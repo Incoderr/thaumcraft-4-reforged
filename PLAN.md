@@ -11,7 +11,7 @@
 - `common/config`: god-классы `ConfigBlocks` (45 блоков с meta-подтипами), `ConfigItems` (111 предметов с meta), `ConfigEntities`, `ConfigAspects` (теги аспектов), `ConfigRecipes`, `ConfigResearch` (201 исследование).
 - Рецепты Thaumcraft: 84 + 5 arcane, 49 тигель, 63 инфузия, 24 инфузионных зачарования, 18 бонусов переплавки, плюс ванильные shaped/shapeless с oredict.
 - Ассеты: 292 текстуры предметов, 263 блоков, 217 моделей (в т.ч. 16 `.obj`), 112 звуков, 51 аспект, 22 фокуса, post-шейдеры варпа (`blurtc`, `desaturatetc`, `hunger`, `sunscorned`), GLSL в `assets/thaumcraft/shader`.
-- Локализация: 23 `.lang`. `ru_RU.lang` полный, включая все 309 страниц исследований (`tc.research_page.*`), отдельный перевод не нужен.
+- Локализация: 22 `.lang`. `ru_RU.lang` полный, включая все 309 страниц исследований (`tc.research_page.*`), отдельный перевод не нужен.
 - Зависимости и мёртвый груз: Baubles 1.0.1.10 (12 классов на `baubles/api`), встроенный CodeChicken lib (CCModel, OBJ, освещение), coremod `DepLoader`, `truetyper` (TTF-шрифт), `itemPhotoPlate`, `itemFlyingCarpet`, `WorldGenSilverwoodTreesOld`, код для Thaumic Tinkerer.
 
 ### Чем TC4 тяжелее TC3
@@ -37,8 +37,9 @@
 | Сборка | ModDevGradle 2.0.148, Gradle wrapper, configuration cache (в 1.19.2 отключить, если конфликтует) |
 | modid, пакет | `thaumcraft`, корневой пакет `thaumcraft`. С TC3 Reforged в одной сборке не уживается, это осознанно |
 | Имя и версия | `Thaumcraft 4 Reforged`, `mod_version=4.2.3.5-reforged.1`, jar `thaumcraft-4-reforged-<mc>.jar` |
-| Baubles | Свой фасад `platform/Baubles` (амулет, 2 кольца, пояс). Бэкенд Curios на 1.21.1 и 1.19.2; на 26.3 Curios, если к фазе 0 есть сборка под 26.3, иначе свои 4 слота (attachment + кнопка в инвентаре) |
-| Биомы | Регистрируются JSON-ами на всех версиях. В генерацию оверворлда через TerraBlender (где есть); без него контент магического леса раскладывается biome modifier-ами по лесам, а биом порчи появляется только через распространение |
+| Baubles | Свой фасад `platform/Baubles` (амулет, 2 кольца, пояс), бэкенд Curios на всех трёх версиях |
+| Зависимости (проверено 2026-10-07) | Curios `17.0.0-beta.2+26.3` / `9.5.1+1.21.1` / `1.19.2-5.1.6.4`; TerraBlender `26.3-26.3.0.0.9` / `1.21.1-4.1.0.1` / `1.19.2-2.0.1.124`; JEI `31.9.0.58` / `19.57.0.451` / `11.68.0.1086` |
+| Биомы | Регистрируются JSON-ами на всех версиях, в генерацию оверворлда через TerraBlender (есть на всех трёх версиях) |
 | Регистрация контента | Java + `DeferredRegister`, «флаттенинг» meta в отдельные id, состояния в blockstate properties |
 | Ресурсы | Python-генераторы в `tools/` с профилями версий (`mcformat.py` из TC3), не datagen |
 | Аспекты, исследования, рецепты TC | В Java, генерируются скриптами из декомпилята (`ConfigAspects`, `ConfigResearch`, `ConfigRecipes`), как в TC3 |
@@ -46,7 +47,7 @@
 | Модели | Статичные `ModelRenderer`-модели в JSON (`model_box` из TC3), `.obj` через OBJ loader загрузчика, анимированное в BER/рендерерах сущностей |
 | Шрифт книги | Ванильный `minecraft:uniform` вместо `truetyper` |
 | Код-стайл Java | Как в TC3: 4 пробела, без комментариев, коммиты `feat:`/`fix:` без соавторства |
-| Язык | Все 23 языка конвертируются автоматически, ручные правки только en_us и ru_ru |
+| Язык | Все 22 языка конвертируются автоматически, ручные правки только en_us и ru_ru |
 
 ## Что берём из TC3 Reforged
 
@@ -71,7 +72,7 @@
 | `StackData` (жезл, фокус, аспекты в банке, заметки, руны) | data components | data components | NBT |
 | `PlayerKnowledge`, `ChunkAura`, `EntityData` | attachments + `.sync()` | attachments + свой payload | capabilities + пакеты |
 | `Transfer` (големы, бур, воронки) | `ResourceHandler`/`Transaction` | `IItemHandler`/`IFluidHandler` | то же через `ForgeCapabilities` |
-| `Baubles` | Curios или свои слоты | Curios | Curios |
+| `Baubles` | Curios | Curios | Curios |
 | `Teleport` (Outer Lands, зеркала, фокус) | `TeleportTransition` | `DimensionTransition` | `ITeleporter` |
 | `BiomeEdit` (порча, цветок очищения) | `fillbiome`-подход + `ClientboundChunksBiomesPacket` | то же | переотправка чанка |
 | `SaveIO` | `ValueInput`/`ValueOutput` | `compat/ValueInput`/`ValueOutput` из TC3 | то же на `CompoundTag` |
@@ -126,8 +127,8 @@ thaumcraft-4-reforged/
 - [ ] `reference/mc1710/`: декомпилированный MC 1.7.10 + Forge 10.13.4 с MCP-именами, чтобы сверять ванильное поведение (`RenderBlocks`, `Tessellator`, `EntityAITasks`)
 - [ ] `tools/inventory.py` → `INVENTORY.md`: все блоки и предметы с meta, BE, сущности, меню, рецепты, исследования, звуки, пакеты. Список «не переносим» с причиной
 - [ ] `tools/id_map.json`: `(blockStoneDevice, 2)` → `thaumcraft:arcane_pedestal` и т.п., плюс числовые и строковые id ванилы 1.7.10 → современные (по версиям через профиль)
-- [ ] `tools/convert_assets.py`: `textures/blocks|items` → `block|item`, `models` → `model` + `.obj`/`.mtl`, `.png.mcmeta`, `sounds.json` 1.7 → современный с субтитрами, 23 `.lang` → JSON (id блоков и предметов через `id_map`, ключи `tc.*` и `tc.research_page.*` сохраняются)
-- [ ] Проверить доступность Curios, TerraBlender и JEI под 26.3, 1.21.1, 1.19.2, вписать версии в «Решения»
+- [ ] `tools/convert_assets.py`: `textures/blocks|items` → `block|item`, `models` → `model` + `.obj`/`.mtl`, `.png.mcmeta`, `sounds.json` 1.7 → современный с субтитрами, 22 `.lang` → JSON (id блоков и предметов через `id_map`, ключи `tc.*` и `tc.research_page.*` сохраняются)
+- [x] Проверить доступность Curios, TerraBlender и JEI под 26.3, 1.21.1, 1.19.2, вписать версии в «Решения»
 - [ ] `CLAUDE.md` проекта (структура, окружение, маппинг, заметки, отступления)
 
 ### Фаза 1. Каркас и швы
@@ -258,7 +259,7 @@ thaumcraft-4-reforged/
 
 | Риск | Что делаем |
 |---|---|
-| Нет Curios/TerraBlender под 26.3 | Свои слоты бижутерии; биомы без TerraBlender (см. «Решения») |
+| Curios под 26.3 пока beta | Всё через фасад `platform/Baubles`, при поломке временно свои слоты |
 | Объём рендера `Tessellator` | `client/geom` + sink-и, порт по одному виду за раз со сверкой скриншотов |
 | Формат post-шейдеров разный в каждой версии | Шейдеры генерируются профилем, на 26.3 `post_effect` |
 | Смена биома в рантайме | `BiomeEdit` за швом, тест на выделенном сервере с двумя игроками |
@@ -287,4 +288,4 @@ thaumcraft-4-reforged/
 
 1. Отдельный репозиторий `thaumcraft-4-reforged` на GitHub (как TC3) или приватный? По умолчанию: отдельный, CI с nightly-релизами.
 2. Нужна ли совместимость с аддонами TC4 через публичный `thaumcraft.api`? По умолчанию: нет, API переносится только как внутренние интерфейсы.
-3. Если Curios под 26.3 нет: свои слоты (по умолчанию) или ждать Curios?
+3. ~~Если Curios под 26.3 нет~~: Curios под 26.3 есть (beta), используется везде.
