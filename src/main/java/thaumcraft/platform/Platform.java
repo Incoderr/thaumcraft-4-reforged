@@ -7,5 +7,7 @@ public final class Platform {
     }
 
     public static void register(IEventBus bus) {
+        StackData.register(bus);
+        DataAttachments.register(bus);
     }
 }
