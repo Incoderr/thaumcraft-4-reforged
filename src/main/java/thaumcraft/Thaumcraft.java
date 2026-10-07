@@ -6,6 +6,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
+import thaumcraft.network.ModPayloads;
 import thaumcraft.platform.Platform;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
@@ -23,6 +24,7 @@ public class Thaumcraft {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+        ModPayloads.register();
     }
 
     public static Identifier id(String path) {
