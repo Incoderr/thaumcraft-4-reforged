@@ -38,6 +38,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      - name: Check seams
+        run: python3 tools/check_seams.py
+
       - name: Build
         run: |
           chmod +x gradlew
