@@ -31,13 +31,13 @@
 | Вопрос | Решение |
 |---|---|
 | Основная версия | `main` = 26.3, бэкпорты цепочкой `main` → `mc/1.21.1` → `mc/1.19.2`, как в TC3 |
-| Загрузчики | 26.3: NeoForge 26.3.0.x; 1.21.1: NeoForge 21.1.x; 1.19.2: Forge 43.x через `net.neoforged.moddev.legacyforge` |
+| Загрузчики | 26.3: NeoForge 26.3.0.57-beta; 1.21.1: NeoForge 21.1.x; 1.19.2: Forge 43.x через `net.neoforged.moddev.legacyforge` |
 | Java | 25 / 21 / 17 (все три уже стоят в `/opt/homebrew/opt/openjdk@*`) |
 | Маппинги | 26.3 без обфускации; Parchment `1.21.1/2024.11.17` и `1.19.2/2022.11.27` |
 | Сборка | ModDevGradle 2.0.148, Gradle wrapper, configuration cache (в 1.19.2 отключить, если конфликтует) |
 | modid, пакет | `thaumcraft`, корневой пакет `thaumcraft`. С TC3 Reforged в одной сборке не уживается, это осознанно |
 | Имя и версия | `Thaumcraft 4 Reforged`, `mod_version=4.2.3.5-reforged.1`, jar `thaumcraft-4-reforged-<mc>.jar` |
-| Baubles | Свой фасад `platform/Baubles` (амулет, 2 кольца, пояс), бэкенд Curios на всех трёх версиях |
+| Baubles | Свой фасад `platform/Baubles` (амулет, 2 кольца, пояс). На 26.3 свои слоты по образцу Baubles 1.0.1.10 (Curios beta.2 несовместим с NeoForge 26.3.0.37+), на бэкпортах бэкенд выбирается при ветвлении (Curios или те же свои слоты) |
 | Зависимости (проверено 2026-10-07) | Curios `17.0.0-beta.2+26.3` / `9.5.1+1.21.1` / `1.19.2-5.1.6.4`; TerraBlender `26.3-26.3.0.0.9` / `1.21.1-4.1.0.1` / `1.19.2-2.0.1.124`; JEI `31.9.0.58` / `19.57.0.451` / `11.68.0.1086` |
 | Биомы | Регистрируются JSON-ами на всех версиях, в генерацию оверворлда через TerraBlender (есть на всех трёх версиях) |
 | Регистрация контента | Java + `DeferredRegister`, «флаттенинг» meta в отдельные id, состояния в blockstate properties |
@@ -72,7 +72,7 @@
 | `StackData` (жезл, фокус, аспекты в банке, заметки, руны) | data components | data components | NBT |
 | `PlayerKnowledge`, `ChunkAura`, `EntityData` | attachments + `.sync()` | attachments + свой payload | capabilities + пакеты |
 | `Transfer` (големы, бур, воронки) | `ResourceHandler`/`Transaction` | `IItemHandler`/`IFluidHandler` | то же через `ForgeCapabilities` |
-| `Baubles` | Curios | Curios | Curios |
+| `Baubles` | свои слоты (attachment, меню, экран) | Curios или свои слоты | то же |
 | `Teleport` (Outer Lands, зеркала, фокус) | `TeleportTransition` | `DimensionTransition` | `ITeleporter` |
 | `BiomeEdit` (порча, цветок очищения) | `fillbiome`-подход + `ClientboundChunksBiomesPacket` | то же | переотправка чанка |
 | `SaveIO` | `ValueInput`/`ValueOutput` | `compat/ValueInput`/`ValueOutput` из TC3 | то же на `CompoundTag` |
@@ -132,11 +132,11 @@ thaumcraft-4-reforged/
 - [x] `CLAUDE.md` проекта (структура, окружение, маппинг, заметки, отступления)
 
 ### Фаза 1. Каркас и швы
-- [ ] MDK NeoForge 26.3 (версии из TC3), `neoforge.mods.toml`, логотип `TCLogo.png`, креатив-вкладка
-- [ ] `platform/*` из таблицы выше с реализацией 26.3, перенос инфраструктуры TC3 (`TcBlockEntity`, `ModNetwork`, `ClientPayloadHandlers`, `Fx`)
-- [ ] `client/geom` + `client/platform` с одним примером (луч)
-- [ ] `tools/check_seams.py` + шаг в CI
-- [ ] Проверка: `runClient` и `runServer` с модом
+- [x] MDK NeoForge 26.3 (версии из TC3), `neoforge.mods.toml`, логотип `TCLogo.png`, креатив-вкладка
+- [x] `platform/*` из таблицы выше с реализацией 26.3, перенос инфраструктуры TC3 (`TcBlockEntity`, `ModNetwork`, `ClientPayloadHandlers`, `Fx`)
+- [x] `client/geom` + `client/platform` с одним примером (луч)
+- [x] `tools/check_seams.py` + шаг в CI
+- [~] Проверка: `runServer` чистый, `runClient` ждёт визуальной проверки (луч `/thaumcraft fx beam`, экран Baubles)
 
 ### Фаза 2. Аспекты и базовый контент
 - [ ] 48 аспектов (6 первичных + составные) с цветами, текстурами, `AspectList`
@@ -259,7 +259,7 @@ thaumcraft-4-reforged/
 
 | Риск | Что делаем |
 |---|---|
-| Curios под 26.3 пока beta | Всё через фасад `platform/Baubles`, при поломке временно свои слоты |
+| Curios под 26.3 сломан (собран под 26.3.0.7, `ModConfig.Type.COMMON` удалён в FML 12.0.8) | Свои слоты за фасадом `platform/Baubles`, при выходе рабочего Curios можно сменить бэкенд |
 | Объём рендера `Tessellator` | `client/geom` + sink-и, порт по одному виду за раз со сверкой скриншотов |
 | Формат post-шейдеров разный в каждой версии | Шейдеры генерируются профилем, на 26.3 `post_effect` |
 | Смена биома в рантайме | `BiomeEdit` за швом, тест на выделенном сервере с двумя игроками |
@@ -288,4 +288,4 @@ thaumcraft-4-reforged/
 
 1. Отдельный репозиторий `thaumcraft-4-reforged` на GitHub (как TC3) или приватный? По умолчанию: отдельный, CI с nightly-релизами.
 2. Нужна ли совместимость с аддонами TC4 через публичный `thaumcraft.api`? По умолчанию: нет, API переносится только как внутренние интерфейсы.
-3. ~~Если Curios под 26.3 нет~~: Curios под 26.3 есть (beta), используется везде.
+3. ~~Если Curios под 26.3 нет~~: beta есть, но не запускается на актуальной NeoForge, на 26.3 свои слоты (решено в фазе 1).
