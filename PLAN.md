@@ -8,11 +8,11 @@
 
 - 942 класса, исходников нет. Классы Thaumcraft не обфусцированы, ссылки на Minecraft в SRG (`func_145845_h`, `field_*`), значит после Vineflower и ремапа по MCP `stable_12-1.7.10` получится почти исходный код (тот же путь, что и с TC3).
 - Крупнейшие пакеты: `common/tiles` 80, `common/blocks` 71, `client/renderers/*` ~150 (49 TESR, 23 ISBRH, 42 рендерера сущностей, 27+15+6 моделей), `common/container` 26, `client/gui` 24, `client/fx/*` ~40, `common/entities/**` ~110 (монстры 30, чемпионы 16, големы 16, AI ~45, снаряды 12, боссы 6).
-- `common/config`: god-классы `ConfigBlocks` (45 блоков с meta-подтипами), `ConfigItems` (111 предметов с meta), `ConfigEntities`, `ConfigAspects` (теги аспектов), `ConfigRecipes`, `ConfigResearch` (201 исследование).
+- `common/config`: god-классы `ConfigBlocks` (45 блоков с meta-подтипами), `ConfigItems` (108 предметов с meta, ещё 3 поля без реализации), `ConfigEntities`, `ConfigAspects` (теги аспектов), `ConfigRecipes`, `ConfigResearch` (201 исследование).
 - Рецепты Thaumcraft: 84 + 5 arcane, 49 тигель, 63 инфузия, 24 инфузионных зачарования, 18 бонусов переплавки, плюс ванильные shaped/shapeless с oredict.
-- Ассеты: 292 текстуры предметов, 263 блоков, 217 моделей (в т.ч. 16 `.obj`), 112 звуков, 51 аспект, 22 фокуса, post-шейдеры варпа (`blurtc`, `desaturatetc`, `hunger`, `sunscorned`), GLSL в `assets/thaumcraft/shader`.
+- Ассеты: 292 текстуры предметов, 263 блоков, 217 моделей (в т.ч. 16 `.obj`), 111 звуков (66 событий), 51 аспект, 22 фокуса, post-шейдеры варпа (`blurtc`, `desaturatetc`, `hunger`, `sunscorned`), GLSL в `assets/thaumcraft/shader`.
 - Локализация: 22 `.lang`. `ru_RU.lang` полный, включая все 309 страниц исследований (`tc.research_page.*`), отдельный перевод не нужен.
-- Зависимости и мёртвый груз: Baubles 1.0.1.10 (12 классов на `baubles/api`), встроенный CodeChicken lib (CCModel, OBJ, освещение), coremod `DepLoader`, `truetyper` (TTF-шрифт), `itemPhotoPlate`, `itemFlyingCarpet`, `WorldGenSilverwoodTreesOld`, код для Thaumic Tinkerer.
+- Зависимости и мёртвый груз: Baubles 1.0.1.10 (7 предметов в `common/items/baubles` на внешнем `baubles.api`), встроенный CodeChicken lib (CCModel, OBJ, освещение), coremod `DepLoader`, `truetyper` (TTF-шрифт), `itemPhotoPlate`, `itemFlyingCarpet`, `WorldGenSilverwoodTreesOld`, код для Thaumic Tinkerer.
 
 ### Чем TC4 тяжелее TC3
 
@@ -121,15 +121,15 @@ thaumcraft-4-reforged/
 Каждая фаза заканчивается: `compileJava`, `runServer` с чистым логом, `runClient` с проверкой контента фазы, `check_seams.py`, коммит, отметка в этом файле и статус в `CLAUDE.md`. Рендер своего контента делается в той же фазе (минимально), красота FX в фазе 15.
 
 ### Фаза 0. Инструменты и декомпиляция
-- [ ] `git init`, `.gitignore` (build, run, `reference/`, оригинальный jar), GitHub-репозиторий, CI из TC3 с именем `thaumcraft-4-reforged`
-- [ ] Vineflower (из `tools/cache` TC3) с библиотеками Forge 1.7.10 и Baubles API в classpath → `reference/decompiled/`
-- [ ] MCP `stable_12-1.7.10` (`methods.csv`, `fields.csv`, `params.csv`) и `tools/remap_srg.py` под 1.7.10, включая `p_*` параметры
-- [ ] `reference/mc1710/`: декомпилированный MC 1.7.10 + Forge 10.13.4 с MCP-именами, чтобы сверять ванильное поведение (`RenderBlocks`, `Tessellator`, `EntityAITasks`)
-- [ ] `tools/inventory.py` → `INVENTORY.md`: все блоки и предметы с meta, BE, сущности, меню, рецепты, исследования, звуки, пакеты. Список «не переносим» с причиной
-- [ ] `tools/id_map.json`: `(blockStoneDevice, 2)` → `thaumcraft:arcane_pedestal` и т.п., плюс числовые и строковые id ванилы 1.7.10 → современные (по версиям через профиль)
-- [ ] `tools/convert_assets.py`: `textures/blocks|items` → `block|item`, `models` → `model` + `.obj`/`.mtl`, `.png.mcmeta`, `sounds.json` 1.7 → современный с субтитрами, 22 `.lang` → JSON (id блоков и предметов через `id_map`, ключи `tc.*` и `tc.research_page.*` сохраняются)
+- [~] `git init`, `.gitignore` (build, run, `reference/`, оригинальный jar), CI из TC3 с именем `thaumcraft-4-reforged`; GitHub-репозиторий отложен
+- [x] Vineflower (из `tools/cache` TC3) с библиотеками Forge 1.7.10 и Baubles API в classpath → `reference/decompiled/`
+- [x] MCP `stable_12-1.7.10` (`methods.csv`, `fields.csv`, `params.csv`) и `tools/remap_srg.py` под 1.7.10, включая `p_*` параметры
+- [x] `reference/mc1710/`: декомпилированный MC 1.7.10 + Forge 10.13.4 с MCP-именами, чтобы сверять ванильное поведение (`RenderBlocks`, `Tessellator`, `EntityAITasks`)
+- [x] `tools/inventory.py` → `INVENTORY.md`: все блоки и предметы с meta, BE, сущности, меню, рецепты, исследования, звуки, пакеты. Список «не переносим» с причиной
+- [x] `tools/id_map.json`: `(blockStoneDevice, 2)` → `thaumcraft:arcane_pedestal` и т.п., плюс числовые и строковые id ванилы 1.7.10 → современные (по версиям через профиль)
+- [x] `tools/convert_assets.py`: `textures/blocks|items` → `block|item`, `models` → `model` + `.obj`/`.mtl`, `.png.mcmeta`, `sounds.json` 1.7 → современный с субтитрами, 22 `.lang` → JSON (id блоков и предметов через `id_map`, ключи `tc.*` и `tc.research_page.*` сохраняются)
 - [x] Проверить доступность Curios, TerraBlender и JEI под 26.3, 1.21.1, 1.19.2, вписать версии в «Решения»
-- [ ] `CLAUDE.md` проекта (структура, окружение, маппинг, заметки, отступления)
+- [x] `CLAUDE.md` проекта (структура, окружение, маппинг, заметки, отступления)
 
 ### Фаза 1. Каркас и швы
 - [ ] MDK NeoForge 26.3 (версии из TC3), `neoforge.mods.toml`, логотип `TCLogo.png`, креатив-вкладка
