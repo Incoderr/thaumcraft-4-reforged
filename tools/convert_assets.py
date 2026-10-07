@@ -24,6 +24,8 @@ TEXTURE_DIRS = {
     "foci": "foci",
 }
 
+SKIPPED_TEXTURES = {"blocks/es_i_1 - Copy.png"}
+
 ENTITY_KEYS = {
     "SpecialItem": "special_item",
     "PermanentItem": "permanent_item",
@@ -156,6 +158,8 @@ def convert_textures():
             if path.is_dir() or path.name == ".DS_Store":
                 continue
             relative = path.relative_to(source_root).as_posix()
+            if f"{old_dir}/{relative}" in SKIPPED_TEXTURES:
+                continue
             name = clean_name(relative)
             if name != relative:
                 report["renamed"].append(f"textures/{old_dir}/{relative} -> {name}")
