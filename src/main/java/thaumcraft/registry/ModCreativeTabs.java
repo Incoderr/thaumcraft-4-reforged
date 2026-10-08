@@ -17,6 +17,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.item.AspectTooltips;
+import thaumcraft.wand.WandCap;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandRod;
+import thaumcraft.wand.Wands;
 
 public final class ModCreativeTabs {
     private static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Thaumcraft.MODID);
@@ -29,7 +33,10 @@ public final class ModCreativeTabs {
         "silver_nugget", "silver",
         "native_silver_cluster", "silver",
         "lead_nugget", "lead",
-        "native_lead_cluster", "lead"
+        "native_lead_cluster", "lead",
+        "copper_wand_cap", "copper",
+        "silver_wand_cap", "silver",
+        "inert_silver_wand_cap", "silver"
     );
 
     public static final Supplier<CreativeModeTab> THAUMCRAFT = TABS.register("thaumcraft", () -> CreativeModeTab.builder()
@@ -48,6 +55,8 @@ public final class ModCreativeTabs {
                     addPerAspect(output, item, 2);
                 } else if (item == ModItems.CRYSTALLIZED_ESSENCE.get()) {
                     addPerAspect(output, item, 1);
+                } else if (item == ModItems.WAND.get()) {
+                    addWands(output);
                 } else {
                     output.accept(item);
                 }
@@ -56,6 +65,19 @@ public final class ModCreativeTabs {
         .build());
 
     private ModCreativeTabs() {
+    }
+
+    private static void addWands(CreativeModeTab.Output output) {
+        output.accept(filled(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false));
+        output.accept(filled(WandRegistry.CAP_GOLD, WandRegistry.ROD_GREATWOOD, false));
+        output.accept(filled(WandRegistry.CAP_THAUMIUM, WandRegistry.ROD_SILVERWOOD, false));
+        output.accept(filled(WandRegistry.CAP_THAUMIUM, WandRegistry.ROD_SILVERWOOD, true));
+    }
+
+    private static ItemStack filled(WandCap cap, WandRod rod, boolean sceptre) {
+        ItemStack stack = Wands.create(cap, rod, sceptre);
+        Wands.fill(stack);
+        return stack;
     }
 
     private static void addPerAspect(CreativeModeTab.Output output, Item item, int amount) {
