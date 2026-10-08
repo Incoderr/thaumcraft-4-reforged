@@ -175,6 +175,38 @@ public final class AspectHelper {
         return result;
     }
 
+    public static AspectList reduceToPrimals(AspectList source) {
+        return reduceToPrimals(source, false);
+    }
+
+    public static AspectList reduceToPrimals(AspectList source, boolean merge) {
+        AspectList result = new AspectList();
+        for (Aspect aspect : source.getAspects()) {
+            int amount = source.getAmount(aspect);
+            if (aspect.isPrimal()) {
+                if (merge) {
+                    result.merge(aspect, amount);
+                } else {
+                    result.add(aspect, amount);
+                }
+                continue;
+            }
+            Aspect[] components = aspect.getComponents();
+            AspectList parts = new AspectList();
+            parts.add(components[0], amount);
+            parts.add(components[1], amount);
+            AspectList reduced = reduceToPrimals(parts, merge);
+            for (Aspect primal : reduced.getAspects()) {
+                if (merge) {
+                    result.merge(primal, reduced.getAmount(primal));
+                } else {
+                    result.add(primal, reduced.getAmount(primal));
+                }
+            }
+        }
+        return result;
+    }
+
     private static float weight(Aspect aspect, int amount) {
         float weight = amount;
         if (aspect.isPrimal()) {

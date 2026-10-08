@@ -7,6 +7,8 @@ import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.fx.Fx;
 import thaumcraft.network.AspectTagsPayload;
 import thaumcraft.network.BeamPulsePayload;
+import thaumcraft.network.NodeZapPayload;
+import thaumcraft.network.VisDrainFxPayload;
 
 public final class ClientPayloadHandlers {
     private ClientPayloadHandlers() {
@@ -15,6 +17,8 @@ public final class ClientPayloadHandlers {
     public static void register() {
         ClientNetwork.handle(BeamPulsePayload.TYPE, ClientPayloadHandlers::beamPulse);
         ClientNetwork.handle(AspectTagsPayload.TYPE, ClientPayloadHandlers::aspectTags);
+        ClientNetwork.handle(NodeZapPayload.TYPE, ClientPayloadHandlers::nodeZap);
+        ClientNetwork.handle(VisDrainFxPayload.TYPE, ClientPayloadHandlers::visDrain);
     }
 
     private static void beamPulse(BeamPulsePayload payload, Player player) {
@@ -27,5 +31,11 @@ public final class ClientPayloadHandlers {
 
     private static void aspectTags(AspectTagsPayload payload, Player player) {
         AspectRegistry.setActive(AspectRegistry.fromSync(payload.items(), payload.entities()));
+    }
+
+    private static void nodeZap(NodeZapPayload payload, Player player) {
+    }
+
+    private static void visDrain(VisDrainFxPayload payload, Player player) {
     }
 }

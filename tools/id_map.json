@@ -165,6 +165,7 @@
     {"old": "blockSecure", "meta": null, "lang": "tile.blockSecure.name", "id": null, "state": {}, "skip": "orphan lang key: no block has this unlocalized name (blockWarded has none), TC3 leftover"},
     {"old": "blockMagicalLog", "meta": 0, "lang": "tile.blockMagicalLog.greatwood.name", "id": "greatwood_log", "state": {}, "skip": null},
     {"old": "blockMagicalLog", "meta": 1, "lang": "tile.blockMagicalLog.silverwood.name", "id": "silverwood_log", "state": {}, "skip": null},
+    {"old": "blockMagicalLog", "meta": 2, "lang": null, "id": "silverwood_knot", "state": {}, "skip": null},
     {"old": "blockMagicalLeaves", "meta": 0, "lang": "tile.blockMagicalLeaves.greatwood.name", "id": "greatwood_leaves", "state": {}, "skip": null},
     {"old": "blockMagicalLeaves", "meta": 1, "lang": "tile.blockMagicalLeaves.silverwood.name", "id": "silverwood_leaves", "state": {}, "skip": null},
     {"old": "blockWooden", "meta": null, "lang": "tile.blockWooden.name", "id": null, "state": {}, "skip": "orphan lang key: no block has this unlocalized name, TC3 leftover"},

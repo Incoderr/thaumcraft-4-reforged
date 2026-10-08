@@ -11,6 +11,7 @@ public final class WorldGenConfig {
     public static int nodeRarity = 36;
     public static int specialNodeRarity = 18;
     public static boolean blueMagicalForest = false;
+    public static boolean hardNode = true;
 
     private WorldGenConfig() {
     }

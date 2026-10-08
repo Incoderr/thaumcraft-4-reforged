@@ -21,6 +21,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.block.AmberBlock;
+import thaumcraft.block.ChargedObsidianTotemBlock;
 import thaumcraft.block.CandleBlock;
 import thaumcraft.block.CustomPlantBlock;
 import thaumcraft.block.FlammableBlock;
@@ -31,11 +32,21 @@ import thaumcraft.block.MagicalLeavesBlock;
 import thaumcraft.block.MagicalLogBlock;
 import thaumcraft.block.MagicalSaplingBlock;
 import thaumcraft.block.ManaPodBlock;
+import thaumcraft.block.NodeJarBlock;
 import thaumcraft.block.ObsidianTotemBlock;
+import thaumcraft.block.RechargeFocusBlock;
+import thaumcraft.block.SilverwoodKnotBlock;
 import thaumcraft.block.TravelPavingStoneBlock;
+import thaumcraft.block.WandPedestalBlock;
 import thaumcraft.block.WardingPavingStoneBlock;
 import thaumcraft.item.ManaBeanItem;
+import thaumcraft.item.NodeJarItem;
+import thaumcraft.node.AuraNodeBlock;
+import thaumcraft.node.EnergizedNodeBlock;
+import thaumcraft.node.NodeStabilizerBlock;
+import thaumcraft.node.NodeTransducerBlock;
 import thaumcraft.platform.Registration;
+import thaumcraft.vis.VisRelayBlock;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Thaumcraft.MODID);
@@ -240,6 +251,77 @@ public final class ModBlocks {
         properties -> wood(properties, 0.15F, 0.0F).noOcclusion()
     ));
 
+    public static final DeferredBlock<AuraNodeBlock> AURA_NODE = withItem(BLOCKS.registerBlock(
+        "aura_node",
+        AuraNodeBlock::new,
+        properties -> airy(properties)
+    ));
+    public static final DeferredBlock<EnergizedNodeBlock> ENERGIZED_AURA_NODE = BLOCKS.registerBlock(
+        "energized_aura_node",
+        EnergizedNodeBlock::new,
+        properties -> airy(properties)
+    );
+    public static final DeferredBlock<ChargedObsidianTotemBlock> CHARGED_OBSIDIAN_TOTEM = withItem(BLOCKS.registerBlock(
+        "charged_obsidian_totem",
+        ChargedObsidianTotemBlock::new,
+        properties -> obsidian(properties)
+    ));
+    public static final DeferredBlock<SilverwoodKnotBlock> SILVERWOOD_KNOT = BLOCKS.registerBlock(
+        "silverwood_knot",
+        SilverwoodKnotBlock::new,
+        ModBlocks::log
+    );
+    public static final DeferredBlock<NodeStabilizerBlock> NODE_STABILIZER = withItem(BLOCKS.registerBlock(
+        "node_stabilizer",
+        properties -> new NodeStabilizerBlock(false, properties),
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<NodeStabilizerBlock> ADVANCED_NODE_STABILIZER = withItem(BLOCKS.registerBlock(
+        "advanced_node_stabilizer",
+        properties -> new NodeStabilizerBlock(true, properties),
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<NodeTransducerBlock> NODE_TRANSDUCER = withItem(BLOCKS.registerBlock(
+        "node_transducer",
+        NodeTransducerBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<WandPedestalBlock> WAND_RECHARGE_PEDESTAL = withItem(BLOCKS.registerBlock(
+        "wand_recharge_pedestal",
+        WandPedestalBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<RechargeFocusBlock> COMPOUND_RECHARGE_FOCUS = withItem(BLOCKS.registerBlock(
+        "compound_recharge_focus",
+        RechargeFocusBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<VisRelayBlock> VIS_RELAY = withItem(BLOCKS.registerBlock(
+        "vis_relay",
+        VisRelayBlock::new,
+        properties -> properties
+            .mapColor(MapColor.METAL)
+            .requiresCorrectToolForDrops()
+            .strength(3.0F, 17.0F)
+            .sound(SoundType.METAL)
+            .noOcclusion()
+    ));
+    public static final DeferredBlock<NodeJarBlock> NODE_JAR = BLOCKS.registerBlock(
+        "node_jar",
+        NodeJarBlock::new,
+        properties -> properties
+            .mapColor(MapColor.NONE)
+            .strength(0.3F)
+            .sound(SoundType.GLASS)
+            .noOcclusion()
+            .lightLevel(state -> 11)
+    );
+    public static final DeferredItem<NodeJarItem> NODE_JAR_ITEM = ModItems.ITEMS.registerItem(
+        "node_jar",
+        properties -> new NodeJarItem(NODE_JAR.get(), properties),
+        NodeJarItem::properties
+    );
+
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
     private ModBlocks() {
@@ -296,6 +378,25 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties obsidian(BlockBehaviour.Properties properties) {
         return rock(properties, 30.0F, 999.0F).mapColor(MapColor.COLOR_BLACK);
+    }
+
+    private static BlockBehaviour.Properties stoneDevice(BlockBehaviour.Properties properties) {
+        return rock(properties, 3.0F, 25.0F).noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties airy(BlockBehaviour.Properties properties) {
+        return properties
+            .mapColor(MapColor.NONE)
+            .noCollision()
+            .noOcclusion()
+            .strength(2.0F, 200.0F)
+            .sound(SoundType.WOOL)
+            .lightLevel(state -> 8)
+            .randomTicks()
+            .pushReaction(PushReaction.IMMOVEABLE)
+            .isValidSpawn((state, level, pos, type) -> false)
+            .isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos, box) -> false);
     }
 
     private static BlockBehaviour.Properties amber(BlockBehaviour.Properties properties) {

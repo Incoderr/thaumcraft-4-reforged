@@ -10,10 +10,13 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.item.AspectContainerItem;
 import thaumcraft.item.CrystalEssenceItem;
+import thaumcraft.item.GogglesItem;
 import thaumcraft.item.LootBagItem;
 import thaumcraft.item.PrimalCharmItem;
+import thaumcraft.item.ThaumometerItem;
 import thaumcraft.item.ZombieBrainItem;
 import thaumcraft.platform.Registration;
+import thaumcraft.wand.WandItem;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
@@ -82,6 +85,36 @@ public final class ModItems {
     public static final DeferredItem<Item> COMMON_LOOT_BAG = ITEMS.registerItem("common_loot_bag", LootBagItem::new);
     public static final DeferredItem<Item> UNCOMMON_LOOT_BAG = ITEMS.registerItem("uncommon_loot_bag", LootBagItem::new, properties -> properties.rarity(Rarity.UNCOMMON));
     public static final DeferredItem<Item> RARE_LOOT_BAG = ITEMS.registerItem("rare_loot_bag", LootBagItem::new, properties -> properties.rarity(Rarity.RARE));
+
+    public static final DeferredItem<WandItem> WAND = ITEMS.registerItem("wand", WandItem::new, WandItem::properties);
+    public static final DeferredItem<Item> IRON_WAND_CAP = ITEMS.registerSimpleItem("iron_wand_cap");
+    public static final DeferredItem<Item> GOLD_WAND_CAP = ITEMS.registerSimpleItem("gold_wand_cap");
+    public static final DeferredItem<Item> THAUMIUM_WAND_CAP = ITEMS.registerSimpleItem("thaumium_wand_cap");
+    public static final DeferredItem<Item> COPPER_WAND_CAP = ITEMS.registerSimpleItem("copper_wand_cap");
+    public static final DeferredItem<Item> SILVER_WAND_CAP = ITEMS.registerSimpleItem("silver_wand_cap");
+    public static final DeferredItem<Item> INERT_SILVER_WAND_CAP = ITEMS.registerSimpleItem("inert_silver_wand_cap");
+    public static final DeferredItem<Item> INERT_THAUMIUM_WAND_CAP = ITEMS.registerSimpleItem("inert_thaumium_wand_cap");
+    public static final DeferredItem<Item> VOID_WAND_CAP = ITEMS.registerSimpleItem("void_wand_cap");
+    public static final DeferredItem<Item> INERT_VOID_WAND_CAP = ITEMS.registerSimpleItem("inert_void_wand_cap");
+    public static final DeferredItem<Item> GREATWOOD_ROD = ITEMS.registerSimpleItem("greatwood_rod");
+    public static final DeferredItem<Item> OBSIDIAN_ROD = ITEMS.registerSimpleItem("obsidian_rod");
+    public static final DeferredItem<Item> SILVERWOOD_ROD = ITEMS.registerSimpleItem("silverwood_rod");
+    public static final DeferredItem<Item> ICY_ROD = ITEMS.registerSimpleItem("icy_rod");
+    public static final DeferredItem<Item> QUARTZ_ROD = ITEMS.registerSimpleItem("quartz_rod");
+    public static final DeferredItem<Item> REED_ROD = ITEMS.registerSimpleItem("reed_rod");
+    public static final DeferredItem<Item> BLAZING_ROD = ITEMS.registerSimpleItem("blazing_rod");
+    public static final DeferredItem<Item> BONE_ROD = ITEMS.registerSimpleItem("bone_rod");
+    public static final DeferredItem<Item> GREATWOOD_STAFF_CORE = ITEMS.registerSimpleItem("greatwood_staff_core");
+    public static final DeferredItem<Item> OBSIDIAN_STAFF_CORE = ITEMS.registerSimpleItem("obsidian_staff_core");
+    public static final DeferredItem<Item> SILVERWOOD_STAFF_CORE = ITEMS.registerSimpleItem("silverwood_staff_core");
+    public static final DeferredItem<Item> ICY_STAFF_CORE = ITEMS.registerSimpleItem("icy_staff_core");
+    public static final DeferredItem<Item> QUARTZ_STAFF_CORE = ITEMS.registerSimpleItem("quartz_staff_core");
+    public static final DeferredItem<Item> REED_STAFF_CORE = ITEMS.registerSimpleItem("reed_staff_core");
+    public static final DeferredItem<Item> BLAZING_STAFF_CORE = ITEMS.registerSimpleItem("blazing_staff_core");
+    public static final DeferredItem<Item> BONE_STAFF_CORE = ITEMS.registerSimpleItem("bone_staff_core");
+    public static final DeferredItem<Item> PRIMAL_STAFF_CORE = ITEMS.registerSimpleItem("primal_staff_core");
+    public static final DeferredItem<ThaumometerItem> THAUMOMETER = ITEMS.registerItem("thaumometer", ThaumometerItem::new, ThaumometerItem::properties);
+    public static final DeferredItem<GogglesItem> GOGGLES_OF_REVEALING = ITEMS.registerItem("goggles_of_revealing", GogglesItem::new, GogglesItem::properties);
 
     private ModItems() {
     }

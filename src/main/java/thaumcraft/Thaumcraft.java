@@ -16,6 +16,7 @@ import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModVillagers;
+import thaumcraft.wand.WandKeys;
 
 @Mod(Thaumcraft.MODID)
 public class Thaumcraft {
@@ -24,6 +25,7 @@ public class Thaumcraft {
 
     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
         AspectKeys.init();
+        WandKeys.init();
         Platform.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);

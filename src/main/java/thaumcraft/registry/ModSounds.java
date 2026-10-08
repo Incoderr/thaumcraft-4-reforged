@@ -12,6 +12,13 @@ public final class ModSounds {
 
     public static final DeferredHolder<SoundEvent, SoundEvent> URNBREAK = register("urnbreak");
     public static final DeferredHolder<SoundEvent, SoundEvent> COINS = register("coins");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WAND = register("wand");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WANDFAIL = register("wandfail");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ZAP = register("zap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAFTFAIL = register("craftfail");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRYSTAL = register("crystal");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CAMERATICKS = register("cameraticks");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JAR = register("jar");
 
     private ModSounds() {
     }
