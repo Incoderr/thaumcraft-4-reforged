@@ -7,11 +7,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import thaumcraft.Thaumcraft;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.aspect.AspectHelper;
+import thaumcraft.aspect.AspectList;
 import thaumcraft.network.BeamPulsePayload;
 import thaumcraft.platform.ModNetwork;
 
@@ -45,7 +52,43 @@ public final class ThaumcraftCommand {
                                 )
                         )
                 )
+                .then(
+                    Commands.literal("aspects")
+                        .then(Commands.literal("hand").executes(ThaumcraftCommand::aspectsHand))
+                        .then(
+                            Commands.literal("entity")
+                                .then(Commands.argument("target", EntityArgument.entity()).executes(ThaumcraftCommand::aspectsEntity))
+                        )
+                )
         );
+    }
+
+    private static int aspectsHand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player player = context.getSource().getPlayerOrException();
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (stack.isEmpty()) {
+            context.getSource().sendFailure(Component.literal("Main hand is empty"));
+            return 0;
+        }
+        return print(context, AspectHelper.getBonusTags(stack, AspectHelper.getObjectTags(stack)));
+    }
+
+    private static int aspectsEntity(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Entity target = EntityArgument.getEntity(context, "target");
+        AspectList aspects = AspectHelper.getEntityTags(target);
+        return print(context, aspects == null ? new AspectList() : aspects);
+    }
+
+    private static int print(CommandContext<CommandSourceStack> context, AspectList aspects) {
+        if (aspects.size() == 0) {
+            context.getSource().sendSuccess(() -> Component.literal("No aspects"), false);
+            return 0;
+        }
+        for (Aspect aspect : aspects.getAspectsSortedAmount()) {
+            String line = aspect.getName() + " x" + aspects.getAmount(aspect);
+            context.getSource().sendSuccess(() -> Component.literal(line), false);
+        }
+        return aspects.size();
     }
 
     private static int beam(CommandContext<CommandSourceStack> context, int color) throws CommandSyntaxException {
