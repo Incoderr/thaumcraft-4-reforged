@@ -8,6 +8,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mcformat
+import gen_biomes
+import gen_loot
+import gen_villages
+import gen_world
 
 profile = mcformat.init()
 OUT = mcformat.out_root
@@ -700,6 +704,11 @@ def main():
     candles()
     items()
     recipes()
+    ctx = sys.modules[__name__]
+    gen_world.generate(ctx)
+    gen_biomes.generate(ctx)
+    gen_loot.generate(ctx)
+    gen_villages.generate(ctx)
     write_tags()
     validate_textures()
     validate_models()

@@ -12,7 +12,10 @@ import thaumcraft.platform.Platform;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModCreativeTabs;
+import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModSounds;
+import thaumcraft.registry.ModVillagers;
 
 @Mod(Thaumcraft.MODID)
 public class Thaumcraft {
@@ -26,6 +29,9 @@ public class Thaumcraft {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+        ModSounds.register(modEventBus);
+        ModFeatures.register(modEventBus);
+        ModVillagers.register(modEventBus);
         ModPayloads.register();
     }
 

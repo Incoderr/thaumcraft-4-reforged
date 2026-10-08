@@ -26,6 +26,7 @@ import thaumcraft.block.CustomPlantBlock;
 import thaumcraft.block.FlammableBlock;
 import thaumcraft.block.GolemFetterBlock;
 import thaumcraft.block.InfusedStoneBlock;
+import thaumcraft.block.LootBlock;
 import thaumcraft.block.MagicalLeavesBlock;
 import thaumcraft.block.MagicalLogBlock;
 import thaumcraft.block.MagicalSaplingBlock;
@@ -226,6 +227,17 @@ public final class ModBlocks {
         "ancient_stone_stairs",
         properties -> new StairBlock(ModBlocks.ANCIENT_STONE.get().defaultBlockState(), properties),
         properties -> rock(properties, 2.0F, 10.0F)
+    ));
+
+    public static final DeferredBlock<LootBlock> LOOT_URN = withItem(BLOCKS.registerBlock(
+        "loot_urn",
+        properties -> new LootBlock(LootBlock.Kind.URN, properties),
+        properties -> properties.mapColor(MapColor.CLAY).strength(0.15F, 0.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<LootBlock> LOOT_CRATE = withItem(BLOCKS.registerBlock(
+        "loot_crate",
+        properties -> new LootBlock(LootBlock.Kind.CRATE, properties),
+        properties -> wood(properties, 0.15F, 0.0F).noOcclusion()
     ));
 
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
