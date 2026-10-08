@@ -4,7 +4,14 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Random;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import thaumcraft.world.gen.HilltopStonesGenerator;
+import thaumcraft.world.gen.MoundGenerator;
+import thaumcraft.world.tree.GreatwoodTreeGenerator;
+import thaumcraft.world.tree.SilverwoodTreeGenerator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -55,6 +62,13 @@ public final class ThaumcraftCommand {
                         )
                 )
                 .then(
+                    Commands.literal("worldgen")
+                        .then(Commands.literal("mound").executes(context -> worldgen(context, "mound")))
+                        .then(Commands.literal("hilltop").executes(context -> worldgen(context, "hilltop")))
+                        .then(Commands.literal("greatwood").executes(context -> worldgen(context, "greatwood")))
+                        .then(Commands.literal("silverwood").executes(context -> worldgen(context, "silverwood")))
+                )
+                .then(
                     Commands.literal("aspects")
                         .then(Commands.literal("hand").executes(ThaumcraftCommand::aspectsHand))
                         .then(
@@ -67,6 +81,24 @@ public final class ThaumcraftCommand {
                         )
                 )
         );
+    }
+
+    private static int worldgen(CommandContext<CommandSourceStack> context, String kind) throws CommandSyntaxException {
+        ServerLevel level = context.getSource().getLevel();
+        BlockPos pos = context.getSource().getPlayerOrException().blockPosition();
+        Random random = new Random(level.getRandom().nextLong());
+        boolean placed = switch (kind) {
+            case "mound" -> MoundGenerator.generate(level, random, pos.getX(), pos.getY() - 9, pos.getZ());
+            case "hilltop" -> HilltopStonesGenerator.generate(level, random, pos.getX(), pos.getY(), pos.getZ());
+            case "greatwood" -> new GreatwoodTreeGenerator(false).generate(level, random, pos, random.nextInt(8) == 0);
+            default -> new SilverwoodTreeGenerator(false, 7, 4).generate(level, random, pos);
+        };
+        if (placed) {
+            context.getSource().sendSuccess(() -> Component.literal("Generated " + kind), true);
+            return 1;
+        }
+        context.getSource().sendFailure(Component.literal("Cannot generate " + kind + " here"));
+        return 0;
     }
 
     private static int aspectsHand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
