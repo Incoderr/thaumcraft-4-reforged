@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:quicksilver"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:quicksilver_drop"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:quicksilver"
+  ],
+  "result": {
+    "id": "thaumcraft:quicksilver_drop",
+    "count": 9
+  }
+}

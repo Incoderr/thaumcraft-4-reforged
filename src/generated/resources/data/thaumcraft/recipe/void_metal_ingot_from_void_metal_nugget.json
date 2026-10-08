@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_metal_ingot"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_metal_nugget"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "thaumcraft:void_metal_nugget"
+  },
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "result": {
+    "id": "thaumcraft:void_metal_ingot"
+  }
+}

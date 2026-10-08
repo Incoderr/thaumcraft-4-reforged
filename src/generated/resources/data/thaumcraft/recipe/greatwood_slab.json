@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:greatwood_planks"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:greatwood_slab"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "K": "thaumcraft:greatwood_planks"
+  },
+  "pattern": [
+    "KKK"
+  ],
+  "result": {
+    "id": "thaumcraft:greatwood_slab",
+    "count": 6
+  }
+}

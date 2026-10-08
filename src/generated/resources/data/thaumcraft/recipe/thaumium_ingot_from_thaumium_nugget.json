@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:thaumium_ingot"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:thaumium_nugget"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "thaumcraft:thaumium_nugget"
+  },
+  "pattern": [
+    "###",
+    "###",
+    "###"
+  ],
+  "result": {
+    "id": "thaumcraft:thaumium_ingot"
+  }
+}

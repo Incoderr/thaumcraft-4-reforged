@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:silverwood_planks"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:silverwood_slab"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "K": "thaumcraft:silverwood_planks"
+  },
+  "pattern": [
+    "KKK"
+  ],
+  "result": {
+    "id": "thaumcraft:silverwood_slab",
+    "count": 6
+  }
+}
