@@ -135,7 +135,7 @@ def jigsaw(material, position, blocks, nbts):
         "target": "minecraft:building_entrance",
         "pool": "minecraft:empty",
         "joint": "aligned",
-        "final_state": state_string(stairs(material["stairs"], "north")),
+        "final_state": state_string(stairs(material["stairs"], "south")),
     }
 
 
