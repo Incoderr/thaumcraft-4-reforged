@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:greatwood_planks"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:greatwood_stairs"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "K": "thaumcraft:greatwood_planks"
+  },
+  "pattern": [
+    "K  ",
+    "KK ",
+    "KKK"
+  ],
+  "result": {
+    "id": "thaumcraft:greatwood_stairs",
+    "count": 4
+  }
+}

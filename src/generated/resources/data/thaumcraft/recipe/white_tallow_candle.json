@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:magic_tallow"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:white_tallow_candle"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "minecraft:string",
+    "T": "thaumcraft:magic_tallow"
+  },
+  "pattern": [
+    " S ",
+    " T ",
+    " T "
+  ],
+  "result": {
+    "id": "thaumcraft:white_tallow_candle",
+    "count": 3
+  }
+}

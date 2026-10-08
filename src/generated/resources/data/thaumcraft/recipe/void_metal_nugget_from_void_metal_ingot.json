@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_metal_ingot"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_metal_nugget"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:void_metal_ingot"
+  ],
+  "result": {
+    "id": "thaumcraft:void_metal_nugget",
+    "count": 9
+  }
+}
