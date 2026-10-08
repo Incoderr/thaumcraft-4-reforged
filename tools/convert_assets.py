@@ -160,6 +160,8 @@ def convert_villager_textures():
     zombie.mkdir(parents=True, exist_ok=True)
     for source_name, name in (("wizard", "wizard"), ("moneychanger", "banker")):
         image = Image.open(SOURCE_THAUM / "textures" / "models" / f"{source_name}.png").convert("RGBA")
+        image.paste((0, 0, 0, 0), (32, 0, 64, 18))
+        image.paste((0, 0, 0, 0), (30, 47, 64, 64))
         image.save(human / f"{name}.png")
         (human / f"{name}.png.mcmeta").write_text(meta)
         zombie_image = image.copy()
