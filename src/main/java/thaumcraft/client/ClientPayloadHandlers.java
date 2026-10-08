@@ -2,8 +2,10 @@ package thaumcraft.client;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.fx.Fx;
+import thaumcraft.network.AspectTagsPayload;
 import thaumcraft.network.BeamPulsePayload;
 
 public final class ClientPayloadHandlers {
@@ -12,6 +14,7 @@ public final class ClientPayloadHandlers {
 
     public static void register() {
         ClientNetwork.handle(BeamPulsePayload.TYPE, ClientPayloadHandlers::beamPulse);
+        ClientNetwork.handle(AspectTagsPayload.TYPE, ClientPayloadHandlers::aspectTags);
     }
 
     private static void beamPulse(BeamPulsePayload payload, Player player) {
@@ -20,5 +23,9 @@ public final class ClientPayloadHandlers {
         if (source != null && target != null) {
             Fx.get().beamPulse(player.level(), source, target, payload.color());
         }
+    }
+
+    private static void aspectTags(AspectTagsPayload payload, Player player) {
+        AspectRegistry.setActive(AspectRegistry.fromSync(payload.items(), payload.entities()));
     }
 }

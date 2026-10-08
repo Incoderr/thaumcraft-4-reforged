@@ -8,5 +8,6 @@ public final class ModPayloads {
 
     public static void register() {
         ModNetwork.toClient(BeamPulsePayload.TYPE, BeamPulsePayload.STREAM_CODEC);
+        ModNetwork.toClient(AspectTagsPayload.TYPE, AspectTagsPayload.STREAM_CODEC);
     }
 }
