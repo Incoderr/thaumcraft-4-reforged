@@ -13,6 +13,7 @@ RESOURCES = ROOT / "src" / "main" / "resources"
 ASSETS = RESOURCES / "assets" / "thaumcraft"
 LANG_EXTRA = ROOT / "tools" / "lang"
 PENDING = ROOT / "tools" / "assets_pending"
+ASSETS_EXTRA = ROOT / "tools" / "assets_extra"
 
 TEXTURE_DIRS = {
     "blocks": "block",
@@ -394,6 +395,7 @@ def main():
     id_map = load_id_map(Path(arguments.id_map))
     results, prefixes, uncovered, unmatched, escape_stats = convert_lang(id_map)
     shaders = convert_shaders()
+    shutil.copytree(ASSETS_EXTRA, ASSETS, dirs_exist_ok=True)
     RESOURCES.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(LOGO, RESOURCES / "TCLogo.png")
     validate(results, sounds)
