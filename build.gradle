@@ -17,6 +17,13 @@ sourceSets.main.resources {
 
 repositories {
     maven {
+        name = "Minecraft Forge"
+        url = "https://maven.minecraftforge.net/"
+        content {
+            includeGroup "com.github.glitchfiend"
+        }
+    }
+    maven {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
         content {
@@ -71,6 +78,7 @@ configurations {
 }
 
 dependencies {
+    implementation "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
