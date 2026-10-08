@@ -151,6 +151,23 @@ def convert_mtl(source, destination):
     destination.write_text("\n".join(result) + "\n", encoding="utf-8")
 
 
+def convert_villager_textures():
+    from PIL import Image
+    meta = json.dumps({"villager": {"hat": "full"}}, indent=4) + "\n"
+    human = ASSETS / "textures" / "entity" / "villager" / "profession"
+    zombie = ASSETS / "textures" / "entity" / "zombie_villager" / "profession"
+    human.mkdir(parents=True, exist_ok=True)
+    zombie.mkdir(parents=True, exist_ok=True)
+    for source_name, name in (("wizard", "wizard"), ("moneychanger", "banker")):
+        image = Image.open(SOURCE_THAUM / "textures" / "models" / f"{source_name}.png").convert("RGBA")
+        image.save(human / f"{name}.png")
+        (human / f"{name}.png.mcmeta").write_text(meta)
+        zombie_image = image.copy()
+        zombie_image.paste((0, 0, 0, 0), (0, 0, 32, 18))
+        zombie_image.save(zombie / f"{name}.png")
+        (zombie / f"{name}.png.mcmeta").write_text(meta)
+
+
 def convert_textures():
     counts = Counter()
     for old_dir, new_dir in TEXTURE_DIRS.items():
@@ -395,6 +412,7 @@ def main():
     id_map = load_id_map(Path(arguments.id_map))
     results, prefixes, uncovered, unmatched, escape_stats = convert_lang(id_map)
     shaders = convert_shaders()
+    convert_villager_textures()
     shutil.copytree(ASSETS_EXTRA, ASSETS, dirs_exist_ok=True)
     RESOURCES.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(LOGO, RESOURCES / "TCLogo.png")
