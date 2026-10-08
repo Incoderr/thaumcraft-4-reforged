@@ -21,6 +21,9 @@ OUTSIDE_PLATFORM = [
     "net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket",
     "net.minecraft.world.item.ToolMaterial",
     "net.minecraft.world.item.equipment.*",
+    "net.minecraft.world.item.component.Consumable",
+    "net.minecraft.world.item.component.Consumables",
+    "net.minecraft.world.item.consume_effects.*",
 ]
 
 OUTSIDE_CLIENT_PLATFORM = [

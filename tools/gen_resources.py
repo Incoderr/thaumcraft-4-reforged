@@ -341,8 +341,19 @@ def plants():
 
 
 def cosmetic():
-    cube_column("obsidian_totem", "obsidiantile", "obsidiantotembase")
-    simple_state("obsidian_totem")
+    totem_variants = {}
+    for part, model, side in [("base", "obsidian_totem", "obsidiantotembase"), ("shaded", "obsidian_totem_shaded", "obsidiantotembaseshaded")]:
+        cube_column(model, "obsidiantile", side)
+        for carving in range(4):
+            totem_variants[f"carving={carving},part={part}"] = {"model": ref(model)}
+    for carving in range(4):
+        model = f"obsidian_totem_carved_{carving}"
+        textures = {"particle": ref("obsidiantile"), "down": ref("obsidiantile"), "up": ref("obsidiantile")}
+        for face, side in {"north": 2, "south": 3, "west": 4, "east": 5}.items():
+            textures[face] = ref(f"obsidiantotem{(side + carving) % 4 + 1}")
+        block_model(model, {"parent": "minecraft:block/cube", "textures": textures})
+        totem_variants[f"carving={carving},part=carved"] = {"model": ref(model)}
+    blockstate("obsidian_totem", {"variants": totem_variants})
     cube_all("obsidian_tile", "obsidiantile")
     cube_all("travel_paving_stone", "paving_stone_travel")
     cube_all("warding_paving_stone", "paving_stone_warding")

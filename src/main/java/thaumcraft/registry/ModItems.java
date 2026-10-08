@@ -2,12 +2,8 @@ package thaumcraft.registry;
 
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.component.Consumable;
-import net.minecraft.world.item.component.Consumables;
-import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -70,22 +66,12 @@ public final class ModItems {
     public static final DeferredItem<Item> FISH_NUGGET = nugget("fish_nugget");
     public static final DeferredItem<Item> TRIPLE_MEAT_TREAT = ITEMS.registerSimpleItem(
         "triple_meat_treat",
-        properties -> properties.food(
-            new FoodProperties.Builder().nutrition(6).saturationModifier(0.8F).alwaysEdible().build(),
-            Consumables.defaultFood()
-                .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 0), 0.66F))
-                .build()
-        )
+        properties -> Registration.food(properties, 6, 0.8F, true, 1.6F, new MobEffectInstance(MobEffects.REGENERATION, 100, 0), 0.66F)
     );
     public static final DeferredItem<Item> ZOMBIE_BRAIN = ITEMS.registerItem(
         "zombie_brain",
         ZombieBrainItem::new,
-        properties -> properties.food(
-            new FoodProperties.Builder().nutrition(4).saturationModifier(0.2F).build(),
-            Consumables.defaultFood()
-                .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.HUNGER, 600, 0), 0.8F))
-                .build()
-        )
+        properties -> Registration.food(properties, 4, 0.2F, false, 1.6F, new MobEffectInstance(MobEffects.HUNGER, 600, 0), 0.8F)
     );
 
     public static final DeferredItem<Item> GLASS_PHIAL = ITEMS.registerSimpleItem("glass_phial");
@@ -101,11 +87,7 @@ public final class ModItems {
     }
 
     private static DeferredItem<Item> nugget(String name) {
-        Consumable consumable = Consumables.defaultFood().consumeSeconds(0.5F).build();
-        return ITEMS.registerSimpleItem(
-            name,
-            properties -> properties.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.3F).build(), consumable)
-        );
+        return ITEMS.registerSimpleItem(name, properties -> Registration.food(properties, 1, 0.3F, false, 0.5F));
     }
 
     public static void register(IEventBus bus) {

@@ -4,9 +4,11 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
@@ -31,10 +33,10 @@ public final class ThaumcraftCommand {
 
     @SubscribeEvent
     static void onRegisterCommands(RegisterCommandsEvent event) {
-        register(event.getDispatcher());
+        register(event.getDispatcher(), event.getBuildContext());
     }
 
-    private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    private static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
         dispatcher.register(
             Commands.literal(Thaumcraft.MODID)
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
@@ -56,6 +58,10 @@ public final class ThaumcraftCommand {
                     Commands.literal("aspects")
                         .then(Commands.literal("hand").executes(ThaumcraftCommand::aspectsHand))
                         .then(
+                            Commands.literal("item")
+                                .then(Commands.argument("item", ItemArgument.item(buildContext)).executes(ThaumcraftCommand::aspectsItem))
+                        )
+                        .then(
                             Commands.literal("entity")
                                 .then(Commands.argument("target", EntityArgument.entity()).executes(ThaumcraftCommand::aspectsEntity))
                         )
@@ -70,6 +76,11 @@ public final class ThaumcraftCommand {
             context.getSource().sendFailure(Component.literal("Main hand is empty"));
             return 0;
         }
+        return print(context, AspectHelper.getBonusTags(stack, AspectHelper.getObjectTags(stack)));
+    }
+
+    private static int aspectsItem(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ItemStack stack = ItemArgument.getItem(context, "item").createItemStack(1);
         return print(context, AspectHelper.getBonusTags(stack, AspectHelper.getObjectTags(stack)));
     }
 

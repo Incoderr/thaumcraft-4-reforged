@@ -6,7 +6,8 @@
 
 - Фаза 0 (инструменты и декомпиляция): готово, кроме GitHub-репозитория (отложен, `gh` не установлен, remote не настроен)
 - Фаза 1 (каркас NeoForge 26.3.0.57-beta, швы `platform/`, луч через `client/geom`, свои слоты Baubles, `check_seams.py`): готово, кроме визуальной проверки в `runClient`
-- Следующая: фаза 2 (аспекты и базовый контент)
+- Фаза 2 (48 аспектов, теги предметов и сущностей с генерацией из рецептов, мировые блоки, базовые предметы, оверлей аспектов по Shift, ванильные рецепты): готово, кроме визуальной проверки в `runClient`
+- Следующая: фаза 3 (мир)
 
 ## Окружение
 
@@ -46,6 +47,10 @@
 
 - Ванильные id лежат отдельно в `tools/vanilla_ids.json`, а не в `id_map.json`: генерируются из DataFixer-ов 26.3 и не правятся руками
 - Forge 1.7.10 в справочнике без наложенных патчей: исходники Forge и патчи-диффы раздельно (бинарные патчи требуют pack200/Java 8)
+- Аспекты в GUI показываются для всех предметов и все аспекты считаются известными (`client/aspect/AspectVisibility`, `item/AspectTooltips.isDiscovered`): сканирование и знания появятся в фазе 5
+- Олово, серебро, свинец: есть только рецепт слиток → 9 самородков (условие на непустой `c:ingots/<металл>`); обратные рецепты и переплавка кластеров требуют результата-тега, в JSON невозможно, нужен свой тип рецепта
+- Тотем из обсидиана: состояния `part`/`carving` как в TC3 вместо выбора текстуры по соседям в рендере; древний камень и скала выбирают текстуру случайным вариантом blockstate
+- Блендинг аспектов (GL_ONE у большинства) в GUI не воспроизводится, все иконки рисуются обычной альфой
 - Baubles: на 26.3 свои слоты по образцу Baubles 1.0.1.10 за фасадом `platform/Baubles`. Curios `17.0.0-beta.2+26.3` собран под NeoForge 26.3.0.7 и падает на 26.3.0.37+ (`ModConfig.Type.COMMON` удалён в FML 12.0.8)
 
 ## Заметки
@@ -54,6 +59,12 @@
 - Рендер FX: `WorldFx` (`client/platform`) отдаёт текстуру и blend, геометрия в `client/geom` пишет в `QuadSink`; `TcRenderTypes` ставят REPEAT-сэмплер (как GL_REPEAT в TC4)
 - Новые пакеты регистрируются в `network/ModPayloads`, клиентские хендлеры в `client/ClientPayloadHandlers`; `/thaumcraft fx beam <цель> [цвет]` отладочная команда
 - `onEquipped`/`onUnequipped` баублов вызываются только на сервере
+- Аспекты: `aspect/Aspect` (enum 48, порядок TC4), `AspectList` (семантика TC4), компонент `AspectKeys.ASPECTS` на фиалах, эссенциях, манабобах, ярлыках. `ConfigAspects.java` генерируется `tools/convert_tags.py` (руками не править), неразрешённые цели (контент будущих фаз) молча пропускаются. Реестр собирается на сервере (`AspectSync`, `ServerStartedEvent` и `/reload`) и уходит клиенту `AspectTagsPayload`. Источники рецептов TC (тигель, arcane, инфузия) подключаются через `RecipeAspectSource.register` в порядке TC4
+- Имена сущностей 1.7.10 → id: `tools/entity_ids.json` (в `id_map.json` нельзя: `inventory.py` перезаписывает всё, кроме `blocks`/`items`)
+- Ресурсы: `python3 tools/gen_resources.py` полностью перезаписывает `src/generated/resources`; текстуры остаются под именами TC4. Самодельные ассеты лежат в `tools/assets_extra/` (копируются `convert_assets.py`)
+- Еда только через `Registration.food` (Consumable/consume_effects запрещены вне `platform/`)
+- Хуки на будущие фазы: `ManaBeanItem.awardAspectPool` (5), `ZombieBrainItem.applyWarp` (5/10), `InfusionStabiliser` у свечей (7), `SilverwoodTreeGenerator.setKnotPlacer` (4), генераторы деревьев в `world/tree/` для фазы 3
+- `/thaumcraft aspects hand|item <предмет>|entity <цель>` печатает теги
 
 - Числа оригинала (подробно в `INVENTORY.md`): 45 блоков, 108 предметов (`itemPhotoPlate`, `itemFlyingCarpet`, `itemBootsFortress` объявлены, но не созданы), 73 BE, 50 сущностей, 15 контейнеров, 39 пакетов, 201 исследование, 66 звуковых событий, 22 языка
 - `id_map.json`: meta, меняющие только состояние, свёрнуты в blockstate (`state`), поэтому один id может встречаться в нескольких записях; уникальна пара (id, state). Проверка: `python3 tools/inventory.py --check`

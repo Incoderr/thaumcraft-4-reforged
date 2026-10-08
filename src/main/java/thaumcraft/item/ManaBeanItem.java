@@ -17,11 +17,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -33,6 +31,7 @@ import thaumcraft.aspect.AspectKeys;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.block.ManaPodBlock;
 import thaumcraft.blockentity.ManaPodBlockEntity;
+import thaumcraft.platform.Registration;
 import thaumcraft.registry.ModBlocks;
 
 public class ManaBeanItem extends Item {
@@ -68,8 +67,7 @@ public class ManaBeanItem extends Item {
     }
 
     public static Properties properties(Properties properties) {
-        return properties
-            .food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.5F).alwaysEdible().build(), Consumable.builder().consumeSeconds(0.5F).build());
+        return Registration.food(properties, 1, 0.5F, true, 0.5F);
     }
 
     public static ItemStack withAspect(Aspect aspect) {
