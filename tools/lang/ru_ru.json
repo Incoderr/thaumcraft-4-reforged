@@ -1,7 +1,13 @@
 {
+  "biome.thaumcraft.eerie": "Жуткие земли",
+  "biome.thaumcraft.eldritch": "Древние земли",
+  "biome.thaumcraft.magical_forest": "Магический лес",
+  "biome.thaumcraft.tainted_land": "Заражённые земли",
   "block.thaumcraft.mana_pod": "Магический стручок",
   "button.thaumcraft.baubles": "Baubles",
   "button.thaumcraft.normal": "Обычн.",
+  "entity.thaumcraft.villager.banker": "Банкир",
+  "entity.thaumcraft.villager.wizard": "Волшебник",
   "key.thaumcraft.baubles": "Инвентарь Baubles",
   "subtitles.thaumcraft.alembicknock": "Стук алембика",
   "subtitles.thaumcraft.brain": "Хлюпанье мозга",

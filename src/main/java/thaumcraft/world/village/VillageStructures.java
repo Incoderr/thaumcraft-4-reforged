@@ -20,7 +20,7 @@ import thaumcraft.Thaumcraft;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class VillageStructures {
-    private static final Map<String, Integer> HOUSES = Map.of("wizard_tower", 2, "banker_home", 3);
+    private static final Map<String, Integer> HOUSES = Map.of("wizard_tower", 1, "banker_home", 1);
     private static final Map<String, String> BIOMES = Map.of(
         "plains", "mossify_10_percent",
         "taiga", "mossify_10_percent",

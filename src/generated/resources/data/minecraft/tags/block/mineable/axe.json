@@ -18,6 +18,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:loot_crate",
+      "required": false
+    },
+    {
       "id": "thaumcraft:silverwood_log",
       "required": false
     },

@@ -1,4 +1,8 @@
 {
+  "biome.thaumcraft.eerie": "Eerie",
+  "biome.thaumcraft.eldritch": "Eldritch",
+  "biome.thaumcraft.magical_forest": "Magical Forest",
+  "biome.thaumcraft.tainted_land": "Tainted Land",
   "block.thaumcraft.advanced_alchemical_construct": "Advanced Alchemical Construct",
   "block.thaumcraft.advanced_alchemical_furnace": "Advanced Alchemical Furnace",
   "block.thaumcraft.advanced_node_stabilizer": "Advanced Node Stabilizer",
@@ -233,6 +237,8 @@
   "entity.thaumcraft.tainted_villager": "Tainted Villager",
   "entity.thaumcraft.thaumic_slime": "Thaumic Slime",
   "entity.thaumcraft.traveling_trunk": "Traveling Trunk",
+  "entity.thaumcraft.villager.banker": "Banker",
+  "entity.thaumcraft.villager.wizard": "Wizard",
   "entity.thaumcraft.wisp": "Wisp",
   "entity.trunk.guiname": "'s Trunk",
   "entity.trunk.move": "The trunk will now follow you",

@@ -47,7 +47,7 @@ public record ThaumcraftWorldGenFeature() implements Feature {
     }
 
     private static int height(WorldGenLevel level, int x, int z) {
-        return level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        return level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
     private static void generateNether(WorldGenLevel level, Random random, int chunkX, int chunkZ, boolean flat) {

@@ -1,4 +1,8 @@
 {
+  "biome.thaumcraft.eerie": "Жуткие земли",
+  "biome.thaumcraft.eldritch": "Древние земли",
+  "biome.thaumcraft.magical_forest": "Магический лес",
+  "biome.thaumcraft.tainted_land": "Заражённые земли",
   "block.thaumcraft.advanced_alchemical_construct": "Улучшенная алхимическая конструкция",
   "block.thaumcraft.advanced_alchemical_furnace": "Улучшенная алхимическая печь",
   "block.thaumcraft.advanced_node_stabilizer": "Улучшенный узел-стабилизатор",
@@ -233,6 +237,8 @@
   "entity.thaumcraft.tainted_villager": "Заражённый житель",
   "entity.thaumcraft.thaumic_slime": "Таум-слизень",
   "entity.thaumcraft.traveling_trunk": "Ходячий сундук",
+  "entity.thaumcraft.villager.banker": "Банкир",
+  "entity.thaumcraft.villager.wizard": "Волшебник",
   "entity.thaumcraft.wisp": "Висп",
   "entity.trunk.guiname": " сундук",
   "entity.trunk.move": "Сундук будет следовать за Вами",

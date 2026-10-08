@@ -1,7 +1,13 @@
 {
+  "biome.thaumcraft.eerie": "Eerie",
+  "biome.thaumcraft.eldritch": "Eldritch",
+  "biome.thaumcraft.magical_forest": "Magical Forest",
+  "biome.thaumcraft.tainted_land": "Tainted Land",
   "block.thaumcraft.mana_pod": "Mana Pod",
   "button.thaumcraft.baubles": "Baubles",
   "button.thaumcraft.normal": "Normal",
+  "entity.thaumcraft.villager.banker": "Banker",
+  "entity.thaumcraft.villager.wizard": "Wizard",
   "key.thaumcraft.baubles": "Baubles Inventory",
   "subtitles.thaumcraft.alembicknock": "Alembic knocks",
   "subtitles.thaumcraft.brain": "Brain squelches",

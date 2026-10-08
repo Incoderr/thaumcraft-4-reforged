@@ -83,9 +83,9 @@ public final class ThaumcraftCommand {
         );
     }
 
-    private static int worldgen(CommandContext<CommandSourceStack> context, String kind) throws CommandSyntaxException {
+    private static int worldgen(CommandContext<CommandSourceStack> context, String kind) {
         ServerLevel level = context.getSource().getLevel();
-        BlockPos pos = context.getSource().getPlayerOrException().blockPosition();
+        BlockPos pos = BlockPos.containing(context.getSource().getPosition());
         Random random = new Random(level.getRandom().nextLong());
         boolean placed = switch (kind) {
             case "mound" -> MoundGenerator.generate(level, random, pos.getX(), pos.getY() - 9, pos.getZ());

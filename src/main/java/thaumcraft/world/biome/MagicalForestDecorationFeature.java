@@ -41,7 +41,7 @@ public record MagicalForestDecorationFeature() implements Feature {
     }
 
     private static BlockPos surface(WorldGenLevel level, int x, int z) {
-        return new BlockPos(x, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z), z);
+        return new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z);
     }
 
     @Override
@@ -134,7 +134,7 @@ public record MagicalForestDecorationFeature() implements Feature {
     private static void placeManaPod(WorldGenLevel level, Random random, int startX, int startY, int startZ) {
         int x = startX;
         int z = startZ;
-        int limit = Math.min(128, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z));
+        int limit = Math.min(128, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z));
         for (int y = startY; y < limit; y++) {
             BlockPos pos = new BlockPos(x, y, z);
             if (level.isEmptyBlock(pos) && level.isEmptyBlock(pos.below())) {
@@ -154,7 +154,7 @@ public record MagicalForestDecorationFeature() implements Feature {
     }
 
     private static void placeVishroom(WorldGenLevel level, int x, int z) {
-        int y = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
         while (y > 50 && !level.getBlockState(new BlockPos(x, y, z)).is(Blocks.GRASS_BLOCK)) {
             y--;
         }
@@ -165,10 +165,7 @@ public record MagicalForestDecorationFeature() implements Feature {
         }
         for (BlockPos neighbour : BlockPos.betweenClosed(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))) {
             if (!neighbour.equals(pos) && level.getBlockState(neighbour).is(BlockTags.LOGS)) {
-                BlockState state = ModBlocks.VISHROOM.get().defaultBlockState();
-                if (state.canSurvive(level, pos)) {
-                    level.setBlock(pos, state, Block.UPDATE_CLIENTS);
-                }
+                level.setBlock(pos, ModBlocks.VISHROOM.get().defaultBlockState(), Block.UPDATE_CLIENTS);
                 return;
             }
         }
