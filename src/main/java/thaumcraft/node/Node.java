@@ -8,6 +8,9 @@ import thaumcraft.aspect.AspectList;
 public interface Node extends AspectContainer {
     String getId();
 
+    default void setId(String id) {
+    }
+
     AspectList getAspectsBase();
 
     NodeType getNodeType();

@@ -7,6 +7,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import thaumcraft.aspect.AspectKeys;
+import thaumcraft.item.NodeJarKeys;
 import thaumcraft.network.ModPayloads;
 import thaumcraft.platform.Platform;
 import thaumcraft.registry.ModBlockEntities;
@@ -26,6 +27,7 @@ public class Thaumcraft {
     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
         AspectKeys.init();
         WandKeys.init();
+        NodeJarKeys.init();
         Platform.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
