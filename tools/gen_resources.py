@@ -12,6 +12,7 @@ import gen_biomes
 import gen_loot
 import gen_phase4
 import gen_phase5
+import gen_phase6
 import gen_villages
 import gen_world
 
@@ -725,6 +726,7 @@ def main():
     gen_villages.generate(ctx)
     gen_phase4.generate(ctx)
     gen_phase5.generate(ctx)
+    gen_phase6.generate(ctx)
     write_tags()
     validate_textures()
     validate_models()

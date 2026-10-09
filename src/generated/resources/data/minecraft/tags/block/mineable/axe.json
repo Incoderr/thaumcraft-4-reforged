@@ -2,6 +2,14 @@
   "replace": false,
   "values": [
     {
+      "id": "thaumcraft:arcane_worktable",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:deconstruction_table",
+      "required": false
+    },
+    {
       "id": "thaumcraft:greatwood_log",
       "required": false
     },
