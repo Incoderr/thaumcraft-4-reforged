@@ -6,6 +6,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:silverwood_knot",
+      "required": false
+    },
+    {
       "id": "thaumcraft:silverwood_log",
       "required": false
     }

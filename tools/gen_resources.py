@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mcformat
 import gen_biomes
 import gen_loot
+import gen_phase4
 import gen_villages
 import gen_world
 
@@ -542,12 +543,12 @@ def recipe(name, content, referenced, extra_conditions=None):
     write(DATA / NS / profile.recipe_folder / f"{name}.json", content)
 
 
-def shaped(name, result, count, pattern, key, category="misc", conditions=None):
+def shaped(name, result, count, pattern, key, category="misc", conditions=None, components=None):
     content = {"type": "minecraft:crafting_shaped"}
     profile.recipe_category(content, category)
     content["key"] = {symbol: profile.recipe_ingredient(ingredient) for symbol, ingredient in key.items()}
     content["pattern"] = pattern
-    content["result"] = profile.recipe_result(result, count, None)
+    content["result"] = profile.recipe_result(result, count, components)
     recipe(name, content, [result, *key.values()], conditions)
 
 
@@ -677,7 +678,8 @@ def validate_textures():
 def validate_models():
     missing = []
     for path in (ASSETS / "items").glob("*.json"):
-        model = json.loads(path.read_text(encoding="utf-8"))["model"]["model"]
+        definition = json.loads(path.read_text(encoding="utf-8"))["model"]
+        model = definition["base"] if definition["type"] == "minecraft:special" else definition["model"]
         namespace, _, location = model.partition(":")
         if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
             missing.append(f"{path.name}: {model}")
@@ -709,6 +711,7 @@ def main():
     gen_biomes.generate(ctx)
     gen_loot.generate(ctx)
     gen_villages.generate(ctx)
+    gen_phase4.generate(ctx)
     write_tags()
     validate_textures()
     validate_models()
