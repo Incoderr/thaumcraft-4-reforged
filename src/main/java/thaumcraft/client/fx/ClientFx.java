@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import thaumcraft.alchemy.CrucibleBlockEntity;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.client.geom.LightningBolt;
 import thaumcraft.client.platform.ParticleSprites;
@@ -107,7 +108,7 @@ public final class ClientFx implements FxProxy {
     @Override
     public void crucibleBoil(Level level, BlockPos pos, float fluidHeight, int aspectAmount, int count) {
         RandomSource random = level.getRandom();
-        List<Aspect> primals = Aspect.getPrimalAspects();
+        List<Aspect> aspects = level.getBlockEntity(pos) instanceof CrucibleBlockEntity crucible ? crucible.getAspects().getAspects() : List.of();
         for (int index = 0; index < particleCount(1); index++) {
             BubbleFx fx = new BubbleFx(
                 random,
@@ -116,10 +117,10 @@ public final class ClientFx implements FxProxy {
                 pos.getZ() + 0.2F + random.nextFloat() * 0.6F,
                 3
             );
-            if (aspectAmount <= 0) {
+            if (aspects.isEmpty()) {
                 fx.color(1.0F, 1.0F, 1.0F);
             } else {
-                int color = primals.get(random.nextInt(primals.size())).getColor();
+                int color = aspects.get(random.nextInt(aspects.size())).getColor();
                 fx.color((color >> 16 & 255) / 255.0F, (color >> 8 & 255) / 255.0F, (color & 255) / 255.0F);
             }
             fx.bubbleSpeed(0.003 * count);
