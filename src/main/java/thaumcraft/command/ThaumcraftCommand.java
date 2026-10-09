@@ -1,11 +1,30 @@
 package thaumcraft.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import thaumcraft.node.Node;
+import thaumcraft.node.NodeBlockEntity;
+import thaumcraft.node.NodeGenerator;
+import thaumcraft.node.NodeModifier;
+import thaumcraft.node.NodeType;
+import thaumcraft.wand.WandCap;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandRod;
+import thaumcraft.wand.Wands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import thaumcraft.world.gen.HilltopStonesGenerator;
@@ -80,7 +99,208 @@ public final class ThaumcraftCommand {
                                 .then(Commands.argument("target", EntityArgument.entity()).executes(ThaumcraftCommand::aspectsEntity))
                         )
                 )
+                .then(
+                    Commands.literal("node")
+                        .then(
+                            Commands.literal("place")
+                                .then(
+                                    Commands.argument("pos", BlockPosArgument.blockPos())
+                                        .executes(context -> nodePlace(context, null, null))
+                                        .then(
+                                            Commands.argument("type", StringArgumentType.word())
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(nodeTypeNames(), builder))
+                                                .executes(context -> nodePlace(context, StringArgumentType.getString(context, "type"), null))
+                                                .then(
+                                                    Commands.argument("modifier", StringArgumentType.word())
+                                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(nodeModifierNames(), builder))
+                                                        .executes(context -> nodePlace(
+                                                            context,
+                                                            StringArgumentType.getString(context, "type"),
+                                                            StringArgumentType.getString(context, "modifier")
+                                                        ))
+                                                )
+                                        )
+                                )
+                        )
+                        .then(
+                            Commands.literal("info")
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(ThaumcraftCommand::nodeInfo))
+                        )
+                )
+                .then(
+                    Commands.literal("wand")
+                        .then(
+                            Commands.literal("fill")
+                                .executes(context -> wandFill(context, List.of(context.getSource().getPlayerOrException())))
+                                .then(
+                                    Commands.argument("targets", EntityArgument.players())
+                                        .executes(context -> wandFill(context, EntityArgument.getPlayers(context, "targets")))
+                                )
+                        )
+                        .then(
+                            Commands.literal("give")
+                                .then(
+                                    Commands.argument("targets", EntityArgument.players())
+                                        .then(
+                                            Commands.argument("cap", StringArgumentType.word())
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                                                    WandRegistry.caps().stream().map(WandCap::tag),
+                                                    builder
+                                                ))
+                                                .then(
+                                                    Commands.argument("rod", StringArgumentType.word())
+                                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                                                            WandRegistry.rods().stream().map(WandRod::tag),
+                                                            builder
+                                                        ))
+                                                        .executes(context -> wandGive(context, false))
+                                                        .then(
+                                                            Commands.argument("sceptre", BoolArgumentType.bool())
+                                                                .executes(context -> wandGive(context, BoolArgumentType.getBool(context, "sceptre")))
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                )
         );
+    }
+
+    private static Stream<String> nodeTypeNames() {
+        return Stream.of(NodeType.values()).map(NodeType::getSerializedName);
+    }
+
+    private static Stream<String> nodeModifierNames() {
+        return Stream.concat(Stream.of("none"), Stream.of(NodeModifier.values()).map(NodeModifier::getSerializedName));
+    }
+
+    private static int nodePlace(CommandContext<CommandSourceStack> context, String typeName, String modifierName) throws CommandSyntaxException {
+        ServerLevel level = context.getSource().getLevel();
+        BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, "pos");
+        NodeType type = null;
+        if (typeName != null) {
+            for (NodeType candidate : NodeType.values()) {
+                if (candidate.getSerializedName().equals(typeName)) {
+                    type = candidate;
+                }
+            }
+            if (type == null) {
+                context.getSource().sendFailure(Component.translatable("commands.thaumcraft.node.unknown_type", typeName));
+                return 0;
+            }
+        }
+        NodeModifier modifier = null;
+        boolean overrideModifier = modifierName != null;
+        if (overrideModifier) {
+            for (NodeModifier candidate : NodeModifier.values()) {
+                if (candidate.getSerializedName().equals(modifierName)) {
+                    modifier = candidate;
+                }
+            }
+            if (modifier == null && !modifierName.equals("none")) {
+                context.getSource().sendFailure(Component.translatable("commands.thaumcraft.node.unknown_modifier", modifierName));
+                return 0;
+            }
+        }
+        NodeGenerator.createRandomNodeAt(level, pos, level.getRandom(), false, false, false);
+        BlockEntity entity = level.getBlockEntity(pos);
+        if (!(entity instanceof Node node)) {
+            context.getSource().sendFailure(Component.translatable("commands.thaumcraft.node.missing", pos.getX(), pos.getY(), pos.getZ()));
+            return 0;
+        }
+        if (type != null) {
+            node.setNodeType(type);
+        }
+        if (overrideModifier) {
+            node.setNodeModifier(modifier);
+        }
+        entity.setChanged();
+        level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+        Component placedType = Component.translatable(node.getNodeType().getTranslationKey());
+        context.getSource().sendSuccess(
+            () -> Component.translatable("commands.thaumcraft.node.placed", pos.getX(), pos.getY(), pos.getZ(), placedType),
+            true
+        );
+        return 1;
+    }
+
+    private static int nodeInfo(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ServerLevel level = context.getSource().getLevel();
+        BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, "pos");
+        if (!(level.getBlockEntity(pos) instanceof NodeBlockEntity node)) {
+            context.getSource().sendFailure(Component.translatable("commands.thaumcraft.node.missing", pos.getX(), pos.getY(), pos.getZ()));
+            return 0;
+        }
+        NodeModifier modifier = node.getNodeModifier();
+        Component modifierName = modifier == null ? Component.literal("-") : Component.translatable(modifier.getTranslationKey());
+        context.getSource().sendSuccess(
+            () -> Component.translatable(
+                "commands.thaumcraft.node.info",
+                Component.translatable(node.getNodeType().getTranslationKey()),
+                modifierName,
+                describe(node.getAspects()),
+                describe(node.getAspectsBase())
+            ),
+            false
+        );
+        return 1;
+    }
+
+    private static String describe(AspectList aspects) {
+        if (aspects.size() == 0) {
+            return "-";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (Aspect aspect : aspects.getAspectsSortedAmount()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(aspect.getName()).append(" x").append(aspects.getAmount(aspect));
+        }
+        return builder.toString();
+    }
+
+    private static int wandFill(CommandContext<CommandSourceStack> context, Collection<ServerPlayer> targets) {
+        int filled = 0;
+        for (ServerPlayer target : targets) {
+            ItemStack stack = target.getItemInHand(InteractionHand.MAIN_HAND);
+            if (Wands.isWand(stack)) {
+                Wands.fill(stack);
+                filled++;
+            }
+        }
+        if (filled == 0) {
+            context.getSource().sendFailure(Component.translatable("commands.thaumcraft.wand.none"));
+            return 0;
+        }
+        int count = filled;
+        context.getSource().sendSuccess(() -> Component.translatable("commands.thaumcraft.wand.filled", count), true);
+        return filled;
+    }
+
+    private static int wandGive(CommandContext<CommandSourceStack> context, boolean sceptre) throws CommandSyntaxException {
+        String capName = StringArgumentType.getString(context, "cap");
+        String rodName = StringArgumentType.getString(context, "rod");
+        WandCap cap = WandRegistry.findCap(capName);
+        WandRod rod = WandRegistry.findRod(rodName);
+        if (cap == null || rod == null) {
+            context.getSource().sendFailure(Component.translatable("commands.thaumcraft.wand.unknown", cap == null ? capName : rodName));
+            return 0;
+        }
+        Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
+        ItemStack display = Wands.create(cap, rod, sceptre);
+        for (ServerPlayer target : targets) {
+            ItemStack stack = Wands.create(cap, rod, sceptre);
+            Wands.fill(stack);
+            if (!target.getInventory().add(stack)) {
+                target.drop(stack, false, Prediction.SERVER_ONLY);
+            }
+        }
+        context.getSource().sendSuccess(
+            () -> Component.translatable("commands.thaumcraft.wand.given", display.getDisplayName(), targets.size()),
+            true
+        );
+        return targets.size();
     }
 
     private static int worldgen(CommandContext<CommandSourceStack> context, String kind) {
