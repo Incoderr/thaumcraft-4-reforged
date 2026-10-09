@@ -32,6 +32,7 @@
 
 - `tools/fetch_1710.py` скачивает всё для 1.7.10 в `tools/cache/1.7.10` (идемпотентно)
 - `tools/decompile.py mc1710|tc4` пересобирает `reference/mc1710` и `reference/decompiled`
+- `tools/convert_recipes.py` разбирает `ConfigRecipes.java` TC4 мини-интерпретатором (циклы разворачиваются) в `crafting/ConfigRecipes.java` (генерируется, руками не править) и `tools/tc_recipes.json` (обычный крафт для `gen_phase5.py`, алиасы на рецепты фазы 2 в `ALIASES`)
 - `tools/remap_srg.py <dirs> [--mappings] [--report]` SRG → MCP (`func_`, `field_`, `p_`)
 - `tools/inventory.py` → `INVENTORY.md` и черновик `tools/id_map.json` (ручные правки в id_map сохраняются)
 - `tools/id_map.json` старые регистрации TC4 с meta → новые id (`old`, `meta`, `lang`, `id`, `state`, `skip`)
