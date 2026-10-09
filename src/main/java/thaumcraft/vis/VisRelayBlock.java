@@ -80,11 +80,15 @@ public class VisRelayBlock extends Block implements EntityBlock, WandInteractabl
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
-        if (!level.isClientSide() && level.isEmptyBlock(pos.relative(state.getValue(FACING).getOpposite()))) {
+        if (!level.isClientSide() && !hasSupport(state, level, pos)) {
             level.destroyBlock(pos, true);
             return;
         }
         super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
+    }
+
+    protected boolean hasSupport(BlockState state, Level level, BlockPos pos) {
+        return !level.isEmptyBlock(pos.relative(state.getValue(FACING).getOpposite()));
     }
 
     @Override

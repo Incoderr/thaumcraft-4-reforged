@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -35,7 +36,11 @@ public class VisRelayBlockEntity extends VisNode {
     private float pulseBlue = 0.5F;
 
     public VisRelayBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.VIS_RELAY.get(), pos, state);
+        this(ModBlockEntities.VIS_RELAY.get(), pos, state);
+    }
+
+    protected VisRelayBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, VisRelayBlockEntity entity) {
