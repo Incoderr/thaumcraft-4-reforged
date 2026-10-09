@@ -30,6 +30,7 @@ public final class WorldRenderers {
         event.registerBlockEntityRenderer(ModBlockEntities.NODE_TRANSDUCER.get(), NodeTransducerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.VIS_RELAY.get(), VisRelayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WAND_PEDESTAL.get(), WandPedestalRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.RESEARCH_TABLE.get(), ResearchTableRenderer::new);
     }
 
     @SubscribeEvent

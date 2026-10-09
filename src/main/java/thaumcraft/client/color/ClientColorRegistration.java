@@ -14,5 +14,6 @@ public final class ClientColorRegistration {
     @SubscribeEvent
     static void registerItemTints(RegisterColorHandlersEvent.ItemTintSources event) {
         event.register(Thaumcraft.id("aspect"), AspectTint.MAP_CODEC);
+        event.register(Thaumcraft.id("research_note"), ResearchNoteTint.MAP_CODEC);
     }
 }
