@@ -57,13 +57,15 @@ public final class WorldFxRenderer {
             return;
         }
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
+        float yaw = event.getLevelRenderState().cameraRenderState.yRot;
+        float pitch = event.getLevelRenderState().cameraRenderState.xRot;
         PoseStack poseStack = event.getPoseStack();
         SubmitNodeCollector collector = event.getSubmitNodeCollector();
         for (WorldFx fx : frame.effects()) {
             collector.submitCustomGeometry(
                 poseStack,
                 TcRenderTypes.byBlend(fx.texture(), fx.blendMode()),
-                (pose, buffer) -> fx.render(new VertexQuadSink(pose, buffer), frame.partialTick(), camera)
+                (pose, buffer) -> fx.render(new VertexQuadSink(pose, buffer), frame.partialTick(), camera, yaw, pitch)
             );
         }
     }
