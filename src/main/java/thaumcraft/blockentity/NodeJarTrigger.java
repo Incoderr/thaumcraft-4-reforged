@@ -22,8 +22,8 @@ import thaumcraft.node.NodeType;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.research.ResearchGate;
+import thaumcraft.wand.WandItem;
 import thaumcraft.wand.WandTriggers;
-import thaumcraft.wand.Wands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class NodeJarTrigger {
@@ -50,7 +50,7 @@ public final class NodeJarTrigger {
             for (int y = pos.getY() - 3; y <= pos.getY(); y++) {
                 for (int z = pos.getZ() - 2; z <= pos.getZ(); z++) {
                     BlockPos origin = new BlockPos(x, y, z);
-                    if (fits(level, origin) && consume(level, wand)) {
+                    if (fits(level, origin) && consume(player, wand)) {
                         if (!level.isClientSide()) {
                             replace(level, origin);
                         }
@@ -62,26 +62,12 @@ public final class NodeJarTrigger {
         return false;
     }
 
-    private static boolean consume(Level level, ItemStack wand) {
-        int[] costs = new int[6];
-        for (int index = 0; index < 6; index++) {
-            Aspect aspect = Aspect.getPrimalAspects().get(index);
-            float modifier = Wands.getCap(wand).getCostModifier(aspect);
-            if (Wands.isSceptre(wand)) {
-                modifier -= 0.1F;
-            }
-            costs[index] = (int) (7000 * Math.max(modifier, 0.1F));
-            if (Wands.getVis(wand, aspect) < costs[index]) {
-                return false;
-            }
+    private static boolean consume(Player player, ItemStack wand) {
+        AspectList cost = new AspectList();
+        for (Aspect aspect : Aspect.getPrimalAspects()) {
+            cost.add(aspect, 70);
         }
-        if (!level.isClientSide()) {
-            for (int index = 0; index < 6; index++) {
-                Aspect aspect = Aspect.getPrimalAspects().get(index);
-                Wands.storeVis(wand, aspect, Wands.getVis(wand, aspect) - costs[index]);
-            }
-        }
-        return true;
+        return wand.getItem() instanceof WandItem item && item.consumeAllVisCrafting(wand, player, cost, true);
     }
 
     private static BlockPos cell(BlockPos origin, int layer, int x, int z) {

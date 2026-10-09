@@ -89,6 +89,12 @@ public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteract
         return id;
     }
 
+    @Override
+    public void setId(String id) {
+        this.id = id;
+        setChanged();
+    }
+
     private String generateId() {
         String dimension = level == null ? "unknown" : level.dimension().identifier().toString();
         id = dimension + ":" + worldPosition.getX() + ":" + worldPosition.getY() + ":" + worldPosition.getZ();
