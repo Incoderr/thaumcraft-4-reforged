@@ -11,6 +11,7 @@ import mcformat
 import gen_biomes
 import gen_loot
 import gen_phase4
+import gen_phase5
 import gen_villages
 import gen_world
 
@@ -669,7 +670,7 @@ def validate_textures():
         namespace, _, location = texture.partition(":")
         if namespace != NS:
             continue
-        if not (SOURCE_TEXTURES / f"{location}.png").exists():
+        if not (SOURCE_TEXTURES / f"{location}.png").exists() and not (ASSETS / "textures" / f"{location}.png").exists():
             missing.append(texture)
     if missing:
         raise SystemExit("missing textures:\n  " + "\n  ".join(missing))
@@ -712,6 +713,7 @@ def main():
     gen_loot.generate(ctx)
     gen_villages.generate(ctx)
     gen_phase4.generate(ctx)
+    gen_phase5.generate(ctx)
     write_tags()
     validate_textures()
     validate_models()

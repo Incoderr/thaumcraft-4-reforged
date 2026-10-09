@@ -1,5 +1,6 @@
 package thaumcraft.crafting;
 
+import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -8,8 +9,20 @@ import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.wand.WandKeys;
+import thaumcraft.wand.WandParts;
 
-public record TcStack(Identifier item, int count, @Nullable AspectList aspects) {
+public record TcStack(Identifier item, int count, @Nullable AspectList aspects, Map<String, String> data) {
+    public static final TcStack NONE = new TcStack(Identifier.parse("minecraft:air"), 0, null, Map.of());
+
+    public TcStack {
+        data = Map.copyOf(data);
+    }
+
+    public TcStack(Identifier item, int count, @Nullable AspectList aspects) {
+        this(item, count, aspects, Map.of());
+    }
+
     public static TcStack of(String item) {
         return new TcStack(Identifier.parse(item), 1, null);
     }
@@ -20,6 +33,10 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects) 
 
     public static TcStack withAspects(String item, int count, AspectList aspects) {
         return new TcStack(Identifier.parse(item), count, aspects);
+    }
+
+    public static TcStack withData(String item, int count, Map<String, String> data) {
+        return new TcStack(Identifier.parse(item), count, null, data);
     }
 
     public @Nullable Item resolve() {
@@ -40,6 +57,9 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects) 
         if (aspects != null) {
             AspectKeys.ASPECTS.set(stack, aspects.copy());
         }
+        if (data.containsKey("cap") && data.containsKey("rod")) {
+            WandKeys.PARTS.set(stack, new WandParts(data.get("cap"), data.get("rod"), false));
+        }
         return stack;
     }
 
@@ -47,6 +67,12 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects) 
         Item resolved = resolve();
         if (resolved == null || !stack.is(resolved)) {
             return false;
+        }
+        if (data.containsKey("cap") && data.containsKey("rod")) {
+            WandParts parts = WandKeys.PARTS.getOrDefault(stack, WandParts.DEFAULT);
+            if (!parts.cap().equals(data.get("cap")) || !parts.rod().equals(data.get("rod"))) {
+                return false;
+            }
         }
         return aspects == null || aspects.equals(AspectKeys.ASPECTS.get(stack));
     }
