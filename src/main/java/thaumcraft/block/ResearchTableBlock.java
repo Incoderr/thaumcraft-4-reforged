@@ -130,4 +130,11 @@ public class ResearchTableBlock extends Block implements EntityBlock {
     protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return new ItemStack(ModBlocks.TABLE.get());
     }
+
+    @Override
+    protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int id, int param) {
+        super.triggerEvent(state, level, pos, id, param);
+        BlockEntity entity = level.getBlockEntity(pos);
+        return entity != null && entity.triggerEvent(id, param);
+    }
 }
