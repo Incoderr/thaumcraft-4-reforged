@@ -1,11 +1,20 @@
 package thaumcraft.test;
 
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.FunctionGameTestInstance;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.TestData;
+import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -13,23 +22,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.FunctionGameTestInstance;
-import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.TestData;
-import net.minecraft.gametest.framework.TestEnvironmentDefinition;
-import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jspecify.annotations.Nullable;
 import thaumcraft.Thaumcraft;
+import thaumcraft.aspect.Aspect;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionRunicAugmentRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipes;
+import thaumcraft.essentia.JarBlockEntity;
 import thaumcraft.infusion.InfusionMatrixBlockEntity;
 import thaumcraft.infusion.InfusionPillarBlockEntity;
 import thaumcraft.infusion.InfusionTriggers;
@@ -40,16 +45,21 @@ import thaumcraft.research.ResearchManager;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class InfusionGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"infusion_altar_forms", "infusion_stability_symmetry", "infusion_without_essentia"};
+    private static final String[] TESTS = {"infusion_altar_forms", "infusion_stability_symmetry", "infusion_without_essentia", "infusion_with_jars"};
     private static final BlockPos[] RING = {
         new BlockPos(1, 1, 3), new BlockPos(5, 1, 3), new BlockPos(3, 1, 1), new BlockPos(3, 1, 5),
         new BlockPos(1, 1, 1), new BlockPos(5, 1, 5), new BlockPos(1, 1, 5), new BlockPos(5, 1, 1)
+    };
+    private static final BlockPos[] JARS = {
+        new BlockPos(0, 4, 0), new BlockPos(6, 4, 0), new BlockPos(0, 4, 6), new BlockPos(6, 4, 6),
+        new BlockPos(0, 5, 3), new BlockPos(6, 5, 3)
     };
 
     static {
         FUNCTIONS.register(TESTS[0], () -> InfusionGameTests::altarForms);
         FUNCTIONS.register(TESTS[1], () -> InfusionGameTests::stabilitySymmetry);
         FUNCTIONS.register(TESTS[2], () -> InfusionGameTests::withoutEssentia);
+        FUNCTIONS.register(TESTS[3], () -> InfusionGameTests::withJars);
     }
 
     private InfusionGameTests() {
@@ -143,9 +153,7 @@ public final class InfusionGameTests {
         helper.succeed();
     }
 
-    private static void withoutEssentia(GameTestHelper helper) {
-        ServerPlayer player = mockServerPlayer(helper);
-        InfusionRecipe chosen = null;
+    private static @Nullable InfusionRecipe usableRecipe() {
         for (InfusionRecipe recipe : TcRecipes.all(InfusionRecipe.class)) {
             if (InfusionRunicAugmentRecipe.isDisplayRecipe(recipe.key()) || recipe.research().isEmpty()
                 || !recipe.central().exists() || recipe.components().size() > RING.length || recipe.central().displayStacks().isEmpty()) {
@@ -155,11 +163,15 @@ public final class InfusionGameTests {
             for (TcIngredient ingredient : recipe.components()) {
                 usable &= ingredient.exists() && !ingredient.displayStacks().isEmpty();
             }
-            if (usable) {
-                chosen = recipe;
-                break;
+            if (usable && recipe.result().exists() && recipe.aspects().size() <= JARS.length) {
+                return recipe;
             }
         }
+        return null;
+    }
+
+    private static InfusionRecipe prepare(GameTestHelper helper, ServerPlayer player) {
+        InfusionRecipe chosen = usableRecipe();
         helper.assertTrue(chosen != null, "no usable infusion recipe");
         ResearchManager.complete(player, chosen.research());
         buildFrame(helper);
@@ -170,16 +182,61 @@ public final class InfusionGameTests {
             helper.setBlock(RING[index], ModBlocks.ARCANE_PEDESTAL.get());
             helper.getBlockEntity(RING[index], PedestalBlockEntity.class).setStack(chosen.components().get(index).displayStacks().get(0).copyWithCount(1));
         }
+        return chosen;
+    }
+
+    private static InfusionMatrixBlockEntity start(GameTestHelper helper, ServerPlayer player) {
         InfusionMatrixBlockEntity matrix = helper.getBlockEntity(new BlockPos(3, 3, 3), InfusionMatrixBlockEntity.class);
         matrix.recalculateSurroundings();
         matrix.craftingStart(player);
         helper.assertTrue(matrix.isCrafting(), "crafting did not start");
+        return matrix;
+    }
+
+    private static void run(GameTestHelper helper, InfusionMatrixBlockEntity matrix, int ticks) {
         BlockPos matrixPos = helper.absolutePos(new BlockPos(3, 3, 3));
-        for (int tick = 0; tick < 600; tick++) {
+        for (int tick = 0; tick < ticks && (tick == 0 || matrix.isCrafting()); tick++) {
             InfusionMatrixBlockEntity.tick(helper.getLevel(), matrixPos, matrix.getBlockState(), matrix);
         }
+    }
+
+    private static void withoutEssentia(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        InfusionRecipe chosen = prepare(helper, player);
+        ItemStack central = chosen.central().displayStacks().get(0);
+        InfusionMatrixBlockEntity matrix = start(helper, player);
+        run(helper, matrix, 600);
         PedestalBlockEntity center = helper.getBlockEntity(new BlockPos(3, 1, 3), PedestalBlockEntity.class);
         helper.assertTrue(center.getStack().is(central.getItem()), "central item changed without essentia");
+        helper.succeed();
+    }
+
+    private static void withJars(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        InfusionRecipe chosen = prepare(helper, player);
+        List<Aspect> aspects = chosen.aspects().getAspects();
+        for (int index = 0; index < aspects.size(); index++) {
+            helper.setBlock(JARS[index], ModBlocks.WARDED_JAR.get());
+            JarBlockEntity jar = helper.getBlockEntity(JARS[index], JarBlockEntity.class);
+            jar.setAspect(aspects.get(index));
+            jar.setAmount(jar.getMaxAmount());
+        }
+        InfusionMatrixBlockEntity matrix = start(helper, player);
+        try {
+            Field instability = InfusionMatrixBlockEntity.class.getDeclaredField("instability");
+            instability.setAccessible(true);
+            instability.setInt(matrix, 0);
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException(exception);
+        }
+        run(helper, matrix, 4000);
+        helper.assertFalse(matrix.isCrafting(), "crafting did not finish");
+        PedestalBlockEntity center = helper.getBlockEntity(new BlockPos(3, 1, 3), PedestalBlockEntity.class);
+        helper.assertTrue(chosen.result().matches(center.getStack()), "central item is not the result: " + center.getStack());
+        for (int index = 0; index < aspects.size(); index++) {
+            JarBlockEntity jar = helper.getBlockEntity(JARS[index], JarBlockEntity.class);
+            helper.assertValueEqual(jar.getAmount(), jar.getMaxAmount() - chosen.aspects().getAmount(aspects.get(index)), "jar " + aspects.get(index).getTag());
+        }
         helper.succeed();
     }
 }
