@@ -685,6 +685,9 @@ def item_definition_models(definition):
             yield from item_definition_models(definition["fallback"])
     elif definition["type"] == "minecraft:special":
         yield definition["base"]
+    elif definition["type"] == "minecraft:composite":
+        for model in definition["models"]:
+            yield from item_definition_models(model)
     else:
         yield definition["model"]
 

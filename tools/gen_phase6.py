@@ -9,6 +9,7 @@ CENTRIFUGE_ITEM = {"type": f"{NS}:centrifuge"}
 CRYSTALLIZER_ITEM = {"type": f"{NS}:essentia_crystallizer"}
 RESERVOIR_ITEM = {"type": f"{NS}:essentia_reservoir"}
 FILLED_JAR_ITEM = {"type": f"{NS}:filled_jar"}
+TUBE_VALVE_ITEM = {"type": f"{NS}:tube_valve"}
 ALEMBIC_ITEM = {"type": f"{NS}:alembic"}
 FLUX_SCRUBBER_ITEM = {"type": f"{NS}:flux_scrubber"}
 BELLOWS_ITEM = {"type": f"{NS}:arcane_bellows"}
@@ -122,13 +123,10 @@ def tube_models(ctx):
         "essentia_core_buffer": ("pipe_buffer", 4, 12),
     }
     for name, (texture, low, high) in cores.items():
-        elements = [cube_element(low, high)]
-        if name == "essentia_core_filter":
-            elements.append(cube_element(6, 10, "#core"))
         ctx.block_model(name, {
             "parent": "minecraft:block/block",
-            "textures": {"particle": ctx.ref(texture), "t": ctx.ref(texture), "core": ctx.ref("pipe_filter_core")},
-            "elements": elements,
+            "textures": {"particle": ctx.ref(texture), "t": ctx.ref(texture)},
+            "elements": [cube_element(low, high)],
         })
 
 
@@ -176,6 +174,15 @@ def essentia(ctx):
     tube_item(ctx, "filtered_essentia_tube", (5.5, 10.5), core_texture="pipe_filter")
     tube_item(ctx, "restricted_essentia_tube", (6.5, 9.5), core_texture="pipe_restrict")
     tube_item(ctx, "essentia_buffer", (4, 12), arm_texture="pipe_buffer")
+    ctx.write(ctx.ASSETS / "items" / "essentia_valve.json", {
+        "model": {
+            "type": "minecraft:composite",
+            "models": [
+                {"type": "minecraft:model", "model": ctx.ref("essentia_valve", "item")},
+                {"type": "minecraft:special", "base": ctx.ref("essentia_valve", "item"), "model": TUBE_VALVE_ITEM},
+            ],
+        },
+    })
     for name in ["essentia_tube", "directional_essentia_tube", "essentia_valve", "filtered_essentia_tube", "restricted_essentia_tube", "essentia_buffer"]:
         ctx.self_drop(name)
         ctx.mineable("pickaxe", name)
@@ -213,7 +220,7 @@ def essentia(ctx):
         ctx.block_item(name)
     for name in ["filled_jar", "filled_void_jar"]:
         ctx.item_model(name, {"parent": ctx.ref("void_jar" if "void" in name else "warded_jar")})
-        gen_phase4.special_item(ctx, name, FILLED_JAR_ITEM)
+        gen_phase4.special_item(ctx, name, {**FILLED_JAR_ITEM, "void": True} if "void" in name else FILLED_JAR_ITEM)
 
 
 def flat(face, start, end, texture):

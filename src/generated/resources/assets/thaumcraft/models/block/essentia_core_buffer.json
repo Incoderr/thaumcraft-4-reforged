@@ -2,8 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "thaumcraft:block/pipe_buffer",
-    "t": "thaumcraft:block/pipe_buffer",
-    "core": "thaumcraft:block/pipe_filter_core"
+    "t": "thaumcraft:block/pipe_buffer"
   },
   "elements": [
     {

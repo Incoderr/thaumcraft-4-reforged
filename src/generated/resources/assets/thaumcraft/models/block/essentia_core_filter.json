@@ -2,8 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "thaumcraft:block/pipe_filter",
-    "t": "thaumcraft:block/pipe_filter",
-    "core": "thaumcraft:block/pipe_filter_core"
+    "t": "thaumcraft:block/pipe_filter"
   },
   "elements": [
     {
@@ -35,38 +34,6 @@
         },
         "east": {
           "texture": "#t"
-        }
-      }
-    },
-    {
-      "from": [
-        6,
-        6,
-        6
-      ],
-      "to": [
-        10,
-        10,
-        10
-      ],
-      "faces": {
-        "down": {
-          "texture": "#core"
-        },
-        "up": {
-          "texture": "#core"
-        },
-        "north": {
-          "texture": "#core"
-        },
-        "south": {
-          "texture": "#core"
-        },
-        "west": {
-          "texture": "#core"
-        },
-        "east": {
-          "texture": "#core"
         }
       }
     }
