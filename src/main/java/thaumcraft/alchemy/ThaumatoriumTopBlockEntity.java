@@ -2,6 +2,7 @@ package thaumcraft.alchemy;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Container;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
@@ -135,5 +136,10 @@ public class ThaumatoriumTopBlockEntity extends TcBlockEntity implements AspectC
         if (bottom != null) {
             bottom.setAspects(aspects);
         }
+    }
+
+    public @Nullable Container exposedItems(@Nullable Direction side) {
+        ThaumatoriumBlockEntity thaumatorium = getThaumatorium();
+        return thaumatorium == null ? null : thaumatorium.exposedItems(side);
     }
 }

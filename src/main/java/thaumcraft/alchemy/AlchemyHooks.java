@@ -8,6 +8,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.essentia.EssentiaKeys;
 
 public final class AlchemyHooks {
     private AlchemyHooks() {
@@ -37,6 +38,6 @@ public final class AlchemyHooks {
     }
 
     public static @Nullable Aspect getJarFilter(ItemStack jar) {
-        return null;
+        return EssentiaKeys.FILTER.get(jar);
     }
 }
