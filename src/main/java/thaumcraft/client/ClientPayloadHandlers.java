@@ -1,7 +1,9 @@
 package thaumcraft.client;
 
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.fx.Fx;
@@ -9,6 +11,7 @@ import thaumcraft.network.AspectTagsPayload;
 import thaumcraft.network.BeamPulsePayload;
 import thaumcraft.network.NodeZapPayload;
 import thaumcraft.network.VisDrainFxPayload;
+import thaumcraft.registry.ModSounds;
 
 public final class ClientPayloadHandlers {
     private ClientPayloadHandlers() {
@@ -34,8 +37,12 @@ public final class ClientPayloadHandlers {
     }
 
     private static void nodeZap(NodeZapPayload payload, Player player) {
+        Level level = player.level();
+        Fx.get().nodeBolt(level, payload.x(), payload.y(), payload.z(), payload.targetX(), payload.targetY(), payload.targetZ());
+        level.playLocalSound(payload.x(), payload.y(), payload.z(), ModSounds.ZAP.get(), SoundSource.BLOCKS, 0.1F, 1.0F + level.getRandom().nextFloat() * 0.2F, false);
     }
 
     private static void visDrain(VisDrainFxPayload payload, Player player) {
+        Fx.get().visDrain(player.level(), payload.drainer(), payload.source(), payload.primal());
     }
 }

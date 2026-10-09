@@ -52,5 +52,10 @@ public abstract class WorldFx {
 
     public abstract int blendMode();
 
-    public abstract void render(QuadSink sink, float partialTick, Vec3 camera);
+    public void render(QuadSink sink, float partialTick, Vec3 camera) {
+    }
+
+    public void render(QuadSink sink, float partialTick, Vec3 camera, float cameraYaw, float cameraPitch) {
+        render(sink, partialTick, camera);
+    }
 }

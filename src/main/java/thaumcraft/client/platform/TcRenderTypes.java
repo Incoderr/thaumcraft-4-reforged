@@ -7,13 +7,36 @@ import java.util.Map;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
 public final class TcRenderTypes {
     private static final Map<Identifier, RenderType> ADDITIVE = new HashMap<>();
     private static final Map<Identifier, RenderType> TRANSLUCENT = new HashMap<>();
+    private static final Map<Identifier, RenderType> ADDITIVE_NO_DEPTH = new HashMap<>();
+    private static final Map<Identifier, RenderType> TRANSLUCENT_NO_DEPTH = new HashMap<>();
 
     private TcRenderTypes() {
+    }
+
+    public enum Kind {
+        ADDITIVE,
+        TRANSLUCENT,
+        ADDITIVE_NO_DEPTH,
+        TRANSLUCENT_NO_DEPTH,
+        ENTITY_CUTOUT,
+        ENTITY_TRANSLUCENT
+    }
+
+    public static RenderType of(Kind kind, Identifier texture) {
+        return switch (kind) {
+            case ADDITIVE -> additive(texture);
+            case TRANSLUCENT -> translucent(texture);
+            case ADDITIVE_NO_DEPTH -> additiveNoDepth(texture);
+            case TRANSLUCENT_NO_DEPTH -> translucentNoDepth(texture);
+            case ENTITY_CUTOUT -> entityCutout(texture);
+            case ENTITY_TRANSLUCENT -> entityTranslucent(texture);
+        };
     }
 
     public static RenderType additive(Identifier texture) {
@@ -36,6 +59,43 @@ public final class TcRenderTypes {
                 .useLightmap()
                 .createRenderSetup()
         ));
+    }
+
+    public static RenderType additiveNoDepth(Identifier texture) {
+        return ADDITIVE_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
+            "thaumcraft_additive_no_depth",
+            RenderSetup.builder(ModRenderPipelines.ADDITIVE_NO_DEPTH)
+                .setOitPipelines(RenderPipelines.OIT_PARTICLE)
+                .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
+                .useLightmap()
+                .createRenderSetup()
+        ));
+    }
+
+    public static RenderType translucentNoDepth(Identifier texture) {
+        return TRANSLUCENT_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
+            "thaumcraft_translucent_no_depth",
+            RenderSetup.builder(ModRenderPipelines.TRANSLUCENT_NO_DEPTH)
+                .setOitPipelines(RenderPipelines.OIT_PARTICLE)
+                .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
+                .useLightmap()
+                .createRenderSetup()
+        ));
+    }
+
+    public static RenderType byBlend(Identifier texture, int blendMode, boolean depth) {
+        if (depth) {
+            return byBlend(texture, blendMode);
+        }
+        return blendMode == 771 ? translucentNoDepth(texture) : additiveNoDepth(texture);
+    }
+
+    public static RenderType entityCutout(Identifier texture) {
+        return RenderTypes.entityCutout(texture);
+    }
+
+    public static RenderType entityTranslucent(Identifier texture) {
+        return RenderTypes.entityTranslucent(texture);
     }
 
     public static RenderType byBlend(Identifier texture, int blendMode) {
