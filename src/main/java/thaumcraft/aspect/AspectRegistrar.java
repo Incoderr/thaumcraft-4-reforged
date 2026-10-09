@@ -35,6 +35,14 @@ public abstract class AspectRegistrar {
         }
     }
 
+    protected void fill(String target, AspectList aspects) {
+        for (Item item : resolve(target)) {
+            if (!registry.exists(item)) {
+                registry.register(item, aspects.copy());
+            }
+        }
+    }
+
     protected void complex(String target, AspectList aspects) {
         for (Item item : resolve(target)) {
             if (!registry.exists(item)) {

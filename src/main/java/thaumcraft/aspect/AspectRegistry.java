@@ -22,6 +22,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.item.crafting.SingleItemRecipe;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import org.jspecify.annotations.Nullable;
 
@@ -33,6 +35,7 @@ public final class AspectRegistry {
     private final Map<Item, AspectList> tags = new HashMap<>();
     private final Map<EntityType<?>, List<EntityAspects>> entities = new HashMap<>();
     private final Map<Item, List<CraftingSource>> craftingByOutput = new HashMap<>();
+    private final Map<Item, List<CraftingSource>> processingByOutput = new HashMap<>();
     private @Nullable MinecraftServer server;
 
     private record CraftingSource(List<Ingredient> ingredients, int outputCount) {
@@ -131,6 +134,7 @@ public final class AspectRegistry {
         }
         server = null;
         craftingByOutput.clear();
+        processingByOutput.clear();
         return exportTags();
     }
 
@@ -175,20 +179,48 @@ public final class AspectRegistry {
                 return result;
             }
         }
-        return generateFromCrafting(item, history);
+        AspectList crafted = generateFromSources(craftingByOutput, item, history);
+        if (crafted != null) {
+            return crafted;
+        }
+        return generateFromSources(processingByOutput, item, history);
     }
 
-    private @Nullable AspectList generateFromCrafting(Item item, List<Item> history) {
+    private @Nullable AspectList generateFromSources(Map<Item, List<CraftingSource>> sources, Item item, List<Item> history) {
+        List<CraftingSource> recipes = sources.getOrDefault(item, List.of());
         AspectList best = null;
         int value = Integer.MAX_VALUE;
-        for (CraftingSource recipe : craftingByOutput.getOrDefault(item, List.of())) {
+        for (CraftingSource recipe : recipes) {
             AspectList candidate = fromItems(resolve(recipe.ingredients(), history), recipe.outputCount(), history);
             if (candidate.visSize() < value && candidate.visSize() > 0) {
                 best = candidate;
                 value = candidate.visSize();
             }
         }
-        return best;
+        if (best != null) {
+            return best;
+        }
+        for (CraftingSource recipe : recipes) {
+            AspectList candidate = dominantAspect(resolve(recipe.ingredients(), history), history);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private @Nullable AspectList dominantAspect(List<Item> ingredients, List<Item> history) {
+        AspectList mid = new AspectList();
+        for (Item ingredient : ingredients) {
+            AspectList aspects = generate(ingredient, history);
+            if (aspects != null) {
+                for (Aspect aspect : aspects.getAspects()) {
+                    mid.add(aspect, aspects.getAmount(aspect));
+                }
+            }
+        }
+        List<Aspect> sorted = mid.getAspectsSortedAmount();
+        return sorted.isEmpty() ? null : new AspectList().add(sorted.getFirst(), 1);
     }
 
     private List<Item> resolve(List<Ingredient> ingredients, List<Item> history) {
@@ -250,6 +282,12 @@ public final class AspectRegistry {
                     shaped.getIngredients().forEach(optional -> optional.ifPresent(ingredients::add));
                     craftingByOutput.computeIfAbsent(result.getItem(), key -> new ArrayList<>())
                         .add(new CraftingSource(ingredients, Math.max(1, result.getCount())));
+                }
+            } else if (recipe instanceof SingleItemRecipe single) {
+                ItemStack result = single.assemble(new SingleRecipeInput(ItemStack.EMPTY));
+                if (!result.isEmpty()) {
+                    processingByOutput.computeIfAbsent(result.getItem(), key -> new ArrayList<>())
+                        .add(new CraftingSource(List.of(single.input()), Math.max(1, result.getCount())));
                 }
             } else if (recipe instanceof ShapelessRecipe shapeless) {
                 ItemStackTemplate result = shapeless.result();

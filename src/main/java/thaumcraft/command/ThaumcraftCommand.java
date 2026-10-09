@@ -6,14 +6,19 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -38,8 +43,11 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -48,6 +56,8 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.aspect.EntityAspects;
 import thaumcraft.network.BeamPulsePayload;
 import thaumcraft.platform.ModNetwork;
 import thaumcraft.research.Knowledge;
@@ -97,6 +107,7 @@ public final class ThaumcraftCommand {
                 .then(
                     Commands.literal("aspects")
                         .then(Commands.literal("hand").executes(ThaumcraftCommand::aspectsHand))
+                        .then(Commands.literal("missing").executes(ThaumcraftCommand::aspectsMissing))
                         .then(
                             Commands.literal("item")
                                 .then(Commands.argument("item", ItemArgument.item(buildContext)).executes(ThaumcraftCommand::aspectsItem))
@@ -505,6 +516,41 @@ public final class ThaumcraftCommand {
         Entity target = EntityArgument.getEntity(context, "target");
         AspectList aspects = AspectHelper.getEntityTags(target);
         return print(context, aspects == null ? new AspectList() : aspects);
+    }
+
+    private static int aspectsMissing(CommandContext<CommandSourceStack> context) {
+        List<String> lines = new ArrayList<>();
+        int items = 0;
+        for (Item item : BuiltInRegistries.ITEM) {
+            ItemStack stack = new ItemStack(item);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            AspectList aspects = AspectHelper.getBonusTags(stack, AspectHelper.getObjectTags(stack));
+            if (aspects.size() == 0) {
+                lines.add((item instanceof BlockItem ? "block " : "item ") + BuiltInRegistries.ITEM.getKey(item));
+                items++;
+            }
+        }
+        Map<EntityType<?>, List<EntityAspects>> known = AspectRegistry.active().exportEntities();
+        int entities = 0;
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+            if (!known.containsKey(type)) {
+                lines.add("entity " + BuiltInRegistries.ENTITY_TYPE.getKey(type) + " " + type.getCategory().getName());
+                entities++;
+            }
+        }
+        Path file = context.getSource().getServer().getServerDirectory().resolve("aspects_missing.txt");
+        try {
+            Files.write(file, lines);
+        } catch (IOException exception) {
+            context.getSource().sendFailure(Component.literal("Failed to write " + file));
+            return 0;
+        }
+        int itemCount = items;
+        int entityCount = entities;
+        context.getSource().sendSuccess(() -> Component.literal(itemCount + " items and " + entityCount + " entities without aspects, written to " + file), false);
+        return lines.size();
     }
 
     private static int print(CommandContext<CommandSourceStack> context, AspectList aspects) {

@@ -33,6 +33,7 @@ public final class AspectSync {
         long start = System.currentTimeMillis();
         AspectRegistry registry = new AspectRegistry(server);
         new ConfigAspects(registry).registerAll();
+        new ModernAspects(registry).registerAll();
         int items = registry.buildAll().size();
         AspectRegistry.setActive(registry);
         Thaumcraft.LOGGER.info(
