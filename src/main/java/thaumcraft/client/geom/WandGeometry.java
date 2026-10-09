@@ -4,28 +4,14 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public final class WandGeometry {
-    private static final float STAFF_SCALE = 0.7F;
     private static final float TEXTURE_WIDTH = 64.0F;
     private static final float TEXTURE_HEIGHT = 32.0F;
 
     private WandGeometry() {
     }
 
-    public static Matrix4f base(boolean staff) {
-        float scale = staff ? STAFF_SCALE : 1.0F;
-        float center = staff ? 1.37F : 0.625F;
-        return new Matrix4f()
-            .translate(0.5F, 0.5F + center * scale, 0.5F)
-            .rotateX((float) Math.PI)
-            .scale(scale);
-    }
-
-    public static float halfLength(boolean staff) {
-        return staff ? 1.24F * STAFF_SCALE : 0.6875F;
-    }
-
     public static void rod(QuadSink sink, boolean staff, int light, int argb) {
-        Matrix4f matrix = base(staff);
+        Matrix4f matrix = new Matrix4f();
         if (staff) {
             matrix.translate(0.0F, 0.2F, 0.0F).translate(0.0F, -0.1F, 0.0F).scale(1.2F, 2.0F, 1.2F);
         }
@@ -34,7 +20,7 @@ public final class WandGeometry {
 
     public static void caps(QuadSink sink, boolean staff, boolean sceptre, int light) {
         int argb = 0xFFFFFFFF;
-        Matrix4f matrix = base(staff);
+        Matrix4f matrix = new Matrix4f();
         if (staff) {
             matrix.translate(0.0F, 0.2F, 0.0F);
             matrix.scale(1.3F, 1.1F, 1.3F);
@@ -56,7 +42,7 @@ public final class WandGeometry {
     }
 
     public static void runes(QuadSink sink, boolean staff, boolean sceptre, boolean primalRunes, float ticks, int light) {
-        Matrix4f matrix = base(staff);
+        Matrix4f matrix = new Matrix4f();
         if (staff) {
             matrix.translate(0.0F, 0.2F, 0.0F);
         }

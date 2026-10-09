@@ -676,14 +676,25 @@ def validate_textures():
         raise SystemExit("missing textures:\n  " + "\n  ".join(missing))
 
 
+def item_definition_models(definition):
+    if definition["type"] == "minecraft:select":
+        for case in definition["cases"]:
+            yield from item_definition_models(case["model"])
+        if "fallback" in definition:
+            yield from item_definition_models(definition["fallback"])
+    elif definition["type"] == "minecraft:special":
+        yield definition["base"]
+    else:
+        yield definition["model"]
+
+
 def validate_models():
     missing = []
     for path in (ASSETS / "items").glob("*.json"):
-        definition = json.loads(path.read_text(encoding="utf-8"))["model"]
-        model = definition["base"] if definition["type"] == "minecraft:special" else definition["model"]
-        namespace, _, location = model.partition(":")
-        if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
-            missing.append(f"{path.name}: {model}")
+        for model in item_definition_models(json.loads(path.read_text(encoding="utf-8"))["model"]):
+            namespace, _, location = model.partition(":")
+            if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
+                missing.append(f"{path.name}: {model}")
     for path in (ASSETS / "blockstates").glob("*.json"):
         text = path.read_text(encoding="utf-8")
         for entry in json.loads(text)["variants"].values():

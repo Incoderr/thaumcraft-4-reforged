@@ -189,8 +189,7 @@ def jar(ctx):
 
 
 def wands(ctx):
-    ctx.item_model("wand", {"parent": "minecraft:item/handheld_rod", "textures": {"layer0": ctx.ref("wand_rod_greatwood", "item")}})
-    special_item(ctx, "wand", {"type": f"{NS}:wand"})
+    legacy_special_item(ctx, "wand", {"type": f"{NS}:wand"}, "wand_rod_greatwood")
     for cap, texture in CAPS.items():
         ctx.generated_item(f"{cap}_wand_cap", texture)
     for rod, texture in RODS.items():

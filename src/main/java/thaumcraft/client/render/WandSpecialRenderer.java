@@ -1,6 +1,7 @@
 package thaumcraft.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -19,6 +20,46 @@ import thaumcraft.wand.WandRod;
 import thaumcraft.wand.Wands;
 
 public class WandSpecialRenderer implements SpecialModelRenderer<WandParts> {
+    private final LegacyItemView view;
+
+    public WandSpecialRenderer(LegacyItemView view) {
+        this.view = view;
+    }
+
+    private static void transform(PoseStack poseStack, LegacyItemView view, boolean staff) {
+        view.apply(poseStack);
+        if (staff) {
+            poseStack.translate(0.0F, 0.5F, 0.0F);
+        }
+        switch (view) {
+            case INVENTORY -> {
+                if (staff) {
+                    poseStack.scale(0.8F, 0.8F, 0.8F);
+                }
+                poseStack.rotateDegrees(Axis.ZP, 66.0F);
+                poseStack.translate(0.0F, 0.6F, 0.0F);
+                if (staff) {
+                    poseStack.translate(-0.7F, 0.6F, 0.0F);
+                }
+            }
+            case ENTITY -> {
+                if (staff) {
+                    poseStack.translate(0.0F, 1.5F, 0.0F);
+                    poseStack.scale(0.9F, 0.9F, 0.9F);
+                } else {
+                    poseStack.translate(0.0F, 1.0F, 0.0F);
+                }
+            }
+            case EQUIPPED, FIRST_PERSON -> {
+                poseStack.translate(0.5F, 1.5F, 0.5F);
+                if (view == LegacyItemView.FIRST_PERSON) {
+                    poseStack.scale(1.0F, 1.1F, 1.0F);
+                }
+            }
+        }
+        poseStack.rotateDegrees(Axis.XP, 180.0F);
+    }
+
     private static final Identifier SCRIPT = Thaumcraft.id("textures/misc/script.png");
     private static final int BLEND_ADDITIVE = 1;
 
@@ -32,10 +73,12 @@ public class WandSpecialRenderer implements SpecialModelRenderer<WandParts> {
         boolean hasFoil,
         int outlineColor
     ) {
+        poseStack.pushPose();
         WandParts resolved = parts == null ? WandParts.DEFAULT : parts;
         WandRod rod = resolved.getRod();
         boolean staff = rod.staff();
         boolean sceptre = resolved.sceptre();
+        transform(poseStack, view, staff);
         float ticks = Util.getMillis() / 50.0F;
         int rodLight = lightCoords;
         if (rod.glowing()) {
@@ -55,14 +98,20 @@ public class WandSpecialRenderer implements SpecialModelRenderer<WandParts> {
                 sink -> WandGeometry.runes(sink, staff, sceptre, rod.runes(), ticks, runeLight)
             );
         }
+        poseStack.popPose();
     }
 
     @Override
     public void getExtents(Consumer<Vector3fc> output) {
-        for (float x : new float[] {0.35F, 0.65F}) {
-            for (float y : new float[] {0.0F, 1.0F}) {
-                for (float z : new float[] {0.35F, 0.65F}) {
-                    output.accept(new Vector3f(x, y, z));
+        for (boolean staff : new boolean[] {false, true}) {
+            PoseStack poseStack = new PoseStack();
+            transform(poseStack, view, staff);
+            float top = staff ? 2.4F : 1.4F;
+            for (float x : new float[] {-0.15F, 0.15F}) {
+                for (float y : new float[] {-0.1F, top}) {
+                    for (float z : new float[] {-0.15F, 0.15F}) {
+                        output.accept(poseStack.last().pose().transformPosition(x, y, z, new Vector3f()));
+                    }
                 }
             }
         }
@@ -73,12 +122,12 @@ public class WandSpecialRenderer implements SpecialModelRenderer<WandParts> {
         return Wands.getParts(stack);
     }
 
-    public record Unbaked() implements SpecialModelRenderer.Unbaked<WandParts> {
-        public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
+    public record Unbaked(LegacyItemView view) implements SpecialModelRenderer.Unbaked<WandParts> {
+        public static final MapCodec<Unbaked> MAP_CODEC = LegacyItemView.FIELD.xmap(Unbaked::new, Unbaked::view);
 
         @Override
         public SpecialModelRenderer<WandParts> bake(SpecialModelRenderer.BakingContext context) {
-            return new WandSpecialRenderer();
+            return new WandSpecialRenderer(view);
         }
 
         @Override

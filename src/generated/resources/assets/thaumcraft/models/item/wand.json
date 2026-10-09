@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:item/handheld_rod",
+  "gui_light": "side",
   "textures": {
-    "layer0": "thaumcraft:item/wand_rod_greatwood"
+    "particle": "thaumcraft:item/wand_rod_greatwood"
   }
 }
