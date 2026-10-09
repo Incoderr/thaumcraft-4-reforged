@@ -19,6 +19,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> CRYSTAL = register("crystal");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAMERATICKS = register("cameraticks");
     public static final DeferredHolder<SoundEvent, SoundEvent> JAR = register("jar");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CAMERACLACK = register("cameraclack");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LEARN = register("learn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WRITE = register("write");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ERASE = register("erase");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PAGE = register("page");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WHISPERS = register("whispers");
 
     private ModSounds() {
     }

@@ -13,7 +13,10 @@ import thaumcraft.item.CrystalEssenceItem;
 import thaumcraft.item.GogglesItem;
 import thaumcraft.item.LootBagItem;
 import thaumcraft.item.PrimalCharmItem;
+import thaumcraft.item.ResearchNotesItem;
+import thaumcraft.item.ScribingToolsItem;
 import thaumcraft.item.ThaumometerItem;
+import thaumcraft.item.ThaumonomiconItem;
 import thaumcraft.item.ZombieBrainItem;
 import thaumcraft.platform.Registration;
 import thaumcraft.wand.WandItem;
@@ -115,6 +118,11 @@ public final class ModItems {
     public static final DeferredItem<Item> PRIMAL_STAFF_CORE = ITEMS.registerSimpleItem("primal_staff_core");
     public static final DeferredItem<ThaumometerItem> THAUMOMETER = ITEMS.registerItem("thaumometer", ThaumometerItem::new, ThaumometerItem::properties);
     public static final DeferredItem<GogglesItem> GOGGLES_OF_REVEALING = ITEMS.registerItem("goggles_of_revealing", GogglesItem::new, GogglesItem::properties);
+    public static final DeferredItem<ScribingToolsItem> SCRIBING_TOOLS = ITEMS.registerItem("scribing_tools", ScribingToolsItem::new, ScribingToolsItem::properties);
+    public static final DeferredItem<ResearchNotesItem> RESEARCH_NOTES = ITEMS.registerItem("research_notes", properties -> new ResearchNotesItem(properties, false), properties -> properties.rarity(Rarity.RARE));
+    public static final DeferredItem<ResearchNotesItem> DISCOVERY = ITEMS.registerItem("discovery", properties -> new ResearchNotesItem(properties, true), properties -> properties.rarity(Rarity.EPIC).stacksTo(64));
+    public static final DeferredItem<ThaumonomiconItem> THAUMONOMICON = ITEMS.registerItem("thaumonomicon", properties -> new ThaumonomiconItem(properties, false), ThaumonomiconItem::properties);
+    public static final DeferredItem<ThaumonomiconItem> THAUMONOMICON_CHEAT = ITEMS.registerItem("thaumonomicon_cheat", properties -> new ThaumonomiconItem(properties, true), ThaumonomiconItem::properties);
 
     private ModItems() {
     }

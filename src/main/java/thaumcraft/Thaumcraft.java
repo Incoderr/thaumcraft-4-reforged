@@ -7,6 +7,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import thaumcraft.aspect.AspectKeys;
+import thaumcraft.crafting.ConfigRecipes;
 import thaumcraft.item.NodeJarKeys;
 import thaumcraft.network.ModPayloads;
 import thaumcraft.platform.Platform;
@@ -15,8 +16,12 @@ import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModCreativeTabs;
 import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModMenus;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModVillagers;
+import thaumcraft.research.ConfigResearch;
+import thaumcraft.research.Knowledge;
+import thaumcraft.research.ResearchNoteKeys;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
 
@@ -29,6 +34,8 @@ public class Thaumcraft {
         AspectKeys.init();
         WandKeys.init();
         NodeJarKeys.init();
+        ResearchNoteKeys.init();
+        Knowledge.init();
         Platform.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
@@ -37,7 +44,10 @@ public class Thaumcraft {
         ModSounds.register(modEventBus);
         ModFeatures.register(modEventBus);
         ModVillagers.register(modEventBus);
+        ModMenus.register(modEventBus);
         ModPayloads.register();
+        ConfigRecipes.init();
+        ConfigResearch.init();
         ThaumcraftGameTests.register(modEventBus);
     }
 

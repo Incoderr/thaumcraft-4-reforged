@@ -6,11 +6,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.client.platform.ClientNetwork;
+import thaumcraft.client.research.ResearchNotifications;
 import thaumcraft.fx.Fx;
+import thaumcraft.network.AspectDiscoveryPayload;
+import thaumcraft.network.AspectPoolPayload;
 import thaumcraft.network.AspectTagsPayload;
 import thaumcraft.network.BeamPulsePayload;
 import thaumcraft.network.NodeZapPayload;
+import thaumcraft.network.ResearchCompletePayload;
 import thaumcraft.network.VisDrainFxPayload;
+import thaumcraft.network.WarpMessagePayload;
 import thaumcraft.registry.ModSounds;
 
 public final class ClientPayloadHandlers {
@@ -22,6 +27,10 @@ public final class ClientPayloadHandlers {
         ClientNetwork.handle(AspectTagsPayload.TYPE, ClientPayloadHandlers::aspectTags);
         ClientNetwork.handle(NodeZapPayload.TYPE, ClientPayloadHandlers::nodeZap);
         ClientNetwork.handle(VisDrainFxPayload.TYPE, ClientPayloadHandlers::visDrain);
+        ClientNetwork.handle(ResearchCompletePayload.TYPE, ResearchNotifications::researchComplete);
+        ClientNetwork.handle(AspectPoolPayload.TYPE, ResearchNotifications::aspectPool);
+        ClientNetwork.handle(AspectDiscoveryPayload.TYPE, ResearchNotifications::aspectDiscovery);
+        ClientNetwork.handle(WarpMessagePayload.TYPE, ResearchNotifications::warpMessage);
     }
 
     private static void beamPulse(BeamPulsePayload payload, Player player) {

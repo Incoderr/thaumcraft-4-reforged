@@ -34,6 +34,9 @@ import thaumcraft.block.MagicalSaplingBlock;
 import thaumcraft.block.ManaPodBlock;
 import thaumcraft.block.NodeJarBlock;
 import thaumcraft.block.ObsidianTotemBlock;
+import thaumcraft.block.ResearchTableBlock;
+import thaumcraft.block.ResearchTablePartBlock;
+import thaumcraft.block.TableBlock;
 import thaumcraft.block.RechargeFocusBlock;
 import thaumcraft.block.SilverwoodKnotBlock;
 import thaumcraft.block.TravelPavingStoneBlock;
@@ -323,6 +326,10 @@ public final class ModBlocks {
         NodeJarItem::properties
     );
 
+    public static final DeferredBlock<TableBlock> TABLE = withItem(BLOCKS.registerBlock("table", TableBlock::new, ModBlocks::tableProperties));
+    public static final DeferredBlock<ResearchTableBlock> RESEARCH_TABLE = BLOCKS.registerBlock("research_table", ResearchTableBlock::new, ModBlocks::tableProperties);
+    public static final DeferredBlock<ResearchTablePartBlock> RESEARCH_TABLE_PART = BLOCKS.registerBlock("research_table_part", ResearchTablePartBlock::new, ModBlocks::tableProperties);
+
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
     private ModBlocks() {
@@ -345,6 +352,16 @@ public final class ModBlocks {
             )));
         }
         return candles;
+    }
+
+    private static BlockBehaviour.Properties tableProperties(BlockBehaviour.Properties properties) {
+        return properties
+            .mapColor(MapColor.WOOD)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(2.5F)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+            .ignitedByLava();
     }
 
     private static <B extends Block> DeferredBlock<B> withItem(DeferredBlock<B> block) {

@@ -7,6 +7,6 @@ public final class ResearchGate {
     }
 
     public static boolean isComplete(Player player, String key) {
-        return true;
+        return ResearchManager.isComplete(player, key);
     }
 }

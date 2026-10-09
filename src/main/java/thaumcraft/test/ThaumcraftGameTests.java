@@ -27,6 +27,7 @@ import thaumcraft.node.NodeBlockEntity;
 import thaumcraft.node.NodeGenerator;
 import thaumcraft.node.NodeType;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.research.Knowledge;
 import thaumcraft.wand.WandRegistry;
 import thaumcraft.wand.WandTriggers;
 import thaumcraft.wand.Wands;
@@ -115,6 +116,7 @@ public final class ThaumcraftGameTests {
         }
         NodeGenerator.createNodeAt(helper.getLevel(), helper.absolutePos(center), NodeType.HUNGRY, null, primals(15));
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Knowledge.get(player).addResearch("NODEJAR");
         ItemStack wand = Wands.create(WandRegistry.CAP_GOLD, WandRegistry.ROD_SILVERWOOD, false);
         Wands.fill(wand);
         boolean done = WandTriggers.perform(helper.getLevel(), wand, player, helper.absolutePos(center.offset(1, 1, 1)), Direction.UP);

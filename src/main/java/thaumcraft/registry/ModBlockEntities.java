@@ -7,6 +7,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.blockentity.ManaPodBlockEntity;
+import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.NodeJarBlockEntity;
 import thaumcraft.blockentity.WandPedestalBlockEntity;
 import thaumcraft.blockentity.WardingStoneBlockEntity;
@@ -54,6 +55,10 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<NodeJarBlockEntity>> NODE_JAR = BLOCK_ENTITIES.register(
         "node_jar",
         () -> new BlockEntityType<>(NodeJarBlockEntity::new, ModBlocks.NODE_JAR.get())
+    );
+    public static final Supplier<BlockEntityType<ResearchTableBlockEntity>> RESEARCH_TABLE = BLOCK_ENTITIES.register(
+        "research_table",
+        () -> new BlockEntityType<>(ResearchTableBlockEntity::new, ModBlocks.RESEARCH_TABLE.get())
     );
 
     private ModBlockEntities() {
