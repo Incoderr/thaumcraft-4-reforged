@@ -11,6 +11,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.item.AspectContainerItem;
 import thaumcraft.item.CrystalEssenceItem;
 import thaumcraft.item.GogglesItem;
+import thaumcraft.item.KnowledgeFragmentItem;
 import thaumcraft.item.LootBagItem;
 import thaumcraft.item.PrimalCharmItem;
 import thaumcraft.item.ResearchNotesItem;
@@ -32,7 +33,7 @@ public final class ModItems {
     public static final DeferredItem<Item> AMBER = ITEMS.registerSimpleItem("amber");
     public static final DeferredItem<Item> ENCHANTED_FABRIC = ITEMS.registerSimpleItem("enchanted_fabric");
     public static final DeferredItem<Item> VIS_FILTER = ITEMS.registerSimpleItem("vis_filter");
-    public static final DeferredItem<Item> KNOWLEDGE_FRAGMENT = ITEMS.registerSimpleItem("knowledge_fragment");
+    public static final DeferredItem<Item> KNOWLEDGE_FRAGMENT = ITEMS.registerItem("knowledge_fragment", KnowledgeFragmentItem::new);
     public static final DeferredItem<Item> MIRRORED_GLASS = ITEMS.registerSimpleItem("mirrored_glass");
     public static final DeferredItem<Item> TAINTED_GOO = ITEMS.registerSimpleItem("tainted_goo");
     public static final DeferredItem<Item> TAINT_TENDRIL = ITEMS.registerSimpleItem("taint_tendril");

@@ -33,6 +33,7 @@ import thaumcraft.block.ManaPodBlock;
 import thaumcraft.blockentity.ManaPodBlockEntity;
 import thaumcraft.platform.Registration;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.research.ResearchManager;
 
 public class ManaBeanItem extends Item {
     private static final List<Holder<MobEffect>> POTION_EFFECTS = List.of(
@@ -85,6 +86,7 @@ public class ManaBeanItem extends Item {
     }
 
     public static void awardAspectPool(ServerPlayer player, Aspect aspect, int amount) {
+        ResearchManager.addAspectPool(player, aspect, amount);
     }
 
     private static Aspect randomAspect(RandomSource random) {

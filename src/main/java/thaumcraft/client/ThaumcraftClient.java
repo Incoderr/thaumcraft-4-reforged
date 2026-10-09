@@ -12,6 +12,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.client.fx.ClientFx;
 import thaumcraft.client.platform.ModRenderPipelines;
 import thaumcraft.client.research.ResearchBrowserScreen;
+import thaumcraft.client.research.ThaumometerClient;
 import thaumcraft.client.screen.ResearchTableScreen;
 import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModMenus;
@@ -24,6 +25,7 @@ public final class ThaumcraftClient {
         ClientPayloadHandlers.register();
         Fx.set(new ClientFx());
         ResearchClientHooks.setBookOpener(ResearchBrowserScreen::open);
+        ThaumometerClient.register();
     }
 
     @SubscribeEvent
