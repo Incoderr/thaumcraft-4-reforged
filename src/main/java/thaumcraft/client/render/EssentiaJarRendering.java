@@ -93,7 +93,7 @@ public final class EssentiaJarRendering {
         poseStack.popPose();
     }
 
-    private static void quad(QuadSink sink, float minX, float minY, float maxX, float maxY, int argb, int light) {
+    static void quad(QuadSink sink, float minX, float minY, float maxX, float maxY, int argb, int light) {
         sink.vertex(minX, maxY, 0.0F, 0.0F, 1.0F, argb, light);
         sink.vertex(maxX, maxY, 0.0F, 1.0F, 1.0F, argb, light);
         sink.vertex(maxX, minY, 0.0F, 1.0F, 0.0F, argb, light);

@@ -13,9 +13,11 @@ import thaumcraft.client.fx.ClientFx;
 import thaumcraft.client.platform.ModRenderPipelines;
 import thaumcraft.client.research.ResearchBrowserScreen;
 import thaumcraft.client.research.ThaumometerClient;
+import thaumcraft.client.screen.AlchemicalFurnaceScreen;
 import thaumcraft.client.screen.ArcaneWorkbenchScreen;
 import thaumcraft.client.screen.DeconstructionTableScreen;
 import thaumcraft.client.screen.ResearchTableScreen;
+import thaumcraft.client.screen.ThaumatoriumScreen;
 import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModMenus;
 import thaumcraft.research.ResearchClientHooks;
@@ -35,6 +37,8 @@ public final class ThaumcraftClient {
         event.register(ModMenus.RESEARCH_TABLE.get(), ResearchTableScreen::new);
         event.register(ModMenus.ARCANE_WORKBENCH.get(), ArcaneWorkbenchScreen::new);
         event.register(ModMenus.DECONSTRUCTION_TABLE.get(), DeconstructionTableScreen::new);
+        event.register(ModMenus.ALCHEMICAL_FURNACE.get(), AlchemicalFurnaceScreen::new);
+        event.register(ModMenus.THAUMATORIUM.get(), ThaumatoriumScreen::new);
     }
 
     @SubscribeEvent

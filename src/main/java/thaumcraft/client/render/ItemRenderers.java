@@ -25,6 +25,9 @@ public final class ItemRenderers {
         event.register(Thaumcraft.id("essentia_crystallizer"), EssentiaSpecialRenderers.Crystallizer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("essentia_reservoir"), EssentiaSpecialRenderers.Reservoir.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("tube_valve"), EssentiaSpecialRenderers.TubeValve.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("alembic"), AlchemySpecialRenderers.Alembic.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("flux_scrubber"), AlchemySpecialRenderers.FluxScrubber.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("arcane_bellows"), AlchemySpecialRenderers.Bellows.Unbaked.MAP_CODEC);
     }
 
     @SubscribeEvent

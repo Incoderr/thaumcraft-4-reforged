@@ -40,6 +40,12 @@ public final class WorldRenderers {
         event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), CentrifugeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_CRYSTALLIZER.get(), EssentiaCrystallizerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_RESERVOIR.get(), EssentiaReservoirRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CRUCIBLE.get(), CrucibleRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ALEMBIC.get(), AlembicRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ADVANCED_ALCHEMICAL_FURNACE.get(), AdvancedFurnaceRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.THAUMATORIUM.get(), ThaumatoriumRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.BELLOWS.get(), BellowsRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.FLUX_SCRUBBER.get(), FluxScrubberRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_WORKBENCH.get(), ArcaneWorkbenchRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.VIS_CHARGE_RELAY.get(), ChargeRelayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.DECONSTRUCTION_TABLE.get(), DeconstructionTableRenderer::new);
