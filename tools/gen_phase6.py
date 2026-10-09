@@ -9,6 +9,10 @@ CENTRIFUGE_ITEM = {"type": f"{NS}:centrifuge"}
 CRYSTALLIZER_ITEM = {"type": f"{NS}:essentia_crystallizer"}
 RESERVOIR_ITEM = {"type": f"{NS}:essentia_reservoir"}
 FILLED_JAR_ITEM = {"type": f"{NS}:filled_jar"}
+ALEMBIC_ITEM = {"type": f"{NS}:alembic"}
+FLUX_SCRUBBER_ITEM = {"type": f"{NS}:flux_scrubber"}
+BELLOWS_ITEM = {"type": f"{NS}:arcane_bellows"}
+HORIZONTAL = {"south": 0, "west": 90, "north": 180, "east": 270}
 ARM_DIRECTIONS = {"north": {}, "south": {"y": 180}, "east": {"y": 90}, "west": {"y": 270}, "down": {"x": 90}, "up": {"x": 270}}
 
 
@@ -212,7 +216,142 @@ def essentia(ctx):
         gen_phase4.special_item(ctx, name, FILLED_JAR_ITEM)
 
 
+def flat(face, start, end, texture):
+    return {"from": start, "to": end, "faces": {face: {"texture": texture}}}
+
+
+def crucible(ctx):
+    ctx.block_model("crucible", {
+        "parent": "minecraft:block/block",
+        "textures": {
+            "particle": ctx.ref("crucible3"), "side": ctx.ref("crucible3"), "top": ctx.ref("crucible4"),
+            "bottom": ctx.ref("crucible2"), "inner": ctx.ref("crucible5"), "floor": ctx.ref("crucible6"),
+        },
+        "elements": [
+            {"from": [0, 0, 0], "to": [16, 16, 16], "faces": {
+                "down": {"texture": "#bottom", "cullface": "down"}, "up": {"texture": "#top", "cullface": "up"},
+                "north": {"texture": "#side", "cullface": "north"}, "south": {"texture": "#side", "cullface": "south"},
+                "west": {"texture": "#side", "cullface": "west"}, "east": {"texture": "#side", "cullface": "east"},
+            }},
+            flat("east", [1.968, 0, 0], [1.968, 16, 16], "#inner"),
+            flat("west", [14.032, 0, 0], [14.032, 16, 16], "#inner"),
+            flat("south", [0, 0, 1.968], [16, 16, 1.968], "#inner"),
+            flat("north", [0, 0, 14.032], [16, 16, 14.032], "#inner"),
+            flat("up", [0, 4, 0], [16, 4, 16], "#floor"),
+            flat("down", [0, 4, 0], [16, 4, 16], "#floor"),
+        ],
+    })
+    ctx.simple_state("crucible")
+    ctx.block_item("crucible")
+    ctx.self_drop("crucible")
+    ctx.mineable("pickaxe", "crucible")
+
+
+def horizontal_state(ctx, name):
+    ctx.blockstate(name, {"variants": {
+        f"facing={facing}": {"model": ctx.ref(name), "y": rotation} if rotation else {"model": ctx.ref(name)}
+        for facing, rotation in HORIZONTAL.items()
+    }})
+
+
+def furnaces(ctx):
+    for lit in ["false", "true"]:
+        for has_vis in ["false", "true"]:
+            name = f"alchemical_furnace_{lit}_{has_vis}"
+            ctx.block_model(name, {
+                "parent": "minecraft:block/cube",
+                "textures": {
+                    "particle": ctx.ref("al_furnace_side"),
+                    "down": ctx.ref("al_furnace_side"),
+                    "up": ctx.ref("al_furnace_top_filled" if has_vis == "true" else "al_furnace_top"),
+                    **{side: ctx.ref("al_furnace_front_on" if lit == "true" else "al_furnace_front_off") for side in ["north", "south", "west", "east"]},
+                },
+            })
+    ctx.blockstate("alchemical_furnace", {"variants": {
+        f"has_vis={has_vis},lit={lit}": {"model": ctx.ref(f"alchemical_furnace_{lit}_{has_vis}")}
+        for lit in ["false", "true"]
+        for has_vis in ["false", "true"]
+    }})
+    ctx.block_item("alchemical_furnace", model=ctx.ref("alchemical_furnace_false_false"))
+    ctx.self_drop("alchemical_furnace")
+    ctx.mineable("pickaxe", "alchemical_furnace")
+
+    gen_phase4.particle_model(ctx, "advanced_alchemical_furnace", "alchemyblockadv")
+    ctx.blockstate("advanced_alchemical_furnace", {"variants": {
+        f"light={light},part={part}": {"model": ctx.ref("advanced_alchemical_furnace")}
+        for part in ["core", "nozzle", "frame_alembic", "frame_edge", "frame_corner"]
+        for light in range(13)
+    }})
+    ctx.mineable("pickaxe", "advanced_alchemical_furnace")
+
+    for name, texture in [("alchemical_construct", "alchemyblock"), ("advanced_alchemical_construct", "alchemyblockadv")]:
+        ctx.cube_all(name, texture)
+        ctx.simple_state(name)
+        ctx.block_item(name)
+        ctx.self_drop(name)
+        ctx.mineable("pickaxe", name)
+
+    for name in ["thaumatorium", "thaumatorium_top"]:
+        gen_phase4.particle_model(ctx, name, "alchemyblock")
+        horizontal_state(ctx, name)
+        ctx.mineable("pickaxe", name)
+
+    ctx.block_model("mnemonic_matrix", {
+        "parent": "minecraft:block/block",
+        "textures": {"particle": ctx.ref("brainbox"), "t": ctx.ref("brainbox")},
+        "elements": [cube_element(3, 13)],
+    })
+    ctx.blockstate("mnemonic_matrix", {"variants": {f"facing={facing}": {"model": ctx.ref("mnemonic_matrix")} for facing in FACINGS}})
+    ctx.block_item("mnemonic_matrix")
+    ctx.self_drop("mnemonic_matrix")
+    ctx.mineable("pickaxe", "mnemonic_matrix")
+
+
+def flux(ctx):
+    for name, texture, hanging in [("flux_goo", "fluxgoo", False), ("flux_gas", "fluxgas", True)]:
+        variants = {}
+        for level in range(1, 9):
+            model = f"{name}_{level}"
+            height = level * 2
+            start, end = (16 - height, 16) if hanging else (0, height)
+            ctx.block_model(model, {
+                "parent": "minecraft:block/block",
+                "textures": {"particle": ctx.ref(texture), "t": ctx.ref(texture)},
+                "elements": [{"from": [0, start, 0], "to": [16, end, 16], "faces": {
+                    face: {"texture": "#t"} for face in ["down", "up", "north", "south", "west", "east"]
+                }}],
+            })
+            variants[f"level={level}"] = {"model": ctx.ref(model)}
+        ctx.blockstate(name, {"variants": variants})
+        ctx.generated_item(name, texture, texture_kind="block")
+
+
+def alchemy(ctx):
+    crucible(ctx)
+    furnaces(ctx)
+    flux(ctx)
+
+    gen_phase4.particle_model(ctx, "alembic", "metalbase")
+    horizontal_state(ctx, "alembic")
+    gen_phase4.item_base_particle(ctx, "alembic", "metalbase")
+    gen_phase4.special_item(ctx, "alembic", ALEMBIC_ITEM)
+    ctx.self_drop("alembic")
+    ctx.mineable("pickaxe", "alembic")
+
+    for name, texture, item, tool in [
+        ("flux_scrubber", "pedestal_top", FLUX_SCRUBBER_ITEM, "pickaxe"),
+        ("arcane_bellows", "planks_greatwood", BELLOWS_ITEM, "axe"),
+    ]:
+        gen_phase4.particle_model(ctx, name, texture)
+        ctx.blockstate(name, {"variants": {f"facing={facing}": {"model": ctx.ref(name)} for facing in FACINGS}})
+        gen_phase4.item_base_particle(ctx, name, texture)
+        gen_phase4.special_item(ctx, name, item)
+        ctx.self_drop(name)
+        ctx.mineable(tool, name)
+
+
 def generate(ctx):
     arcane(ctx)
     infusion(ctx)
     essentia(ctx)
+    alchemy(ctx)

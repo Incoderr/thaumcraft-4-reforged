@@ -2,6 +2,14 @@
   "replace": false,
   "values": [
     {
+      "id": "thaumcraft:advanced_alchemical_construct",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:advanced_alchemical_furnace",
+      "required": false
+    },
+    {
       "id": "thaumcraft:advanced_node_stabilizer",
       "required": false
     },
@@ -11,6 +19,18 @@
     },
     {
       "id": "thaumcraft:alchemical_centrifuge",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:alchemical_construct",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:alchemical_furnace",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:alembic",
       "required": false
     },
     {
@@ -82,6 +102,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:crucible",
+      "required": false
+    },
+    {
       "id": "thaumcraft:crusted_stone",
       "required": false
     },
@@ -126,6 +150,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:flux_scrubber",
+      "required": false
+    },
+    {
       "id": "thaumcraft:golem_fetter",
       "required": false
     },
@@ -135,6 +163,10 @@
     },
     {
       "id": "thaumcraft:infusion_pillar_top",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:mnemonic_matrix",
       "required": false
     },
     {
@@ -167,6 +199,14 @@
     },
     {
       "id": "thaumcraft:tallow_block",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:thaumatorium",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:thaumatorium_top",
       "required": false
     },
     {
