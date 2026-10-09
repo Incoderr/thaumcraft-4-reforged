@@ -10,7 +10,8 @@
 - Фаза 3 (генерация мира, биомы через TerraBlender, деревня с волшебником и банкиром, урны, ящики, мешочки, лут в сундуках): готово, кроме визуальной проверки в `runClient`
 - Фаза 4 (ноды и их генерация, жезлы, вис-сеть, стабилизаторы, трансдьюсер, пьедестал, банка для ноды, HUD виса, GameTest-ы): готово, кроме визуальной проверки в `runClient`
 - Фаза 5 (знания игрока, сканирование, варп, 201 исследование, рецепты TC данными, исследовательский стол с гексами, Таумономикон, команды, GameTest-ы): готово, кроме визуальной проверки в `runClient`
-- Следующая: ветка `mc/1.21.1` (M-core), затем фаза 6 (алхимия и эссенция)
+- Фаза 6 (тигель, эссенция: банки, трубы, буфер, центрифуга, кристаллизатор, резервуар, фиалы; алембик, обе алхимические печи, тауматориум, мнемоническая матрица, флюкс, очиститель, мехи) и фаза 7 (магический верстак, рецепты жезла и скипетра, зарядное реле, стол деконструкции, алтарь инфузии): готово, кроме визуальной проверки в `runClient`
+- Следующая: ветка `mc/1.21.1` (M-core + фазы 6/7 одним заходом), затем фаза 8 (снаряжение)
 
 ## Окружение
 
@@ -78,6 +79,16 @@
 - Пьедестал перезарядки принимает только жезлы (амулет виса в фазе 8), без `Container` и воронок; энергезированная нода не реализует `Node`, как в TC4
 - Рендер: анимации WAVE/CHARGE и фокус жезла, левая рука как правая (без зеркального сдвига 26.3), тексты на экране таумометра обычной альфой вместо аддитивной, вспышка на конце луча реле не перенесены (фазы 8 и 15), пульс луча реле приближённый
 
+- Фазы 6/7: фокальный манипулятор перенесён в фазу 8 (нужны фокусы), зеркало эссенции в фазу 9 (общее с магическим зеркалом), мехи из фазы 9 в 6. Колонна инфузии meta 4 называется `infusion_pillar_top` (верхняя часть, в `id_map` было `_base`)
+- Тигель: выход рецепта обычный `ItemEntity` с тегом `thaumcraft_special_item` вместо парящего `EntitySpecialItem`; котёл → тигель без исследования и виса, как в TC4; вёдра только ванильные с водой, остальное через шов `Transfer` (`exposedFluids`)
+- Тауматориум и инфузия хранят игрока по UUID и рецепт по ключу (TC4 имя и хеш); крафт инфузии переживает перезагрузку чанка. Тауматориум смотрит только горизонтально
+- Флюкс-газ и слизь: свои блоки с `level` 1..8 и портом `BlockFluidFinite` (газ поднимается), свет `level*7/8`; газ рисуется слоем от потолка без инвертированных высот
+- Трубы: руки в blockstate (`none/normal/extended` по шести сторонам) + `facing`; с жезлом в руке форма трубы тонкие руки, по которым переключаются стороны (порт sub-hit RayTracer). Снять ярлык с банки или очистить её можно только пустой рукой (ванилла не вызывает use блока при приседании с предметом)
+- Верстак: результат в `ResultContainer` меню (слот 9 BE не хранится), пересчёт при изменении виса жезла, несколько игроков одновременно. Шансы `nextInt(50-2i)`/`nextInt(100-3i)` инфузии ограничены снизу 1 (в TC4 исключение)
+- Мехи ускоряют ванильную печь через перезапись `cooking_time_spent` в NBT (поле приватное, AT нет)
+- Найденные дюпы и NPE TC4 исправлены: возврат стака из тигля после частичного крафта, NPE сопла печи, отрицательный жар продвинутой печи, приоритет в компараторе печи, null-рецепт тауматориума
+- Рендер фаз 6/7 (приближения): вода тигля с биомным оттенком, предметы над столом деконструкции обычной альфой, затемнение недоступного результата верстака заливкой, частицы без столкновений и со светом 240
+
 ## Заметки
 
 - Швы (`platform/`): `ModNetwork` (+ `client/platform/ClientNetwork`), `StackData`/`StackKey` (data components), `DataAttachments`/`DataKey` (attachments, сохраняются как `{value: ...}`), `Transfer`, `Teleport`, `BiomeEdit`, `Registration` (+ `TcToolMaterial`, `TcArmorMaterial`, `ArmorSlot`; топливо через компонент `COOKING_FUEL`), `Baubles`. Шов `SaveIO` на `main` пустой: BE используют ванильные `ValueInput`/`ValueOutput`
@@ -110,4 +121,10 @@
 - Исследования: модель `research/{ResearchItem,ResearchPage,ResearchCategories}`, генерируемый `ConfigResearch`; логика `ResearchManager` (`complete`, `completeWithSiblings`, `handlePlayerComplete`, подсказки `@KEY`), `Warp`, `ScanManager` (+ клиент `client/research/ThaumometerClient` через `ScanClientHooks`), заметки `ResearchNotes` + компонент `research_note` (заметка без компонента = неизвестная), гексы `HexGrid`. `ResearchGate.isComplete` теперь настоящая проверка
 - Книга: `client/research/ResearchBrowserScreen` (карта), `ResearchPageScreen` (страницы), уведомления `ResearchNotifications` + `ResearchHud`, тост `ResearchToast`; общий код открывает книгу через `ResearchClientHooks`. Стол: `blockentity/ResearchTableBlockEntity`, `menu/ResearchTableMenu` (меню с позицией через шов `platform/Menus`), `client/screen/ResearchTableScreen`, tint `thaumcraft:research_note`
 - `/thaumcraft research [list] | <игроки> list|all|reset|<ключ>`, `aspect <игроки> <аспект|all> <n>`, `warp <игроки> set|add <n> [perm|temp|sticky]` (по умолчанию липкий, как в TC4)
+- Эссенция: `essentia/EssentiaTransport` (порт `IEssentiaTransport`), `Essentia.getConnectable`, `aspect/AspectSource`, `EssentiaHandler.drainEssentia(be, aspect, dir, range)` (кэш источников, `EssentiaSourceFxPayload`), фильтр банки `EssentiaKeys.FILTER`; трубы `TubeBlock` + `TubeArms`. Алхимия в `alchemy/`, верстак и стол деконструкции в `arcane/`, алтарь в `infusion/` (`InfusionKeys.HARDEN` рунный заряд, `InfusionKeys.TAGS` NBT-результаты инфузии для фазы 8). Сопоставление рецептов: `crafting/CrucibleCrafting`, `ArcaneCrafting` (работает и на клиенте), `InfusionCrafting`; динамические `ArcaneWandRecipe`, `ArcaneSceptreRecipe`, `InfusionRunicAugmentRecipe`
+- Триггеры жезла фаз 6/7: `alchemy/AlchemyTriggers` (котёл, тауматориум, продвинутая печь), `arcane/ArcaneTriggers` (стол → верстак), `infusion/InfusionTriggers` (алтарь)
+- Шов `Transfer`: `exposeItems`/`exposeFluids` + `Transfer.FluidTank`, регистрации в `registry/ModCapabilities` (BE отдаёт `exposedItems(side)`/`exposedFluids(side)`)
+- Хуки фаз 6/7: `alchemy/AlchemyHooks` (нитор как источник тепла: 9; слизень и порча от флюкса: 10/11), `effect/EffectHooks` (вис-истощение, отравление порчей: 10), `infusion/InfusionHooks` (рунная броня: 8; варп за крафт предмета с варпом: 10). Зачарования `thaumcraft:repair`/`haste` для инфузии появятся в фазе 8
+- FX фаз 6/7 в `client/fx/ClientFx` (+ `ParticleFx`, `BubbleFx`, `VentFx`, `EssentiaTrailFx`, `BoreSparkleFx`, `BoreParticleFx`, `BlockRunesFx`, `EssentiaSourceTracker`), спрайты частиц блоков и предметов `client/platform/ParticleSprites`
+- Ресурсы фаз 6/7: `tools/gen_phase6.py` (`arcane`, `infusion`, `essentia`, `alchemy`), special-типы предметов константами в начале файла
 - GameTest-ы: `test/ThaumcraftGameTests` (функции в реестре `test_function`, площадка `thaumcraft:test/platform` из `tools/gen_structures.py`), запуск `./gradlew runGameTestServer`
