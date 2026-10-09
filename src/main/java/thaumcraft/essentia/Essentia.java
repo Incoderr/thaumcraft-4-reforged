@@ -10,6 +10,9 @@ public final class Essentia {
     }
 
     public static @Nullable EssentiaTransport getConnectable(BlockGetter level, BlockPos pos, Direction face) {
-        return level.getBlockEntity(pos.relative(face)) instanceof EssentiaTransport transport ? transport : null;
+        if (level.getBlockEntity(pos.relative(face)) instanceof EssentiaTransport transport && transport.isConnectable(face.getOpposite())) {
+            return transport;
+        }
+        return null;
     }
 }
