@@ -63,7 +63,7 @@ public final class RecipeSync {
         if (TcRecipes.get(key) instanceof CraftingRecipeRef reference) {
             Identifier id = reference.recipe();
             if (server.getRecipeManager().byKey(ResourceKey.create(Registries.RECIPE, id)).isEmpty()) {
-                Thaumcraft.LOGGER.warn("Research {} recipe {} points to missing crafting recipe {}", research.key(), key, id);
+                Thaumcraft.LOGGER.debug("Research {} recipe {} points to missing crafting recipe {}", research.key(), key, id);
                 return 1;
             }
         }

@@ -9,7 +9,8 @@
 - Фаза 2 (48 аспектов, теги предметов и сущностей с генерацией из рецептов, мировые блоки, базовые предметы, оверлей аспектов по Shift, ванильные рецепты): готово, кроме визуальной проверки в `runClient`
 - Фаза 3 (генерация мира, биомы через TerraBlender, деревня с волшебником и банкиром, урны, ящики, мешочки, лут в сундуках): готово, кроме визуальной проверки в `runClient`
 - Фаза 4 (ноды и их генерация, жезлы, вис-сеть, стабилизаторы, трансдьюсер, пьедестал, банка для ноды, HUD виса, GameTest-ы): готово, кроме визуальной проверки в `runClient`
-- Следующая: фаза 5 (исследования)
+- Фаза 5 (знания игрока, сканирование, варп, 201 исследование, рецепты TC данными, исследовательский стол с гексами, Таумономикон, команды, GameTest-ы): готово, кроме визуальной проверки в `runClient`
+- Следующая: ветка `mc/1.21.1` (M-core), затем фаза 6 (алхимия и эссенция)
 
 ## Окружение
 
@@ -51,7 +52,6 @@
 
 - Ванильные id лежат отдельно в `tools/vanilla_ids.json`, а не в `id_map.json`: генерируются из DataFixer-ов 26.3 и не правятся руками
 - Forge 1.7.10 в справочнике без наложенных патчей: исходники Forge и патчи-диффы раздельно (бинарные патчи требуют pack200/Java 8)
-- Аспекты в GUI показываются для всех предметов и все аспекты считаются известными (`client/aspect/AspectVisibility`, `item/AspectTooltips.isDiscovered`): сканирование и знания появятся в фазе 5
 - Олово, серебро, свинец: есть только рецепт слиток → 9 самородков (условие на непустой `c:ingots/<металл>`); обратные рецепты и переплавка кластеров требуют результата-тега, в JSON невозможно, нужен свой тип рецепта
 - Тотем из обсидиана: состояния `part`/`carving` как в TC3 вместо выбора текстуры по соседям в рендере; древний камень и скала выбирают текстуру случайным вариантом blockstate
 - Блендинг аспектов (GL_ONE у большинства) в GUI не воспроизводится, все иконки рисуются обычной альфой
@@ -63,7 +63,13 @@
 - Деревня: в TC4 не больше одной башни и одного дома банкира на деревню (веса 15/25), в jigsaw-пулах лимитов нет, поэтому веса 1 в `houses`. Волшебник и банкир без рабочего места (`Xp: 1` в шаблоне держит профессию), волшебнику в фазе 5/7 добавить POI. Сделки: каждый уровень 1–5 берёт 2 из общего пула профессии (в TC4 один случайный трейд и новый после использования последнего)
 - Биомы: веса регионов TerraBlender 3 (магический лес вместо леса и берёзового леса) и 1 (порча вместо равнин), синий вариант магического леса (`blueMagicalForest`) не поддержан, плотность травы и цветов по-современному
 - Baubles: на 26.3 свои слоты по образцу Baubles 1.0.1.10 за фасадом `platform/Baubles`. Curios `17.0.0-beta.2+26.3` собран под NeoForge 26.3.0.7 и падает на 26.3.0.37+ (`ModConfig.Type.COMMON` удалён в FML 12.0.8)
-- Исследования до фазы 5: `research/ResearchGate.isComplete` всегда `true` (тап `NODETAPPER1/2`, `NODEPRESERVE`, `NODEJAR`, `CAP_*`/`ROD_*`)
+- Знания игрока в attachment `research/Knowledge` (копируется при смерти целиком, как TC4 с данными по имени игрока), вместо файлов `.thaum`; ключи сканирования строками (id предмета, id сущности + суффиксы TC4, `NODE<id>`) вместо хешей, наборы с префиксом `#` не переносятся
+- Сервер проверяет то, чему TC4 верил с клиента: цель и дистанцию скана, пул и `secondary` при покупке, наличие аспекта и гекса при размещении, оба аспекта при комбинировании
+- Константы конфига исследований (`research_difficulty = 0`, `aspect_total_cap = 100`, `allowCheatSheet = false`, wuss mode) в `research/ResearchConfig` до `ModConfigSpec` (14)
+- События варпа и выдача `ELDRITCHMINOR`/`ELDRITCHMAJOR`/`@BATHSALTS` в фазе 10 (пока `/thaumcraft research`), сферы аспектов с мобов и аспект-орб у первичного амулета в фазе 11, руны скана таумометра и искры у полки в фазе 15
+- Рецепты TC переведены в данные в фазе 5 (план ставил их в 7): `crafting/TcRecipes` по ключам TC4, машины фаз 6/7 используют те же записи. Счётчики после разворота циклов: arcane 109, тигель 54, инфузия 63, инфузионные зачарования 24, compound 9. Динамические `ArcaneWandRecipe`, `ArcaneSceptreRecipe`, `InfusionRunicAugmentRecipe`, покраска роб в фазе 7; результаты инфузии с NBT (апгрейды големов, очки и маски) хранятся как центральный предмет с `data`; ярлыки банок (`JarLabel*`) без JSON до своего типа рецепта
+- Бонусы окружения стола сохраняются с количеством (TC4 при загрузке сводил каждый к 1); кристаллы и банки в скане окружения пропускаются до фаз 9 и 6
+- Тост «Research Completed!» ванильный (вверху справа, стопкой), заголовок захардкожен как в TC4 (ключ в фазе 14); линии карты и гексов рисуются прямоугольниками, аддитивный блендинг заменён альфой; BER стола рисует письменные принадлежности и заметку плоскими предметами
 - Имя жезла: шаблон `item.thaumcraft.wand` разбирается на клиенте по плейсхолдерам `%CAP`/`%ROD`/`%OBJ` (порядок в языках разный), части через `item.Wand.*`
 - Нода у храма: по стартам структур `desert_pyramid`/`jungle_temple`/`swamp_hut` в текущем чанке; `netherTotem` пуст (в TC4 тотем генерировался только в измерениях 0 и 1); чёрные списки измерений и биомов не перенесены, биомные эффекты нод выключены в Нижнем мире и Энде
 - Видимость нод с таумометром: баг TC4 в `isVisibleTo` сохранён (конус всегда истинен, видно в пределах 48 блоков); иконка таумометра самодельная (`tools/assets_extra`), в TC4 только 3D-модель
@@ -97,4 +103,7 @@
 - Ноды: `node/NodeBlockEntity` (тип BE `node` на `aura_node`, `charged_obsidian_totem`, `silverwood_knot`), генерация `node/NodeGenerator`, хуки будущих фаз `node/NodeHooks`; вис-сеть `vis/VisNet` + `vis/VisNode`; триггеры жезла `wand/WandTriggers` (банка: `blockentity/NodeJarTrigger`)
 - Special-модели предметов: `thaumcraft:wand`, `aura_node`, `node_jar` (`client/render/ItemRenderers`), `node_stabilizer` (`advanced`), `node_transducer`, `vis_relay` (`client/render/WorldRenderers`); OBJ через `ObjModel`, пайплайны без depth-теста для открытых нод в `ModRenderPipelines`
 - `/thaumcraft node place <pos> [тип] [модификатор]|info <pos>`, `/thaumcraft wand fill [игроки]|give <игроки> <колпачок> <стержень> [скипетр]`
+- Исследования: модель `research/{ResearchItem,ResearchPage,ResearchCategories}`, генерируемый `ConfigResearch`; логика `ResearchManager` (`complete`, `completeWithSiblings`, `handlePlayerComplete`, подсказки `@KEY`), `Warp`, `ScanManager` (+ клиент `client/research/ThaumometerClient` через `ScanClientHooks`), заметки `ResearchNotes` + компонент `research_note` (заметка без компонента = неизвестная), гексы `HexGrid`. `ResearchGate.isComplete` теперь настоящая проверка
+- Книга: `client/research/ResearchBrowserScreen` (карта), `ResearchPageScreen` (страницы), уведомления `ResearchNotifications` + `ResearchHud`, тост `ResearchToast`; общий код открывает книгу через `ResearchClientHooks`. Стол: `blockentity/ResearchTableBlockEntity`, `menu/ResearchTableMenu` (меню с позицией через шов `platform/Menus`), `client/screen/ResearchTableScreen`, tint `thaumcraft:research_note`
+- `/thaumcraft research [list] | <игроки> list|all|reset|<ключ>`, `aspect <игроки> <аспект|all> <n>`, `warp <игроки> set|add <n> [perm|temp|sticky]` (по умолчанию липкий, как в TC4)
 - GameTest-ы: `test/ThaumcraftGameTests` (функции в реестре `test_function`, площадка `thaumcraft:test/platform` из `tools/gen_structures.py`), запуск `./gradlew runGameTestServer`
