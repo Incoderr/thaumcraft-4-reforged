@@ -23,6 +23,8 @@ import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.client.aspect.AspectRenderer;
 import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.client.platform.GuiBlit;
+import thaumcraft.client.research.ResearchHud;
+import thaumcraft.client.research.ResearchNotifications;
 import thaumcraft.menu.ResearchTableMenu;
 import thaumcraft.network.AspectCombinePayload;
 import thaumcraft.network.AspectPlacePayload;
@@ -313,6 +315,7 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        ResearchHud.renderNotifications(graphics, ResearchNotifications.now());
         ResearchNote note = note();
         if (canDuplicate(note) && inside(mouseX, mouseY, leftPos + 37, topPos + 5, 24, 24)) {
             drawCopyCost(graphics, note);
