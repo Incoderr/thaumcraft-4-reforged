@@ -1,14 +1,17 @@
 package thaumcraft.test;
 
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.network.Connection;
@@ -17,7 +20,10 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -40,6 +46,7 @@ import thaumcraft.research.PlayerKnowledge;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
 import thaumcraft.research.ResearchManager;
+import thaumcraft.research.ScanManager;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 import thaumcraft.wand.WandRegistry;
@@ -49,7 +56,7 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps"};
+    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ThaumcraftGameTests::wandTapsNode);
@@ -58,6 +65,7 @@ public final class ThaumcraftGameTests {
         FUNCTIONS.register(TESTS[3], () -> ThaumcraftGameTests::researchWarpSplit);
         FUNCTIONS.register(TESTS[4], () -> ThaumcraftGameTests::researchPurchase);
         FUNCTIONS.register(TESTS[5], () -> ThaumcraftGameTests::scanAwardCaps);
+        FUNCTIONS.register(TESTS[6], () -> ThaumcraftGameTests::modernScanTargets);
     }
 
     private ThaumcraftGameTests() {
@@ -132,6 +140,22 @@ public final class ThaumcraftGameTests {
         ResearchManager.handlePlayerComplete(new PlayerCompletePayload("TESTBUY", ResearchManager.ACTION_PURCHASE), player);
         helper.assertTrue(ResearchManager.isComplete(player, "TESTBUY"), "purchase failed");
         helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.AIR), 7, "pool after purchase");
+        helper.succeed();
+    }
+
+    private static void modernScanTargets(GameTestHelper helper) {
+        for (String id : List.of("deepslate", "tuff_brick_wall", "waxed_oxidized_cut_copper_stairs", "lime_concrete", "echo_shard")) {
+            Item item = BuiltInRegistries.ITEM.getValue(Identifier.withDefaultNamespace(id));
+            ScanManager.Target target = ScanManager.resolveStack(new ItemStack(item));
+            helper.assertTrue(target != null && target.aspects() != null && target.aspects().size() > 0, "no aspects for " + id);
+        }
+        for (String id : List.of("axolotl", "warden", "husk")) {
+            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace(id));
+            Entity entity = helper.spawn(type, new BlockPos(1, 2, 1));
+            ScanManager.Target target = ScanManager.resolveEntity(entity);
+            helper.assertTrue(target != null && target.aspects() != null && target.aspects().size() > 0, "no aspects for " + id);
+            entity.discard();
+        }
         helper.succeed();
     }
 

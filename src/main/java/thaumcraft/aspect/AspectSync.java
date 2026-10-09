@@ -32,8 +32,10 @@ public final class AspectSync {
     public static void rebuild(MinecraftServer server) {
         long start = System.currentTimeMillis();
         AspectRegistry registry = new AspectRegistry(server);
+        ModernAspects modern = new ModernAspects(registry);
+        modern.registerBase();
         new ConfigAspects(registry).registerAll();
-        new ModernAspects(registry).registerAll();
+        modern.registerDerived();
         int items = registry.buildAll().size();
         AspectRegistry.setActive(registry);
         Thaumcraft.LOGGER.info(

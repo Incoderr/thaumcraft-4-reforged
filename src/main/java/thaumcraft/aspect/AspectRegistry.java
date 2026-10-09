@@ -72,6 +72,11 @@ public final class AspectRegistry {
         return tags.containsKey(item);
     }
 
+    public boolean hasAspects(Item item) {
+        AspectList existing = tags.get(item);
+        return existing != null && !existing.isEmpty();
+    }
+
     public @Nullable AspectList getObjectTags(Item item) {
         AspectList existing = tags.get(item);
         if (existing != null) {

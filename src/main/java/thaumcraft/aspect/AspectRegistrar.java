@@ -37,7 +37,7 @@ public abstract class AspectRegistrar {
 
     protected void fill(String target, AspectList aspects) {
         for (Item item : resolve(target)) {
-            if (!registry.exists(item)) {
+            if (!registry.hasAspects(item)) {
                 registry.register(item, aspects.copy());
             }
         }

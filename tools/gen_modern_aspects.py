@@ -61,7 +61,7 @@ def item_lines(items, valid):
             if not aspects:
                 raise SystemExit(f"{where}: no aspects")
             plain.append(f'        fill("{target}", {aspects_expression(aspects, valid, where)});')
-    return plain + copies
+    return plain, copies
 
 
 def entity_lines(entities, valid):
@@ -81,7 +81,9 @@ def entity_lines(entities, valid):
 def main():
     valid = aspect_names()
     items, entities = load_entries()
-    body_items = "\n".join(item_lines(items, valid))
+    plain, copies = item_lines(items, valid)
+    body_plain = "\n".join(plain)
+    body_copies = "\n".join(copies)
     body_entities = "\n".join(entity_lines(entities, valid))
     java = f"""package thaumcraft.aspect;
 
@@ -90,13 +92,17 @@ public final class ModernAspects extends AspectRegistrar {{
         super(registry);
     }}
 
-    public void registerAll() {{
-        registerItemAspects();
+    public void registerBase() {{
+{body_plain}
+    }}
+
+    public void registerDerived() {{
+        registerCopies();
         registerEntityAspects();
     }}
 
-    private void registerItemAspects() {{
-{body_items}
+    private void registerCopies() {{
+{body_copies}
     }}
 
     private void registerEntityAspects() {{
