@@ -27,6 +27,7 @@ import thaumcraft.menu.ResearchTableMenu;
 import thaumcraft.network.AspectCombinePayload;
 import thaumcraft.network.AspectPlacePayload;
 import thaumcraft.registry.ModSounds;
+import thaumcraft.registry.ModSounds;
 import thaumcraft.research.HexGrid;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.PlayerKnowledge;
@@ -41,9 +42,6 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
     private static final Identifier HEX_HIGHLIGHT = Thaumcraft.id("textures/gui/hex2.png");
     private static final Identifier PARCHMENT = Thaumcraft.id("textures/misc/parchment3.png");
     private static final Identifier SCRIPT = Thaumcraft.id("textures/misc/script.png");
-    private static final SoundEvent ASPECT_SOUND = SoundEvent.createVariableRangeEvent(Thaumcraft.id("hhoff"));
-    private static final SoundEvent COMBINE_SOUND = SoundEvent.createVariableRangeEvent(Thaumcraft.id("hhon"));
-    private static final SoundEvent SCROLL_SOUND = SoundEvent.createVariableRangeEvent(Thaumcraft.id("key"));
     private static final int HEX_SIZE = 9;
     private static final int GRID_X = 169;
     private static final int GRID_Y = 83;
@@ -114,11 +112,11 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
     }
 
     private void playAspect() {
-        play(ASPECT_SOUND, 0.2F, 1.0F + random.nextFloat() * 0.1F);
+        play(ModSounds.HHOFF.get(), 0.2F, 1.0F + random.nextFloat() * 0.1F);
     }
 
     private void playCombine() {
-        play(COMBINE_SOUND, 0.3F, 1.0F);
+        play(ModSounds.HHON.get(), 0.3F, 1.0F);
     }
 
     private void playWrite() {
@@ -130,7 +128,7 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
     }
 
     private void playScroll() {
-        play(SCROLL_SOUND, 0.3F, 1.0F);
+        play(ModSounds.KEY.get(), 0.3F, 1.0F);
     }
 
     private List<Aspect> visibleAspects() {

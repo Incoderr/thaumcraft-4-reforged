@@ -25,6 +25,9 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ERASE = register("erase");
     public static final DeferredHolder<SoundEvent, SoundEvent> PAGE = register("page");
     public static final DeferredHolder<SoundEvent, SoundEvent> WHISPERS = register("whispers");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HHOFF = register("hhoff");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HHON = register("hhon");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEY = register("key");
 
     private ModSounds() {
     }
