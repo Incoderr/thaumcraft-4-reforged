@@ -305,6 +305,7 @@ public final class ModBlocks {
             .strength(3.0F, 17.0F)
             .sound(SoundType.METAL)
             .noOcclusion()
+            .lightLevel(state -> state.getValue(VisRelayBlock.CONNECTED) ? 10 : 2)
     ));
     public static final DeferredBlock<NodeJarBlock> NODE_JAR = BLOCKS.registerBlock(
         "node_jar",
