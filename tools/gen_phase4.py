@@ -197,7 +197,7 @@ def wands(ctx):
         ctx.generated_item(f"{rod}_rod", f"wand_rod_{texture}")
         ctx.generated_item(f"{rod}_staff_core", f"staff_rod_{texture}")
     ctx.generated_item("primal_staff_core", "staff_rod_primal")
-    ctx.generated_item("thaumometer", "thaumometer")
+    legacy_special_item(ctx, "thaumometer", {"type": f"{NS}:thaumometer"}, "blank")
     ctx.generated_item("goggles_of_revealing", "gogglesrevealing")
     ctx.write(ctx.ASSETS / "equipment" / "goggles.json", {
         "layers": {"humanoid": [{"texture": f"{NS}:goggles"}]},
