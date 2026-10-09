@@ -1,0 +1,42 @@
+package thaumcraft.client.platform;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
+
+public final class ParticleSprites {
+    private ParticleSprites() {
+    }
+
+    public static @Nullable TextureAtlasSprite block(BlockState state) {
+        Material.Baked material = Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(state);
+        return material == null ? null : material.sprite();
+    }
+
+    public static @Nullable TextureAtlasSprite item(Level level, ItemStack stack, RandomSource random) {
+        ItemStackRenderState renderState = new ItemStackRenderState();
+        Minecraft.getInstance().getItemModelResolver().updateForTopItem(renderState, stack, ItemDisplayContext.GROUND, level, null, 0);
+        Material.Baked material = renderState.pickParticleMaterial(random);
+        return material == null ? null : material.sprite();
+    }
+
+    public static float u(TextureAtlasSprite sprite, float fraction) {
+        return sprite.getU(fraction);
+    }
+
+    public static float v(TextureAtlasSprite sprite, float fraction) {
+        return sprite.getV(fraction);
+    }
+
+    public static Identifier atlas(TextureAtlasSprite sprite) {
+        return sprite.atlasLocation();
+    }
+}
