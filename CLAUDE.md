@@ -38,6 +38,7 @@
 - `tools/vanilla_ids.py` → `tools/vanilla_ids.json` ванильные id 1.7.10 (числовые, `id:meta`, поля `Blocks.*`/`Items.*`) → современные по профилям версий
 - `tools/mcformat.py` профили версий 26.3/1.21.1/1.19.2 (из TC3)
 - `tools/convert_assets.py` текстуры, звуки, `.obj`, lang (22 языка) → `src/main/resources/assets/thaumcraft`; шейдеры варпа откладываются в `tools/assets_pending/` до фазы 10
+- `tools/convert_research.py` разбирает `ConfigResearch` TC4 и пишет `research/ConfigResearch.java` (201 исследование, варп, страницы, рецепты скипетра и рунного усиления с ключами `ConfigResearch.*`), руками не править
 
 ## Код-стайл
 
