@@ -698,7 +698,9 @@ def validate_models():
                 missing.append(f"{path.name}: {model}")
     for path in (ASSETS / "blockstates").glob("*.json"):
         text = path.read_text(encoding="utf-8")
-        for entry in json.loads(text)["variants"].values():
+        content = json.loads(text)
+        entries = content["variants"].values() if "variants" in content else [part["apply"] for part in content["multipart"]]
+        for entry in entries:
             for variant in entry if isinstance(entry, list) else [entry]:
                 namespace, _, location = variant["model"].partition(":")
                 if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():

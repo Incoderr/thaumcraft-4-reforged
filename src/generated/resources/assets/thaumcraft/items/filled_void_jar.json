@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "thaumcraft:item/filled_void_jar",
+    "model": {
+      "type": "thaumcraft:filled_jar"
+    }
+  }
+}

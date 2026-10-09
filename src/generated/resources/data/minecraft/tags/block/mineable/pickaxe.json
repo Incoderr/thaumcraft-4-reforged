@@ -10,6 +10,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:alchemical_centrifuge",
+      "required": false
+    },
+    {
       "id": "thaumcraft:amber_block",
       "required": false
     },
@@ -82,11 +86,39 @@
       "required": false
     },
     {
+      "id": "thaumcraft:directional_essentia_tube",
+      "required": false
+    },
+    {
       "id": "thaumcraft:earth_infused_stone",
       "required": false
     },
     {
       "id": "thaumcraft:entropy_infused_stone",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:essentia_buffer",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:essentia_crystallizer",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:essentia_reservoir",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:essentia_tube",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:essentia_valve",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:filtered_essentia_tube",
       "required": false
     },
     {
@@ -123,6 +155,10 @@
     },
     {
       "id": "thaumcraft:order_infused_stone",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:restricted_essentia_tube",
       "required": false
     },
     {
