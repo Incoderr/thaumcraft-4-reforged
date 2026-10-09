@@ -33,6 +33,10 @@ public final class ModRenderPipelines {
         .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
         .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
         .build();
+    public static final RenderPipeline GUI_ADDITIVE = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+        .withLocation(Thaumcraft.id("pipeline/gui_additive"))
+        .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+        .build();
 
     private ModRenderPipelines() {
     }

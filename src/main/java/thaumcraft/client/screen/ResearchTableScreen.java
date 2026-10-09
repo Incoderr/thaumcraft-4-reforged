@@ -24,6 +24,7 @@ import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.client.aspect.AspectRenderer;
 import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.client.platform.GuiBlit;
+import thaumcraft.client.platform.GuiLines;
 import thaumcraft.client.research.ResearchHud;
 import thaumcraft.client.research.ResearchNotifications;
 import thaumcraft.menu.ResearchTableMenu;
@@ -221,12 +222,8 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
 
     private void drawLine(GuiGraphicsExtractor graphics, double x, double y, double x2, double y2) {
         float alpha = Mth.clamp(0.3F + Mth.sin((float) (minecraft.player.tickCount + x)) * 0.3F + 0.3F, 0.0F, 1.0F);
-        double length = Math.sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y));
-        graphics.pose().pushMatrix();
-        graphics.pose().translate((float) x, (float) y);
-        graphics.pose().rotate((float) Math.atan2(y2 - y, x2 - x));
-        graphics.fill(0, -1, (int) Math.ceil(length), 2, ARGB.colorFromFloat(alpha, 0.0F, 0.6F, 0.8F));
-        graphics.pose().popMatrix();
+        int color = ARGB.colorFromFloat(alpha, 0.0F, 0.6F, 0.8F);
+        GuiLines.strip(graphics, new float[] {(float) x, (float) x2}, new float[] {(float) y, (float) y2}, new int[] {color, color}, true);
     }
 
     private void drawRune(GuiGraphicsExtractor graphics, double x, double y, int rune, float alpha) {

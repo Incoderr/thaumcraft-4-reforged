@@ -29,6 +29,7 @@ import thaumcraft.client.aspect.AspectRenderer;
 import thaumcraft.client.platform.BrowserDraw;
 import thaumcraft.client.platform.ClientNetwork;
 import thaumcraft.client.platform.GuiBlit;
+import thaumcraft.client.platform.GuiLines;
 import thaumcraft.network.PlayerCompletePayload;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.research.Knowledge;
@@ -550,11 +551,9 @@ public class ResearchBrowserScreen extends Screen {
         } else {
             stepY *= 2.0F;
         }
-        int viewLeft = left() + 16;
-        int viewTop = top() + 17;
-        float previousX = 0.0F;
-        float previousY = 0.0F;
-        int previousColor = 0;
+        float[] pointsX = new float[increments + 1];
+        float[] pointsY = new float[increments + 1];
+        int[] colors = new int[increments + 1];
         for (int index = 0; index <= increments; index++) {
             float r = red;
             float g = green;
@@ -571,31 +570,16 @@ public class ResearchBrowserScreen extends Screen {
                 b *= 1.0F - phase;
                 opacity *= phase;
             }
-            float pointX = x - stepX * index + offsetX;
-            float pointY = y - stepY * index + offsetY;
-            int color = ARGB.colorFromFloat(opacity, r, g, b);
-            if (index > 0) {
-                float deltaX = pointX - previousX;
-                float deltaY = pointY - previousY;
-                int segments = Math.max(1, (int) (Math.max(Math.abs(deltaX), Math.abs(deltaY)) / 2.0F));
-                for (int segment = 0; segment < segments; segment++) {
-                    float t = (float) segment / segments;
-                    int drawX = Math.round(previousX + deltaX * t);
-                    int drawY = Math.round(previousY + deltaY * t);
-                    if (drawX >= viewLeft - 2 && drawY >= viewTop - 2 && drawX < viewLeft + VIEW_WIDTH && drawY < viewTop + VIEW_HEIGHT) {
-                        graphics.fill(drawX, drawY, drawX + 2, drawY + 2, ARGB.srgbLerp(t, previousColor, color));
-                    }
-                }
-            }
-            previousX = pointX;
-            previousY = pointY;
-            previousColor = color;
+            pointsX[index] = x - stepX * index + offsetX;
+            pointsY[index] = y - stepY * index + offsetY;
+            colors[index] = ARGB.colorFromFloat(opacity, r, g, b);
             if (horizontal) {
                 stepX *= 1.0F - 1.0F / (increments * 3.0F / 2.0F);
             } else {
                 stepY *= 1.0F - 1.0F / (increments * 3.0F / 2.0F);
             }
         }
+        GuiLines.strip(graphics, pointsX, pointsY, colors, false);
     }
 
     private void drawForbidden(GuiGraphicsExtractor graphics, int x, int y) {
