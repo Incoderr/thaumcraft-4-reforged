@@ -26,7 +26,7 @@ public final class ThaumometerClient implements ScanClientHooks.Scanner {
     private static final int DURATION = 25;
     private static final int COMPLETE_AT = 5;
 
-    private record Hit(int kind, BlockPos pos, int entityId, ScanManager.Target target) {
+    public record Hit(int kind, BlockPos pos, int entityId, ScanManager.Target target) {
         boolean sameAs(@Nullable Hit other) {
             return other != null && kind == other.kind && pos.equals(other.pos) && entityId == other.entityId;
         }
@@ -80,10 +80,14 @@ public final class ThaumometerClient implements ScanClientHooks.Scanner {
     }
 
     private @Nullable Hit doScan(Level level, Player player) {
+        return fresh(player, lookAt(level, player));
+    }
+
+    public static @Nullable Hit lookAt(Level level, Player player) {
         Entity pointed = pointedEntity(level, player);
         if (pointed != null) {
             ScanManager.Target target = ScanManager.resolveEntity(pointed);
-            return fresh(player, new Hit(ScanManager.KIND_ENTITY, BlockPos.ZERO, pointed.getId(), target));
+            return new Hit(ScanManager.KIND_ENTITY, BlockPos.ZERO, pointed.getId(), target);
         }
         HitResult result = player.pick(player.blockInteractionRange(), 1.0F, true);
         if (result instanceof BlockHitResult blockHit && result.getType() == HitResult.Type.BLOCK) {
@@ -93,13 +97,13 @@ public final class ThaumometerClient implements ScanClientHooks.Scanner {
                 return null;
             }
             int kind = target.kind() == ScanKind.PHENOMENON ? ScanManager.KIND_NODE : ScanManager.KIND_BLOCK;
-            return fresh(player, new Hit(kind, pos, 0, target));
+            return new Hit(kind, pos, 0, target);
         }
         return null;
     }
 
-    private static @Nullable Hit fresh(Player player, Hit hit) {
-        if (hit.target() == null || ScanManager.hasBeenScanned(player, hit.target())) {
+    private static @Nullable Hit fresh(Player player, @Nullable Hit hit) {
+        if (hit == null || hit.target() == null || ScanManager.hasBeenScanned(player, hit.target())) {
             return null;
         }
         return hit;

@@ -19,6 +19,7 @@ public final class ItemRenderers {
         event.register(Thaumcraft.id("wand"), WandSpecialRenderer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("aura_node"), NodeItemRenderer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("node_jar"), NodeJarItemRenderer.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("thaumometer"), ThaumometerItemRenderer.Unbaked.MAP_CODEC);
     }
 
     @SubscribeEvent
