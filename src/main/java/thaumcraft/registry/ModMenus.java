@@ -6,13 +6,21 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.menu.AlchemicalFurnaceMenu;
+import thaumcraft.menu.ArcaneWorkbenchMenu;
+import thaumcraft.menu.DeconstructionTableMenu;
 import thaumcraft.menu.ResearchTableMenu;
+import thaumcraft.menu.ThaumatoriumMenu;
 import thaumcraft.platform.Menus;
 
 public final class ModMenus {
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Thaumcraft.MODID);
 
     public static final DeferredHolder<MenuType<?>, MenuType<ResearchTableMenu>> RESEARCH_TABLE = MENUS.register("research_table", () -> Menus.withPos(ResearchTableMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<AlchemicalFurnaceMenu>> ALCHEMICAL_FURNACE = MENUS.register("alchemical_furnace", () -> Menus.withPos(AlchemicalFurnaceMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<ThaumatoriumMenu>> THAUMATORIUM = MENUS.register("thaumatorium", () -> Menus.withPos(ThaumatoriumMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<ArcaneWorkbenchMenu>> ARCANE_WORKBENCH = MENUS.register("arcane_workbench", () -> Menus.withPos(ArcaneWorkbenchMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<DeconstructionTableMenu>> DECONSTRUCTION_TABLE = MENUS.register("deconstruction_table", () -> Menus.withPos(DeconstructionTableMenu::new));
 
     private ModMenus() {
     }

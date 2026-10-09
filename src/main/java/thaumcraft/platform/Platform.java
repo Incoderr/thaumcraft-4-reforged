@@ -11,5 +11,6 @@ public final class Platform {
         StackData.register(bus);
         DataAttachments.register(bus);
         BaublesSetup.register(bus);
+        Transfer.register(bus);
     }
 }

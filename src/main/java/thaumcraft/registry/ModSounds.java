@@ -28,6 +28,21 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> HHOFF = register("hhoff");
     public static final DeferredHolder<SoundEvent, SoundEvent> HHON = register("hhon");
     public static final DeferredHolder<SoundEvent, SoundEvent> KEY = register("key");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUBBLE = register("bubble");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SPILL = register("spill");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ALEMBICKNOCK = register("alembicknock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CREAK = register("creak");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SQUEEK = register("squeek");
+    public static final DeferredHolder<SoundEvent, SoundEvent> TOOL = register("tool");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PUMP = register("pump");
+    public static final DeferredHolder<SoundEvent, SoundEvent> INFUSER = register("infuser");
+    public static final DeferredHolder<SoundEvent, SoundEvent> INFUSERSTART = register("infuserstart");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAFTSTART = register("craftstart");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GORE = register("gore");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE = register("upgrade");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FIRELOOP = register("fireloop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ICE = register("ice");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JACOBS = register("jacobs");
 
     private ModSounds() {
     }

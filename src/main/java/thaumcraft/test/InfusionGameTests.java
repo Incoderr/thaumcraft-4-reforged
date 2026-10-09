@@ -1,0 +1,47 @@
+package thaumcraft.test;
+
+import java.util.function.Consumer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.FunctionGameTestInstance;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.TestData;
+import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import thaumcraft.Thaumcraft;
+
+@EventBusSubscriber(modid = Thaumcraft.MODID)
+public final class InfusionGameTests {
+    private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
+    private static final String[] TESTS = {};
+
+    private InfusionGameTests() {
+    }
+
+    public static void register(IEventBus bus) {
+        FUNCTIONS.register(bus);
+    }
+
+    @SubscribeEvent
+    static void registerTests(RegisterGameTestsEvent event) {
+        if (TESTS.length == 0) {
+            return;
+        }
+        Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(
+            Thaumcraft.id("infusion_default"),
+            new TestEnvironmentDefinition.AllOf()
+        );
+        for (String name : TESTS) {
+            ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
+            event.registerTest(
+                Thaumcraft.id(name),
+                new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), 200, 0, true))
+            );
+        }
+    }
+}

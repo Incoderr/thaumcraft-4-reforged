@@ -87,7 +87,7 @@
     {"old": "blockStoneDevice", "meta": 1, "lang": "tile.blockStoneDevice.1.name", "id": "arcane_pedestal", "state": {}, "skip": null},
     {"old": "blockStoneDevice", "meta": 2, "lang": "tile.blockStoneDevice.2.name", "id": "runic_matrix", "state": {}, "skip": null},
     {"old": "blockStoneDevice", "meta": 3, "lang": "tile.blockStoneDevice.3.name", "id": "infusion_pillar", "state": {}, "skip": null},
-    {"old": "blockStoneDevice", "meta": 4, "lang": "tile.blockStoneDevice.4.name", "id": "infusion_pillar_base", "state": {}, "skip": null},
+    {"old": "blockStoneDevice", "meta": 4, "lang": "tile.blockStoneDevice.4.name", "id": "infusion_pillar_top", "state": {}, "skip": null},
     {"old": "blockStoneDevice", "meta": 5, "lang": "tile.blockStoneDevice.5.name", "id": "wand_recharge_pedestal", "state": {}, "skip": null},
     {"old": "blockStoneDevice", "meta": 6, "lang": "tile.blockStoneDevice.6.name", "id": null, "state": {}, "skip": "meta never placed: lang leftover, infusion pillar parts are metas 3 and 4 (damageDropped redirects them to blockCosmeticSolid 7 and 6)"},
     {"old": "blockStoneDevice", "meta": 7, "lang": "tile.blockStoneDevice.7.name", "id": null, "state": {}, "skip": "meta never placed: lang leftover, infusion pillar parts are metas 3 and 4 (damageDropped redirects them to blockCosmeticSolid 7 and 6)"},

@@ -13,6 +13,7 @@ import thaumcraft.network.ModPayloads;
 import thaumcraft.platform.Platform;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.registry.ModCapabilities;
 import thaumcraft.registry.ModCreativeTabs;
 import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
@@ -22,7 +23,11 @@ import thaumcraft.registry.ModVillagers;
 import thaumcraft.research.ConfigResearch;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchNoteKeys;
+import thaumcraft.test.AlchemyGameTests;
+import thaumcraft.test.ArcaneGameTests;
+import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.HexGridGameTests;
+import thaumcraft.test.InfusionGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
 
@@ -46,11 +51,16 @@ public class Thaumcraft {
         ModFeatures.register(modEventBus);
         ModVillagers.register(modEventBus);
         ModMenus.register(modEventBus);
+        ModCapabilities.register();
         ModPayloads.register();
         ConfigRecipes.init();
         ConfigResearch.init();
         ThaumcraftGameTests.register(modEventBus);
         HexGridGameTests.register(modEventBus);
+        EssentiaGameTests.register(modEventBus);
+        AlchemyGameTests.register(modEventBus);
+        ArcaneGameTests.register(modEventBus);
+        InfusionGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {

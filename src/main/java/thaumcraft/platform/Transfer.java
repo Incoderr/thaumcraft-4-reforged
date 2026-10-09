@@ -1,21 +1,134 @@
 package thaumcraft.platform;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Container;
+import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import org.jspecify.annotations.Nullable;
 
 public final class Transfer {
+    private static final List<Exposure<?>> ITEMS = new ArrayList<>();
+    private static final List<Exposure<?>> FLUIDS = new ArrayList<>();
+
     private Transfer() {
+    }
+
+    private record Exposure<B extends BlockEntity>(Supplier<? extends BlockEntityType<B>> type, BiFunction<B, @Nullable Direction, @Nullable Object> provider) {
+    }
+
+    public static final class FluidTank {
+        private final Handler handler;
+
+        public FluidTank(int capacity, Predicate<FluidStack> filter, boolean extractable, Runnable onChanged) {
+            this.handler = new Handler(capacity, filter, extractable, onChanged);
+        }
+
+        public FluidStack getFluid() {
+            return handler.getResource(0).toStack(handler.getAmountAsInt(0));
+        }
+
+        public void setFluid(FluidStack stack) {
+            handler.set(0, FluidResource.of(stack), stack.getAmount());
+        }
+
+        public int getAmount() {
+            return handler.getAmountAsInt(0);
+        }
+
+        public int getCapacity() {
+            return handler.capacity();
+        }
+
+        private static final class Handler extends FluidStacksResourceHandler {
+            private final Predicate<FluidStack> filter;
+            private final boolean extractable;
+            private final Runnable onChanged;
+
+            private Handler(int capacity, Predicate<FluidStack> filter, boolean extractable, Runnable onChanged) {
+                super(1, capacity);
+                this.filter = filter;
+                this.extractable = extractable;
+                this.onChanged = onChanged;
+            }
+
+            private int capacity() {
+                return capacity;
+            }
+
+            @Override
+            public boolean isValid(int index, FluidResource resource) {
+                return filter.test(resource.toStack(1));
+            }
+
+            @Override
+            public int extract(int index, FluidResource resource, int amount, TransactionContext transaction) {
+                return extractable ? super.extract(index, resource, amount, transaction) : 0;
+            }
+
+            @Override
+            protected void onContentsChanged(int index, FluidStack previousContents) {
+                onChanged.run();
+            }
+        }
+    }
+
+    public static <B extends BlockEntity> void exposeItems(Supplier<? extends BlockEntityType<B>> type, BiFunction<B, @Nullable Direction, @Nullable Container> provider) {
+        ITEMS.add(new Exposure<>(type, provider::apply));
+    }
+
+    public static <B extends BlockEntity> void exposeFluids(Supplier<? extends BlockEntityType<B>> type, BiFunction<B, @Nullable Direction, @Nullable FluidTank> provider) {
+        FLUIDS.add(new Exposure<>(type, provider::apply));
+    }
+
+    public static void register(IEventBus bus) {
+        bus.addListener(Transfer::registerCapabilities);
+    }
+
+    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        for (Exposure<?> exposure : ITEMS) {
+            registerItems(event, exposure);
+        }
+        for (Exposure<?> exposure : FLUIDS) {
+            registerFluids(event, exposure);
+        }
+    }
+
+    private static <B extends BlockEntity> void registerItems(RegisterCapabilitiesEvent event, Exposure<B> exposure) {
+        event.registerBlockEntity(Capabilities.Item.BLOCK, exposure.type().get(), (entity, side) -> {
+            Object container = exposure.provider().apply(entity, side);
+            if (container instanceof WorldlyContainer worldly && side != null) {
+                return new WorldlyContainerWrapper(worldly, side);
+            }
+            return container instanceof Container plain ? VanillaContainerWrapper.of(plain) : null;
+        });
+    }
+
+    private static <B extends BlockEntity> void registerFluids(RegisterCapabilitiesEvent event, Exposure<B> exposure) {
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, exposure.type().get(), (entity, side) ->
+            exposure.provider().apply(entity, side) instanceof FluidTank tank ? tank.handler : null
+        );
     }
 
     private static @Nullable ResourceHandler<ItemResource> items(Level level, BlockPos pos, @Nullable Direction side) {

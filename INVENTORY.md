@@ -194,7 +194,7 @@
 | blockStoneDevice | 1 | Arcane Pedestal | arcane_pedestal |  |  |
 | blockStoneDevice | 2 | Runic Matrix | runic_matrix |  |  |
 | blockStoneDevice | 3 | Infusion Pillar | infusion_pillar |  |  |
-| blockStoneDevice | 4 | Infusion Pillar | infusion_pillar_base |  |  |
+| blockStoneDevice | 4 | Infusion Pillar | infusion_pillar_top |  |  |
 | blockStoneDevice | 5 | Wand Recharge Pedestal | wand_recharge_pedestal |  |  |
 | blockStoneDevice | 6 | Infusion Pillar |  |  | meta never placed: lang leftover, infusion pillar parts are metas 3 and 4 (damageDropped redirects them to blockCosmeticSolid 7 and 6) |
 | blockStoneDevice | 7 | Infusion Pillar |  |  | meta never placed: lang leftover, infusion pillar parts are metas 3 and 4 (damageDropped redirects them to blockCosmeticSolid 7 and 6) |

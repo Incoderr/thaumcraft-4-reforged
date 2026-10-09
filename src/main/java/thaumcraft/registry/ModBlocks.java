@@ -3,9 +3,9 @@ package thaumcraft.registry;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
-import net.minecraft.world.item.Item;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SlabBlock;
@@ -20,9 +20,22 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.alchemy.AdvancedAlchemicalFurnaceBlock;
+import thaumcraft.alchemy.AlchemicalFurnaceBlock;
+import thaumcraft.alchemy.AlembicBlock;
+import thaumcraft.alchemy.BellowsBlock;
+import thaumcraft.alchemy.CrucibleBlock;
+import thaumcraft.alchemy.FluxGasBlock;
+import thaumcraft.alchemy.FluxGooBlock;
+import thaumcraft.alchemy.FluxScrubberBlock;
+import thaumcraft.alchemy.MnemonicMatrixBlock;
+import thaumcraft.alchemy.ThaumatoriumBlock;
+import thaumcraft.arcane.ArcaneWorkbenchBlock;
+import thaumcraft.arcane.DeconstructionTableBlock;
+import thaumcraft.arcane.VisChargeRelayBlock;
 import thaumcraft.block.AmberBlock;
-import thaumcraft.block.ChargedObsidianTotemBlock;
 import thaumcraft.block.CandleBlock;
+import thaumcraft.block.ChargedObsidianTotemBlock;
 import thaumcraft.block.CustomPlantBlock;
 import thaumcraft.block.FlammableBlock;
 import thaumcraft.block.GolemFetterBlock;
@@ -34,14 +47,24 @@ import thaumcraft.block.MagicalSaplingBlock;
 import thaumcraft.block.ManaPodBlock;
 import thaumcraft.block.NodeJarBlock;
 import thaumcraft.block.ObsidianTotemBlock;
+import thaumcraft.block.RechargeFocusBlock;
 import thaumcraft.block.ResearchTableBlock;
 import thaumcraft.block.ResearchTablePartBlock;
-import thaumcraft.block.TableBlock;
-import thaumcraft.block.RechargeFocusBlock;
 import thaumcraft.block.SilverwoodKnotBlock;
+import thaumcraft.block.TableBlock;
 import thaumcraft.block.TravelPavingStoneBlock;
 import thaumcraft.block.WandPedestalBlock;
 import thaumcraft.block.WardingPavingStoneBlock;
+import thaumcraft.essentia.CentrifugeBlock;
+import thaumcraft.essentia.EssentiaBufferBlock;
+import thaumcraft.essentia.EssentiaCrystallizerBlock;
+import thaumcraft.essentia.EssentiaReservoirBlock;
+import thaumcraft.essentia.FilledJarItem;
+import thaumcraft.essentia.JarBlock;
+import thaumcraft.essentia.TubeBlock;
+import thaumcraft.infusion.InfusionMatrixBlock;
+import thaumcraft.infusion.InfusionPillarBlock;
+import thaumcraft.infusion.PedestalBlock;
 import thaumcraft.item.ManaBeanItem;
 import thaumcraft.item.NodeJarItem;
 import thaumcraft.node.AuraNodeBlock;
@@ -330,6 +353,148 @@ public final class ModBlocks {
     public static final DeferredBlock<ResearchTableBlock> RESEARCH_TABLE = BLOCKS.registerBlock("research_table", ResearchTableBlock::new, ModBlocks::tableProperties);
     public static final DeferredBlock<ResearchTablePartBlock> RESEARCH_TABLE_PART = BLOCKS.registerBlock("research_table_part", ResearchTablePartBlock::new, ModBlocks::tableProperties);
 
+    public static final DeferredBlock<JarBlock> WARDED_JAR = withItem(BLOCKS.registerBlock("warded_jar", properties -> new JarBlock(false, properties), ModBlocks::jar));
+    public static final DeferredBlock<JarBlock> VOID_JAR = withItem(BLOCKS.registerBlock("void_jar", properties -> new JarBlock(true, properties), ModBlocks::jar));
+    public static final DeferredItem<FilledJarItem> FILLED_JAR = ModItems.ITEMS.registerItem(
+        "filled_jar",
+        properties -> new FilledJarItem(WARDED_JAR.get(), properties),
+        properties -> properties.stacksTo(1)
+    );
+    public static final DeferredItem<FilledJarItem> FILLED_VOID_JAR = ModItems.ITEMS.registerItem(
+        "filled_void_jar",
+        properties -> new FilledJarItem(VOID_JAR.get(), properties),
+        properties -> properties.stacksTo(1)
+    );
+    public static final DeferredBlock<TubeBlock> ESSENTIA_TUBE = tube("essentia_tube", TubeBlock.Kind.TUBE);
+    public static final DeferredBlock<TubeBlock> ESSENTIA_VALVE = tube("essentia_valve", TubeBlock.Kind.VALVE);
+    public static final DeferredBlock<TubeBlock> FILTERED_ESSENTIA_TUBE = tube("filtered_essentia_tube", TubeBlock.Kind.FILTER);
+    public static final DeferredBlock<TubeBlock> RESTRICTED_ESSENTIA_TUBE = tube("restricted_essentia_tube", TubeBlock.Kind.RESTRICT);
+    public static final DeferredBlock<TubeBlock> DIRECTIONAL_ESSENTIA_TUBE = tube("directional_essentia_tube", TubeBlock.Kind.ONEWAY);
+    public static final DeferredBlock<EssentiaBufferBlock> ESSENTIA_BUFFER = withItem(BLOCKS.registerBlock("essentia_buffer", EssentiaBufferBlock::new, ModBlocks::tubeProperties));
+    public static final DeferredBlock<CentrifugeBlock> ALCHEMICAL_CENTRIFUGE = withItem(BLOCKS.registerBlock("alchemical_centrifuge", CentrifugeBlock::new, ModBlocks::tubeProperties));
+    public static final DeferredBlock<EssentiaCrystallizerBlock> ESSENTIA_CRYSTALLIZER = withItem(BLOCKS.registerBlock(
+        "essentia_crystallizer",
+        EssentiaCrystallizerBlock::new,
+        ModBlocks::tubeProperties
+    ));
+    public static final DeferredBlock<EssentiaReservoirBlock> ESSENTIA_RESERVOIR = withItem(BLOCKS.registerBlock(
+        "essentia_reservoir",
+        EssentiaReservoirBlock::new,
+        properties -> metal(properties, 2.0F, 17.0F).noOcclusion()
+    ));
+
+    public static final DeferredBlock<CrucibleBlock> CRUCIBLE = withItem(BLOCKS.registerBlock("crucible", CrucibleBlock::new, ModBlocks::metalDevice));
+    public static final DeferredBlock<AlembicBlock> ALEMBIC = withItem(BLOCKS.registerBlock("alembic", AlembicBlock::new, ModBlocks::metalDevice));
+    public static final DeferredBlock<Block> ALCHEMICAL_CONSTRUCT = withItem(BLOCKS.registerSimpleBlock(
+        "alchemical_construct",
+        properties -> metal(properties, 3.0F, 17.0F)
+    ));
+    public static final DeferredBlock<Block> ADVANCED_ALCHEMICAL_CONSTRUCT = withItem(BLOCKS.registerSimpleBlock(
+        "advanced_alchemical_construct",
+        properties -> metal(properties, 3.0F, 17.0F).lightLevel(state -> 11)
+    ));
+    public static final DeferredBlock<ThaumatoriumBlock> THAUMATORIUM = BLOCKS.registerBlock(
+        "thaumatorium",
+        properties -> new ThaumatoriumBlock(false, properties),
+        ModBlocks::metalDevice
+    );
+    public static final DeferredBlock<ThaumatoriumBlock> THAUMATORIUM_TOP = BLOCKS.registerBlock(
+        "thaumatorium_top",
+        properties -> new ThaumatoriumBlock(true, properties),
+        ModBlocks::metalDevice
+    );
+    public static final DeferredBlock<MnemonicMatrixBlock> MNEMONIC_MATRIX = withItem(BLOCKS.registerBlock(
+        "mnemonic_matrix",
+        MnemonicMatrixBlock::new,
+        ModBlocks::metalDevice
+    ));
+    public static final DeferredBlock<AlchemicalFurnaceBlock> ALCHEMICAL_FURNACE = withItem(BLOCKS.registerBlock(
+        "alchemical_furnace",
+        AlchemicalFurnaceBlock::new,
+        properties -> rock(properties, 3.0F, 25.0F).lightLevel(AlchemicalFurnaceBlock::lightLevel)
+    ));
+    public static final DeferredBlock<AdvancedAlchemicalFurnaceBlock> ADVANCED_ALCHEMICAL_FURNACE = BLOCKS.registerBlock(
+        "advanced_alchemical_furnace",
+        AdvancedAlchemicalFurnaceBlock::new,
+        properties -> metalDevice(properties).lightLevel(AdvancedAlchemicalFurnaceBlock::lightLevel)
+    );
+    public static final DeferredBlock<FluxGasBlock> FLUX_GAS = withItem(BLOCKS.registerBlock(
+        "flux_gas",
+        FluxGasBlock::new,
+        properties -> properties
+            .mapColor(MapColor.COLOR_PURPLE)
+            .replaceable()
+            .noCollision()
+            .noOcclusion()
+            .strength(100.0F)
+            .noLootTable()
+            .randomTicks()
+            .pushReaction(PushReaction.POPPED)
+            .isSuffocating((state, level, pos) -> false)
+            .isViewBlocking((state, level, pos, box) -> false)
+    ));
+    public static final DeferredBlock<FluxGooBlock> FLUX_GOO = withItem(BLOCKS.registerBlock(
+        "flux_goo",
+        FluxGooBlock::new,
+        properties -> properties
+            .mapColor(MapColor.COLOR_PURPLE)
+            .replaceable()
+            .noCollision()
+            .noOcclusion()
+            .strength(100.0F)
+            .noLootTable()
+            .randomTicks()
+            .sound(SoundType.SLIME_BLOCK)
+            .pushReaction(PushReaction.POPPED)
+    ));
+    public static final DeferredBlock<FluxScrubberBlock> FLUX_SCRUBBER = withItem(BLOCKS.registerBlock(
+        "flux_scrubber",
+        FluxScrubberBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<BellowsBlock> ARCANE_BELLOWS = withItem(BLOCKS.registerBlock(
+        "arcane_bellows",
+        BellowsBlock::new,
+        properties -> wood(properties, 2.5F, 10.0F).noOcclusion()
+    ));
+
+    public static final DeferredBlock<ArcaneWorkbenchBlock> ARCANE_WORKTABLE = withItem(BLOCKS.registerBlock(
+        "arcane_worktable",
+        ArcaneWorkbenchBlock::new,
+        ModBlocks::tableProperties
+    ));
+    public static final DeferredBlock<DeconstructionTableBlock> DECONSTRUCTION_TABLE = withItem(BLOCKS.registerBlock(
+        "deconstruction_table",
+        DeconstructionTableBlock::new,
+        ModBlocks::tableProperties
+    ));
+    public static final DeferredBlock<VisChargeRelayBlock> VIS_CHARGE_RELAY = withItem(BLOCKS.registerBlock(
+        "vis_charge_relay",
+        VisChargeRelayBlock::new,
+        ModBlocks::metalDevice
+    ));
+
+    public static final DeferredBlock<InfusionMatrixBlock> RUNIC_MATRIX = withItem(BLOCKS.registerBlock(
+        "runic_matrix",
+        InfusionMatrixBlock::new,
+        properties -> stoneDevice(properties).lightLevel(state -> 10)
+    ));
+    public static final DeferredBlock<PedestalBlock> ARCANE_PEDESTAL = withItem(BLOCKS.registerBlock(
+        "arcane_pedestal",
+        PedestalBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<InfusionPillarBlock> INFUSION_PILLAR = BLOCKS.registerBlock(
+        "infusion_pillar",
+        properties -> new InfusionPillarBlock(false, properties),
+        properties -> stoneDevice(properties)
+    );
+    public static final DeferredBlock<InfusionPillarBlock> INFUSION_PILLAR_TOP = BLOCKS.registerBlock(
+        "infusion_pillar_top",
+        properties -> new InfusionPillarBlock(true, properties),
+        properties -> stoneDevice(properties)
+    );
+
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
     private ModBlocks() {
@@ -352,6 +517,26 @@ public final class ModBlocks {
             )));
         }
         return candles;
+    }
+
+    private static DeferredBlock<TubeBlock> tube(String name, TubeBlock.Kind kind) {
+        return withItem(BLOCKS.registerBlock(name, properties -> new TubeBlock(kind, properties), ModBlocks::tubeProperties));
+    }
+
+    private static BlockBehaviour.Properties metal(BlockBehaviour.Properties properties, float hardness, float resistance) {
+        return properties.mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(hardness, resistance).sound(SoundType.METAL);
+    }
+
+    private static BlockBehaviour.Properties metalDevice(BlockBehaviour.Properties properties) {
+        return metal(properties, 3.0F, 17.0F).noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties tubeProperties(BlockBehaviour.Properties properties) {
+        return metal(properties, 0.5F, 5.0F).noOcclusion();
+    }
+
+    private static BlockBehaviour.Properties jar(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.NONE).strength(0.3F).sound(SoundType.GLASS).noOcclusion().lightLevel(state -> 9);
     }
 
     private static BlockBehaviour.Properties tableProperties(BlockBehaviour.Properties properties) {

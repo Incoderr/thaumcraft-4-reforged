@@ -18,6 +18,9 @@ public final class ModPayloads {
         ModNetwork.toClient(AspectPoolPayload.TYPE, AspectPoolPayload.STREAM_CODEC);
         ModNetwork.toClient(AspectDiscoveryPayload.TYPE, AspectDiscoveryPayload.STREAM_CODEC);
         ModNetwork.toClient(WarpMessagePayload.TYPE, WarpMessagePayload.STREAM_CODEC);
+        ModNetwork.toClient(EssentiaSourceFxPayload.TYPE, EssentiaSourceFxPayload.STREAM_CODEC);
+        ModNetwork.toClient(InfusionSourceFxPayload.TYPE, InfusionSourceFxPayload.STREAM_CODEC);
+        ModNetwork.toClient(BlockSparkleFxPayload.TYPE, BlockSparkleFxPayload.STREAM_CODEC);
         ModNetwork.toServer(ScanPayload.TYPE, ScanPayload.STREAM_CODEC, ScanManager::handleScan);
         ModNetwork.toServer(PlayerCompletePayload.TYPE, PlayerCompletePayload.STREAM_CODEC, ResearchManager::handlePlayerComplete);
         ModNetwork.toServer(AspectPlacePayload.TYPE, AspectPlacePayload.STREAM_CODEC, ResearchTableBlockEntity::handlePlace);

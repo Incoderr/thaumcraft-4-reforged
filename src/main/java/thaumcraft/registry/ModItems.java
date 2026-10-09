@@ -8,6 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.essentia.PhialItem;
 import thaumcraft.item.AspectContainerItem;
 import thaumcraft.item.CrystalEssenceItem;
 import thaumcraft.item.GogglesItem;
@@ -81,8 +82,8 @@ public final class ModItems {
         properties -> Registration.food(properties, 4, 0.2F, false, 1.6F, new MobEffectInstance(MobEffects.HUNGER, 600, 0), 0.8F)
     );
 
-    public static final DeferredItem<Item> GLASS_PHIAL = ITEMS.registerSimpleItem("glass_phial");
-    public static final DeferredItem<Item> ESSENTIA_PHIAL = ITEMS.registerItem("essentia_phial", properties -> new AspectContainerItem(properties, " x ", true));
+    public static final DeferredItem<Item> GLASS_PHIAL = ITEMS.registerItem("glass_phial", properties -> new PhialItem(false, properties));
+    public static final DeferredItem<Item> ESSENTIA_PHIAL = ITEMS.registerItem("essentia_phial", properties -> new PhialItem(true, properties));
     public static final DeferredItem<Item> WISP_ESSENCE = ITEMS.registerItem("wisp_essence", properties -> new AspectContainerItem(properties, " x", true));
     public static final DeferredItem<Item> CRYSTALLIZED_ESSENCE = ITEMS.registerItem("crystallized_essence", CrystalEssenceItem::new);
 

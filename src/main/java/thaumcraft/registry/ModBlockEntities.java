@@ -6,11 +6,38 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.alchemy.AdvancedAlchemicalFurnaceBlockEntity;
+import thaumcraft.alchemy.AdvancedAlchemicalFurnaceNozzleBlockEntity;
+import thaumcraft.alchemy.AlchemicalFurnaceBlockEntity;
+import thaumcraft.alchemy.AlembicBlockEntity;
+import thaumcraft.alchemy.BellowsBlockEntity;
+import thaumcraft.alchemy.CrucibleBlockEntity;
+import thaumcraft.alchemy.FluxScrubberBlockEntity;
+import thaumcraft.alchemy.MnemonicMatrixBlockEntity;
+import thaumcraft.alchemy.ThaumatoriumBlockEntity;
+import thaumcraft.alchemy.ThaumatoriumTopBlockEntity;
+import thaumcraft.arcane.ArcaneWorkbenchBlockEntity;
+import thaumcraft.arcane.DeconstructionTableBlockEntity;
+import thaumcraft.arcane.VisChargeRelayBlockEntity;
 import thaumcraft.blockentity.ManaPodBlockEntity;
-import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.NodeJarBlockEntity;
+import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.WandPedestalBlockEntity;
 import thaumcraft.blockentity.WardingStoneBlockEntity;
+import thaumcraft.essentia.CentrifugeBlockEntity;
+import thaumcraft.essentia.EssentiaBufferBlockEntity;
+import thaumcraft.essentia.EssentiaCrystallizerBlockEntity;
+import thaumcraft.essentia.EssentiaReservoirBlockEntity;
+import thaumcraft.essentia.FilterTubeBlockEntity;
+import thaumcraft.essentia.JarBlockEntity;
+import thaumcraft.essentia.OnewayTubeBlockEntity;
+import thaumcraft.essentia.RestrictTubeBlockEntity;
+import thaumcraft.essentia.TubeBlockEntity;
+import thaumcraft.essentia.ValveTubeBlockEntity;
+import thaumcraft.essentia.VoidJarBlockEntity;
+import thaumcraft.infusion.InfusionMatrixBlockEntity;
+import thaumcraft.infusion.InfusionPillarBlockEntity;
+import thaumcraft.infusion.PedestalBlockEntity;
 import thaumcraft.node.EnergizedNodeBlockEntity;
 import thaumcraft.node.NodeBlockEntity;
 import thaumcraft.node.NodeStabilizerBlockEntity;
@@ -59,6 +86,115 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<ResearchTableBlockEntity>> RESEARCH_TABLE = BLOCK_ENTITIES.register(
         "research_table",
         () -> new BlockEntityType<>(ResearchTableBlockEntity::new, ModBlocks.RESEARCH_TABLE.get())
+    );
+
+    public static final Supplier<BlockEntityType<JarBlockEntity>> JAR = BLOCK_ENTITIES.register(
+        "jar",
+        () -> new BlockEntityType<>(JarBlockEntity::new, ModBlocks.WARDED_JAR.get())
+    );
+    public static final Supplier<BlockEntityType<VoidJarBlockEntity>> VOID_JAR = BLOCK_ENTITIES.register(
+        "void_jar",
+        () -> new BlockEntityType<>(VoidJarBlockEntity::new, ModBlocks.VOID_JAR.get())
+    );
+    public static final Supplier<BlockEntityType<TubeBlockEntity>> TUBE = BLOCK_ENTITIES.register(
+        "essentia_tube",
+        () -> new BlockEntityType<>(TubeBlockEntity::new, ModBlocks.ESSENTIA_TUBE.get())
+    );
+    public static final Supplier<BlockEntityType<ValveTubeBlockEntity>> VALVE_TUBE = BLOCK_ENTITIES.register(
+        "essentia_valve",
+        () -> new BlockEntityType<>(ValveTubeBlockEntity::new, ModBlocks.ESSENTIA_VALVE.get())
+    );
+    public static final Supplier<BlockEntityType<FilterTubeBlockEntity>> FILTER_TUBE = BLOCK_ENTITIES.register(
+        "filtered_essentia_tube",
+        () -> new BlockEntityType<>(FilterTubeBlockEntity::new, ModBlocks.FILTERED_ESSENTIA_TUBE.get())
+    );
+    public static final Supplier<BlockEntityType<RestrictTubeBlockEntity>> RESTRICT_TUBE = BLOCK_ENTITIES.register(
+        "restricted_essentia_tube",
+        () -> new BlockEntityType<>(RestrictTubeBlockEntity::new, ModBlocks.RESTRICTED_ESSENTIA_TUBE.get())
+    );
+    public static final Supplier<BlockEntityType<OnewayTubeBlockEntity>> ONEWAY_TUBE = BLOCK_ENTITIES.register(
+        "directional_essentia_tube",
+        () -> new BlockEntityType<>(OnewayTubeBlockEntity::new, ModBlocks.DIRECTIONAL_ESSENTIA_TUBE.get())
+    );
+    public static final Supplier<BlockEntityType<EssentiaBufferBlockEntity>> ESSENTIA_BUFFER = BLOCK_ENTITIES.register(
+        "essentia_buffer",
+        () -> new BlockEntityType<>(EssentiaBufferBlockEntity::new, ModBlocks.ESSENTIA_BUFFER.get())
+    );
+    public static final Supplier<BlockEntityType<CentrifugeBlockEntity>> CENTRIFUGE = BLOCK_ENTITIES.register(
+        "alchemical_centrifuge",
+        () -> new BlockEntityType<>(CentrifugeBlockEntity::new, ModBlocks.ALCHEMICAL_CENTRIFUGE.get())
+    );
+    public static final Supplier<BlockEntityType<EssentiaCrystallizerBlockEntity>> ESSENTIA_CRYSTALLIZER = BLOCK_ENTITIES.register(
+        "essentia_crystallizer",
+        () -> new BlockEntityType<>(EssentiaCrystallizerBlockEntity::new, ModBlocks.ESSENTIA_CRYSTALLIZER.get())
+    );
+    public static final Supplier<BlockEntityType<EssentiaReservoirBlockEntity>> ESSENTIA_RESERVOIR = BLOCK_ENTITIES.register(
+        "essentia_reservoir",
+        () -> new BlockEntityType<>(EssentiaReservoirBlockEntity::new, ModBlocks.ESSENTIA_RESERVOIR.get())
+    );
+    public static final Supplier<BlockEntityType<CrucibleBlockEntity>> CRUCIBLE = BLOCK_ENTITIES.register(
+        "crucible",
+        () -> new BlockEntityType<>(CrucibleBlockEntity::new, ModBlocks.CRUCIBLE.get())
+    );
+    public static final Supplier<BlockEntityType<AlembicBlockEntity>> ALEMBIC = BLOCK_ENTITIES.register(
+        "alembic",
+        () -> new BlockEntityType<>(AlembicBlockEntity::new, ModBlocks.ALEMBIC.get())
+    );
+    public static final Supplier<BlockEntityType<AlchemicalFurnaceBlockEntity>> ALCHEMICAL_FURNACE = BLOCK_ENTITIES.register(
+        "alchemical_furnace",
+        () -> new BlockEntityType<>(AlchemicalFurnaceBlockEntity::new, ModBlocks.ALCHEMICAL_FURNACE.get())
+    );
+    public static final Supplier<BlockEntityType<AdvancedAlchemicalFurnaceBlockEntity>> ADVANCED_ALCHEMICAL_FURNACE = BLOCK_ENTITIES.register(
+        "advanced_alchemical_furnace",
+        () -> new BlockEntityType<>(AdvancedAlchemicalFurnaceBlockEntity::new, ModBlocks.ADVANCED_ALCHEMICAL_FURNACE.get())
+    );
+    public static final Supplier<BlockEntityType<AdvancedAlchemicalFurnaceNozzleBlockEntity>> ADVANCED_ALCHEMICAL_FURNACE_NOZZLE = BLOCK_ENTITIES.register(
+        "advanced_alchemical_furnace_nozzle",
+        () -> new BlockEntityType<>(AdvancedAlchemicalFurnaceNozzleBlockEntity::new, ModBlocks.ADVANCED_ALCHEMICAL_FURNACE.get())
+    );
+    public static final Supplier<BlockEntityType<ThaumatoriumBlockEntity>> THAUMATORIUM = BLOCK_ENTITIES.register(
+        "thaumatorium",
+        () -> new BlockEntityType<>(ThaumatoriumBlockEntity::new, ModBlocks.THAUMATORIUM.get())
+    );
+    public static final Supplier<BlockEntityType<ThaumatoriumTopBlockEntity>> THAUMATORIUM_TOP = BLOCK_ENTITIES.register(
+        "thaumatorium_top",
+        () -> new BlockEntityType<>(ThaumatoriumTopBlockEntity::new, ModBlocks.THAUMATORIUM_TOP.get())
+    );
+    public static final Supplier<BlockEntityType<MnemonicMatrixBlockEntity>> MNEMONIC_MATRIX = BLOCK_ENTITIES.register(
+        "mnemonic_matrix",
+        () -> new BlockEntityType<>(MnemonicMatrixBlockEntity::new, ModBlocks.MNEMONIC_MATRIX.get())
+    );
+    public static final Supplier<BlockEntityType<FluxScrubberBlockEntity>> FLUX_SCRUBBER = BLOCK_ENTITIES.register(
+        "flux_scrubber",
+        () -> new BlockEntityType<>(FluxScrubberBlockEntity::new, ModBlocks.FLUX_SCRUBBER.get())
+    );
+    public static final Supplier<BlockEntityType<BellowsBlockEntity>> BELLOWS = BLOCK_ENTITIES.register(
+        "arcane_bellows",
+        () -> new BlockEntityType<>(BellowsBlockEntity::new, ModBlocks.ARCANE_BELLOWS.get())
+    );
+    public static final Supplier<BlockEntityType<ArcaneWorkbenchBlockEntity>> ARCANE_WORKBENCH = BLOCK_ENTITIES.register(
+        "arcane_workbench",
+        () -> new BlockEntityType<>(ArcaneWorkbenchBlockEntity::new, ModBlocks.ARCANE_WORKTABLE.get())
+    );
+    public static final Supplier<BlockEntityType<VisChargeRelayBlockEntity>> VIS_CHARGE_RELAY = BLOCK_ENTITIES.register(
+        "vis_charge_relay",
+        () -> new BlockEntityType<>(VisChargeRelayBlockEntity::new, ModBlocks.VIS_CHARGE_RELAY.get())
+    );
+    public static final Supplier<BlockEntityType<DeconstructionTableBlockEntity>> DECONSTRUCTION_TABLE = BLOCK_ENTITIES.register(
+        "deconstruction_table",
+        () -> new BlockEntityType<>(DeconstructionTableBlockEntity::new, ModBlocks.DECONSTRUCTION_TABLE.get())
+    );
+    public static final Supplier<BlockEntityType<InfusionMatrixBlockEntity>> INFUSION_MATRIX = BLOCK_ENTITIES.register(
+        "infusion_matrix",
+        () -> new BlockEntityType<>(InfusionMatrixBlockEntity::new, ModBlocks.RUNIC_MATRIX.get())
+    );
+    public static final Supplier<BlockEntityType<PedestalBlockEntity>> PEDESTAL = BLOCK_ENTITIES.register(
+        "arcane_pedestal",
+        () -> new BlockEntityType<>(PedestalBlockEntity::new, ModBlocks.ARCANE_PEDESTAL.get())
+    );
+    public static final Supplier<BlockEntityType<InfusionPillarBlockEntity>> INFUSION_PILLAR = BLOCK_ENTITIES.register(
+        "infusion_pillar",
+        () -> new BlockEntityType<>(InfusionPillarBlockEntity::new, ModBlocks.INFUSION_PILLAR.get())
     );
 
     private ModBlockEntities() {
