@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import thaumcraft.block.PlantSoil;
+import thaumcraft.node.NodeGenerator;
 import thaumcraft.registry.ModBlocks;
 
 public class SilverwoodTreeGenerator {
@@ -21,8 +22,10 @@ public class SilverwoodTreeGenerator {
         void place(LevelAccessor level, BlockPos pos, Random random);
     }
 
-    private static KnotPlacer knotPlacer = (level, pos, random) ->
-        level.setBlock(pos, ModBlocks.SILVERWOOD_LOG.get().defaultBlockState(), Block.UPDATE_ALL);
+    private static KnotPlacer knotPlacer = (level, pos, random) -> {
+        level.setBlock(pos, ModBlocks.SILVERWOOD_KNOT.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+        NodeGenerator.createRandomNodeAt(level, pos, random, true, false, false);
+    };
 
     private final boolean notify;
     private final int minTreeHeight;

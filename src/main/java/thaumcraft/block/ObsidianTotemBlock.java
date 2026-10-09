@@ -58,7 +58,7 @@ public class ObsidianTotemBlock extends Block {
         return direction.getAxis() == Direction.Axis.Y ? shapeFor(level, pos) : state;
     }
 
-    private BlockState shapeFor(LevelReader level, BlockPos pos) {
+    public BlockState shapeFor(LevelReader level, BlockPos pos) {
         Part part;
         if (level.getBlockState(pos.above()).is(this)) {
             part = Part.SHADED;
