@@ -1,5 +1,6 @@
 package thaumcraft.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -380,7 +381,7 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && handleClick(event)) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && handleClick(event)) {
             return true;
         }
         return super.mouseClicked(event, doubleClick);
@@ -468,7 +469,7 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0 && draggedAspect != null) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && draggedAspect != null) {
             handleDrop(event.x(), event.y());
             draggedAspect = null;
         }

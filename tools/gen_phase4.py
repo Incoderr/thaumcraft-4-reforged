@@ -36,6 +36,30 @@ def special_item(ctx, name, model, base=None):
     })
 
 
+LEGACY_VIEWS = [
+    ("inventory", ["gui"]),
+    ("equipped", ["thirdperson_lefthand", "thirdperson_righthand"]),
+    ("first_person", ["firstperson_lefthand", "firstperson_righthand"]),
+]
+
+
+def legacy_special_item(ctx, name, model, particle):
+    ctx.item_model(name, {"gui_light": "side", "textures": {"particle": ctx.ref(particle, "item")}})
+    base = ctx.ref(name, "item")
+
+    def special(view):
+        return {"type": "minecraft:special", "base": base, "model": {**model, "view": view}}
+
+    ctx.write(ctx.ASSETS / "items" / f"{name}.json", {
+        "model": {
+            "type": "minecraft:select",
+            "property": "minecraft:display_context",
+            "cases": [{"when": contexts, "model": special(view)} for view, contexts in LEGACY_VIEWS],
+            "fallback": special("entity"),
+        },
+    })
+
+
 def item_base_from_block(ctx, name):
     ctx.item_model(name, {"parent": ctx.ref(name)})
 

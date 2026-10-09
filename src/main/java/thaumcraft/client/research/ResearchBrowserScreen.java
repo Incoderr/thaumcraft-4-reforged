@@ -1,5 +1,6 @@
 package thaumcraft.client.research;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -606,7 +607,7 @@ public class ResearchBrowserScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() != 0) {
+        if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) {
             return super.mouseClicked(event, doubleClick);
         }
         double mouseX = event.x();
@@ -658,7 +659,7 @@ public class ResearchBrowserScreen extends Screen {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        if (event.button() == 0 && dragging) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && dragging) {
             int viewX = left() + 8;
             int viewY = top() + 17;
             if (event.x() >= viewX && event.x() < viewX + VIEW_WIDTH && event.y() >= viewY && event.y() < viewY + VIEW_HEIGHT) {
@@ -688,7 +689,7 @@ public class ResearchBrowserScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             dragging = false;
         }
         return super.mouseReleased(event);
