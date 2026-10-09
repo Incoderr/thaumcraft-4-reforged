@@ -22,6 +22,7 @@ import thaumcraft.registry.ModVillagers;
 import thaumcraft.research.ConfigResearch;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchNoteKeys;
+import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
 
@@ -49,6 +50,7 @@ public class Thaumcraft {
         ConfigRecipes.init();
         ConfigResearch.init();
         ThaumcraftGameTests.register(modEventBus);
+        HexGridGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
