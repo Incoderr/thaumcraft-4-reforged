@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "thaumcraft:item/node_stabilizer",
+    "model": {
+      "type": "thaumcraft:node_stabilizer",
+      "advanced": false
+    }
+  }
+}
