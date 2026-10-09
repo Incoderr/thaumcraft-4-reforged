@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -49,6 +50,12 @@ import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.network.BeamPulsePayload;
 import thaumcraft.platform.ModNetwork;
+import thaumcraft.research.Knowledge;
+import thaumcraft.research.ResearchCategories;
+import thaumcraft.research.ResearchItem;
+import thaumcraft.research.ResearchManager;
+import thaumcraft.research.Warp;
+import thaumcraft.research.WarpType;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftCommand {
@@ -97,6 +104,67 @@ public final class ThaumcraftCommand {
                         .then(
                             Commands.literal("entity")
                                 .then(Commands.argument("target", EntityArgument.entity()).executes(ThaumcraftCommand::aspectsEntity))
+                        )
+                )
+                .then(
+                    Commands.literal("research")
+                        .then(Commands.literal("list").executes(ThaumcraftCommand::researchList))
+                        .then(
+                            Commands.argument("targets", EntityArgument.players())
+                                .then(Commands.literal("list").executes(ThaumcraftCommand::researchList))
+                                .then(Commands.literal("all").executes(ThaumcraftCommand::researchAll))
+                                .then(Commands.literal("reset").executes(ThaumcraftCommand::researchReset))
+                                .then(
+                                    Commands.argument("key", StringArgumentType.word())
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                                            ResearchCategories.allResearch().stream().map(ResearchItem::key),
+                                            builder
+                                        ))
+                                        .executes(ThaumcraftCommand::researchGive)
+                                )
+                        )
+                )
+                .then(
+                    Commands.literal("aspect")
+                        .then(
+                            Commands.argument("targets", EntityArgument.players())
+                                .then(
+                                    Commands.argument("aspect", StringArgumentType.word())
+                                        .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                                            Stream.concat(Stream.of("all"), Stream.of(Aspect.values()).map(Aspect::getTag)),
+                                            builder
+                                        ))
+                                        .then(
+                                            Commands.argument("amount", IntegerArgumentType.integer(1))
+                                                .executes(ThaumcraftCommand::aspectGive)
+                                        )
+                                )
+                        )
+                )
+                .then(
+                    Commands.literal("warp")
+                        .then(
+                            Commands.argument("targets", EntityArgument.players())
+                                .then(
+                                    Commands.literal("set")
+                                        .then(
+                                            Commands.argument("amount", IntegerArgumentType.integer(0))
+                                                .executes(context -> warpSet(context, WarpType.STICKY))
+                                                .then(Commands.literal("perm").executes(context -> warpSet(context, WarpType.PERMANENT)))
+                                                .then(Commands.literal("temp").executes(context -> warpSet(context, WarpType.TEMPORARY)))
+                                                .then(Commands.literal("sticky").executes(context -> warpSet(context, WarpType.STICKY)))
+                                        )
+                                )
+                                .then(
+                                    Commands.literal("add")
+                                        .then(
+                                            Commands.argument("amount", IntegerArgumentType.integer(-100, 100))
+                                                .executes(context -> warpAdd(context, WarpType.STICKY))
+                                                .then(Commands.literal("perm").executes(context -> warpAdd(context, WarpType.PERMANENT)))
+                                                .then(Commands.literal("temp").executes(context -> warpAdd(context, WarpType.TEMPORARY)))
+                                                .then(Commands.literal("sticky").executes(context -> warpAdd(context, WarpType.STICKY)))
+                                        )
+                                )
                         )
                 )
                 .then(
@@ -164,6 +232,103 @@ public final class ThaumcraftCommand {
                         )
                 )
         );
+    }
+
+    private static int researchList(CommandContext<CommandSourceStack> context) {
+        for (ResearchItem item : ResearchCategories.allResearch()) {
+            context.getSource().sendSuccess(() -> Component.literal(item.key()), false);
+        }
+        return ResearchCategories.allResearch().size();
+    }
+
+    private static int researchAll(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            for (ResearchItem item : ResearchCategories.allResearch()) {
+                ResearchManager.complete(player, item.key(), false);
+            }
+            Knowledge.sync(player);
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Gave all research to " + players.size() + " players"), true);
+        return players.size();
+    }
+
+    private static int researchReset(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            Knowledge.get(player).clearResearch();
+            ResearchManager.grantAutoUnlock(player);
+            Knowledge.sync(player);
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Reset research of " + players.size() + " players"), true);
+        return players.size();
+    }
+
+    private static int researchGive(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        String key = StringArgumentType.getString(context, "key");
+        if (ResearchCategories.getResearch(key) == null) {
+            context.getSource().sendFailure(Component.literal("Research does not exist."));
+            return 0;
+        }
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            ResearchManager.completeRecursive(player, key);
+            Knowledge.sync(player);
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Gave " + key + " research and its requisites to " + players.size() + " players"), true);
+        return players.size();
+    }
+
+    private static int aspectGive(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        String name = StringArgumentType.getString(context, "aspect");
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+        List<Aspect> aspects = new ArrayList<>();
+        if (name.equalsIgnoreCase("all")) {
+            aspects.addAll(List.of(Aspect.values()));
+        } else {
+            Aspect aspect = Aspect.getAspect(name);
+            if (aspect == null) {
+                for (Aspect candidate : Aspect.values()) {
+                    if (name.equalsIgnoreCase(candidate.getName())) {
+                        aspect = candidate;
+                    }
+                }
+            }
+            if (aspect == null) {
+                context.getSource().sendFailure(Component.literal("Aspect does not exist."));
+                return 0;
+            }
+            aspects.add(aspect);
+        }
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            for (Aspect aspect : aspects) {
+                ResearchManager.addAspectPool(player, aspect, amount);
+            }
+        }
+        String label = aspects.size() == 1 ? aspects.get(0).getName() : "all aspects";
+        context.getSource().sendSuccess(() -> Component.literal("Gave " + amount + " of " + label + " to " + players.size() + " players"), true);
+        return players.size();
+    }
+
+    private static int warpSet(CommandContext<CommandSourceStack> context, WarpType type) throws CommandSyntaxException {
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            Warp.set(player, amount, type);
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Set warp to " + amount + " for " + players.size() + " players"), true);
+        return players.size();
+    }
+
+    private static int warpAdd(CommandContext<CommandSourceStack> context, WarpType type) throws CommandSyntaxException {
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        for (ServerPlayer player : players) {
+            Warp.add(player, amount, type);
+        }
+        context.getSource().sendSuccess(() -> Component.literal("Added " + amount + " warp to " + players.size() + " players"), true);
+        return players.size();
     }
 
     private static Stream<String> nodeTypeNames() {

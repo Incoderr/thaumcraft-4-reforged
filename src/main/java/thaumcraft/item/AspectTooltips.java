@@ -2,17 +2,21 @@ package thaumcraft.item;
 
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.research.Knowledge;
+import thaumcraft.research.ScanClientHooks;
 
 public final class AspectTooltips {
     private AspectTooltips() {
     }
 
     public static boolean isDiscovered(Aspect aspect) {
-        return true;
+        Player player = ScanClientHooks.localPlayer();
+        return player == null || Knowledge.get(player).hasDiscoveredAspect(aspect);
     }
 
     public static AspectList getAspects(ItemStack stack) {
