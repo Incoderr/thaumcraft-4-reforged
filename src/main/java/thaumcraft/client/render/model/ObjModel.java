@@ -93,4 +93,10 @@ public final class ObjModel {
             }
         }
     }
+
+    public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int argb, int light) {
+        for (String name : groups.keySet()) {
+            renderPart(name, pose, buffer, argb, light);
+        }
+    }
 }
