@@ -212,10 +212,10 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
             select2 = null;
         }
         if (select1 != null) {
-            AspectRenderer.drawTag(graphics, leftPos + 13, topPos + 139, select1);
+            AspectRenderer.drawTag(graphics, leftPos + 13, topPos + 139, select1, 0.0F);
         }
         if (select2 != null) {
-            AspectRenderer.drawTag(graphics, leftPos + 71, topPos + 139, select2);
+            AspectRenderer.drawTag(graphics, leftPos + 71, topPos + 139, select2, 0.0F);
         }
     }
 
@@ -374,8 +374,8 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
             graphics.nextStratum();
             AspectRenderer.drawBack(graphics, mouseX + 6, mouseY + 6);
             AspectRenderer.drawBack(graphics, mouseX + 24, mouseY + 6);
-            AspectRenderer.drawTag(graphics, mouseX + 8, mouseY + 8, hovered.getComponents()[0]);
-            AspectRenderer.drawTag(graphics, mouseX + 26, mouseY + 8, hovered.getComponents()[1]);
+            AspectRenderer.drawTag(graphics, mouseX + 8, mouseY + 8, hovered.getComponents()[0], 0.0F);
+            AspectRenderer.drawTag(graphics, mouseX + 26, mouseY + 8, hovered.getComponents()[1], 0.0F);
         }
     }
 

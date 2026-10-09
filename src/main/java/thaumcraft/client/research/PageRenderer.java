@@ -236,8 +236,8 @@ final class PageRenderer {
             if (components != null) {
                 graphics.pose().pushMatrix();
                 graphics.pose().scale(1.5F, 1.5F);
-                AspectRenderer.drawTag(graphics, (int) ((x + start + 54) / 1.5F), (int) ((y + 4 + count * 50) / 1.5F), components[0]);
-                AspectRenderer.drawTag(graphics, (int) ((x + start + 96) / 1.5F), (int) ((y + 4 + count * 50) / 1.5F), components[1]);
+                AspectRenderer.drawTag(graphics, (int) ((x + start + 54) / 1.5F), (int) ((y + 4 + count * 50) / 1.5F), components[0], 0.0F);
+                AspectRenderer.drawTag(graphics, (int) ((x + start + 96) / 1.5F), (int) ((y + 4 + count * 50) / 1.5F), components[1], 0.0F);
                 graphics.pose().popMatrix();
                 Component first = BookText.uniform("§o" + components[0].getName());
                 graphics.text(font, first, tx + 16 - font.width(first) / 2 + 50, y + 30 + count * 50, TITLE_COLOR, false);
