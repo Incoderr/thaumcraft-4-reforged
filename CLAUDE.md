@@ -8,7 +8,8 @@
 - Фаза 1 (каркас NeoForge 26.3.0.57-beta, швы `platform/`, луч через `client/geom`, свои слоты Baubles, `check_seams.py`): готово, кроме визуальной проверки в `runClient`
 - Фаза 2 (48 аспектов, теги предметов и сущностей с генерацией из рецептов, мировые блоки, базовые предметы, оверлей аспектов по Shift, ванильные рецепты): готово, кроме визуальной проверки в `runClient`
 - Фаза 3 (генерация мира, биомы через TerraBlender, деревня с волшебником и банкиром, урны, ящики, мешочки, лут в сундуках): готово, кроме визуальной проверки в `runClient`
-- Следующая: фаза 4 (ноды, вис и жезлы)
+- Фаза 4 (ноды и их генерация, жезлы, вис-сеть, стабилизаторы, трансдьюсер, пьедестал, банка для ноды, HUD виса, GameTest-ы): готово, кроме визуальной проверки в `runClient`
+- Следующая: фаза 5 (исследования)
 
 ## Окружение
 
@@ -60,6 +61,12 @@
 - Деревня: в TC4 не больше одной башни и одного дома банкира на деревню (веса 15/25), в jigsaw-пулах лимитов нет, поэтому веса 1 в `houses`. Волшебник и банкир без рабочего места (`Xp: 1` в шаблоне держит профессию), волшебнику в фазе 5/7 добавить POI. Сделки: каждый уровень 1–5 берёт 2 из общего пула профессии (в TC4 один случайный трейд и новый после использования последнего)
 - Биомы: веса регионов TerraBlender 3 (магический лес вместо леса и берёзового леса) и 1 (порча вместо равнин), синий вариант магического леса (`blueMagicalForest`) не поддержан, плотность травы и цветов по-современному
 - Baubles: на 26.3 свои слоты по образцу Baubles 1.0.1.10 за фасадом `platform/Baubles`. Curios `17.0.0-beta.2+26.3` собран под NeoForge 26.3.0.7 и падает на 26.3.0.37+ (`ModConfig.Type.COMMON` удалён в FML 12.0.8)
+- Исследования до фазы 5: `research/ResearchGate.isComplete` всегда `true` (тап `NODETAPPER1/2`, `NODEPRESERVE`, `NODEJAR`, `CAP_*`/`ROD_*`)
+- Имя жезла: шаблон `item.thaumcraft.wand` разбирается на клиенте по плейсхолдерам `%CAP`/`%ROD`/`%OBJ` (порядок в языках разный), части через `item.Wand.*`
+- Нода у храма: по стартам структур `desert_pyramid`/`jungle_temple`/`swamp_hut` в текущем чанке; `netherTotem` пуст (в TC4 тотем генерировался только в измерениях 0 и 1); чёрные списки измерений и биомов не перенесены, биомные эффекты нод выключены в Нижнем мире и Энде
+- Видимость нод с таумометром: баг TC4 в `isVisibleTo` сохранён (конус всегда истинен, видно в пределах 48 блоков); иконка таумометра самодельная (`tools/assets_extra`), в TC4 только 3D-модель
+- Пьедестал перезарядки принимает только жезлы (амулет виса в фазе 8), без `Container` и воронок; энергезированная нода не реализует `Node`, как в TC4
+- Рендер: посох в предмете уменьшен до 0.7, анимации WAVE/CHARGE, фокус, вспышка на конце луча реле не перенесены (фазы 8 и 15), пульс луча реле приближённый
 
 ## Заметки
 
@@ -84,3 +91,8 @@
 - `.mtl` у `.obj` без путей к текстурам (в оригинале абсолютные пути Windows), текстуры задаются в JSON-моделях
 - Ванильные id: `vanilla_ids.json` (`flatten.get("id:meta") or names.get("id")`, затем `profiles[<версия>]`); блок `skull` по умолчанию `skeleton_skull`, предметы `skull:N` точные
 - Медь, олово, серебро, свинец (самородки, кластеры, колпачки) в оригинале условны, записи в id_map есть
+- Жезл: один предмет `thaumcraft:wand`, компоненты `wand_parts` (cap, rod, sceptre), `wand_vis` (centivis, ключи как NBT TC4), `wand_target` (позиция объекта при тапе); таблицы колпачков и стержней в `wand/WandRegistry`, хранение через `wand/Wands`, траты через `WandItem.consumeAllVis`. Тап: `WandItem.use` → `WandInteractable.onWandUse` ставит `wand_target` → `onUseTick` → `onUsingWandTick`
+- Ноды: `node/NodeBlockEntity` (тип BE `node` на `aura_node`, `charged_obsidian_totem`, `silverwood_knot`), генерация `node/NodeGenerator`, хуки будущих фаз `node/NodeHooks`; вис-сеть `vis/VisNet` + `vis/VisNode`; триггеры жезла `wand/WandTriggers` (банка: `blockentity/NodeJarTrigger`)
+- Special-модели предметов: `thaumcraft:wand`, `aura_node`, `node_jar` (`client/render/ItemRenderers`), `node_stabilizer` (`advanced`), `node_transducer`, `vis_relay` (`client/render/WorldRenderers`); OBJ через `ObjModel`, пайплайны без depth-теста для открытых нод в `ModRenderPipelines`
+- `/thaumcraft node place <pos> [тип] [модификатор]|info <pos>`, `/thaumcraft wand fill [игроки]|give <игроки> <колпачок> <стержень> [скипетр]`
+- GameTest-ы: `test/ThaumcraftGameTests` (функции в реестре `test_function`, площадка `thaumcraft:test/platform` из `tools/gen_structures.py`), запуск `./gradlew runGameTestServer`

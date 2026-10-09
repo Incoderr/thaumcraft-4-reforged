@@ -17,6 +17,7 @@ import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModVillagers;
+import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
 
 @Mod(Thaumcraft.MODID)
@@ -37,6 +38,7 @@ public class Thaumcraft {
         ModFeatures.register(modEventBus);
         ModVillagers.register(modEventBus);
         ModPayloads.register();
+        ThaumcraftGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
