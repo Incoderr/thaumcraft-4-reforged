@@ -3,6 +3,8 @@ package thaumcraft.essentia;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
+import thaumcraft.aspect.Aspect;
 import thaumcraft.registry.ModBlockEntities;
 
 public class RestrictTubeBlockEntity extends TubeBlockEntity {
@@ -12,5 +14,10 @@ public class RestrictTubeBlockEntity extends TubeBlockEntity {
 
     protected RestrictTubeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    protected void calculateSuction(@Nullable Aspect filter, boolean restrict, boolean directional) {
+        super.calculateSuction(filter, true, directional);
     }
 }

@@ -8,6 +8,7 @@ import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.crafting.ConfigRecipes;
+import thaumcraft.essentia.EssentiaKeys;
 import thaumcraft.infusion.InfusionKeys;
 import thaumcraft.item.NodeJarKeys;
 import thaumcraft.network.ModPayloads;
@@ -41,6 +42,7 @@ public class Thaumcraft {
         AspectKeys.init();
         WandKeys.init();
         NodeJarKeys.init();
+        EssentiaKeys.init();
         InfusionKeys.init();
         ResearchNoteKeys.init();
         Knowledge.init();

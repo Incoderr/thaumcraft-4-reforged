@@ -1,6 +1,7 @@
 package thaumcraft.test;
 
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
@@ -14,11 +15,19 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.essentia.JarBlockEntity;
+import thaumcraft.registry.ModBlocks;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class EssentiaGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {};
+    private static final String[] TESTS = {"essentia_moves_through_tubes", "void_jar_voids_overflow"};
+
+    static {
+        FUNCTIONS.register(TESTS[0], () -> EssentiaGameTests::essentiaMovesThroughTubes);
+        FUNCTIONS.register(TESTS[1], () -> EssentiaGameTests::voidJarVoidsOverflow);
+    }
 
     private EssentiaGameTests() {
     }
@@ -43,5 +52,38 @@ public final class EssentiaGameTests {
                 new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), 200, 0, true))
             );
         }
+    }
+
+    private static void essentiaMovesThroughTubes(GameTestHelper helper) {
+        BlockPos source = new BlockPos(1, 1, 1);
+        BlockPos target = new BlockPos(4, 1, 1);
+        helper.setBlock(source, ModBlocks.WARDED_JAR.get());
+        helper.setBlock(target, ModBlocks.WARDED_JAR.get());
+        for (int x = 1; x <= 4; x++) {
+            helper.setBlock(new BlockPos(x, 2, 1), ModBlocks.ESSENTIA_TUBE.get());
+        }
+        JarBlockEntity sourceJar = helper.getBlockEntity(source, JarBlockEntity.class);
+        JarBlockEntity targetJar = helper.getBlockEntity(target, JarBlockEntity.class);
+        sourceJar.addToContainer(Aspect.AIR, 10);
+        targetJar.setAspectFilter(Aspect.AIR);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(targetJar.getAmount() >= 3, "essentia did not reach the second jar");
+            helper.assertTrue(sourceJar.getAmount() + targetJar.getAmount() <= 10, "essentia was duplicated");
+        });
+    }
+
+    private static void voidJarVoidsOverflow(GameTestHelper helper) {
+        BlockPos position = new BlockPos(1, 1, 1);
+        helper.setBlock(position, ModBlocks.VOID_JAR.get());
+        JarBlockEntity voidJar = helper.getBlockEntity(position, JarBlockEntity.class);
+        helper.assertValueEqual(voidJar.addToContainer(Aspect.FIRE, 60), 0, "first add remainder");
+        helper.assertValueEqual(voidJar.addToContainer(Aspect.FIRE, 20), 0, "overflow remainder");
+        helper.assertValueEqual(voidJar.getAmount(), 64, "void jar amount");
+        BlockPos plainPosition = new BlockPos(3, 1, 1);
+        helper.setBlock(plainPosition, ModBlocks.WARDED_JAR.get());
+        JarBlockEntity plainJar = helper.getBlockEntity(plainPosition, JarBlockEntity.class);
+        plainJar.addToContainer(Aspect.FIRE, 60);
+        helper.assertValueEqual(plainJar.addToContainer(Aspect.FIRE, 20), 16, "plain jar remainder");
+        helper.succeed();
     }
 }
