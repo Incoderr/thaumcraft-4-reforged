@@ -97,6 +97,34 @@ public final class NodeDeviceRendering {
         poseStack.popPose();
     }
 
+    public static void charger(SubmitNodeCollector collector, PoseStack poseStack, int light, int crystalColor, boolean connected, float ticks) {
+        ObjModel model = ObjModel.get(RELAY_MODEL);
+        Part solid = new Part(Kind.ENTITY_CUTOUT, RELAY);
+        Part glass = new Part(Kind.ENTITY_TRANSLUCENT, RELAY);
+        poseStack.pushPose();
+        poseStack.translate(0.5F, 0.5F, 0.5F);
+        poseStack.rotateDegrees(Axis.XP, -90.0F);
+        poseStack.rotateDegrees(Axis.XP, 180.0F);
+        poseStack.rotateDegrees(Axis.ZP, 45.0F);
+        part(collector, poseStack, solid, model, "RingFloat", WHITE, light);
+        poseStack.pushPose();
+        poseStack.rotateDegrees(Axis.XP, 180.0F);
+        poseStack.translate(0.0F, 0.0F, 0.5F);
+        for (int index = 0; index < 4; index++) {
+            part(collector, poseStack, solid, model, "Support", WHITE, light);
+            poseStack.rotateDegrees(Axis.ZP, 90.0F);
+        }
+        poseStack.popPose();
+        int tint = WHITE;
+        if (crystalColor >= 0) {
+            tint = color((crystalColor >> 16 & 255) / 200.0F, (crystalColor >> 8 & 255) / 200.0F, (crystalColor & 255) / 200.0F);
+        }
+        float scale = Mth.sin(ticks / 2.0F) * 0.05F + 0.95F;
+        int crystalLight = WorldRendering.emissiveLight((connected ? 50 : 0) + (int) (150.0F * scale));
+        part(collector, poseStack, glass, model, "Crystal", tint, crystalLight);
+        poseStack.popPose();
+    }
+
     public static void relay(SubmitNodeCollector collector, PoseStack poseStack, int light, Direction orientation, int crystalColor, boolean connected, float ticks) {
         ObjModel model = ObjModel.get(RELAY_MODEL);
         Part solid = new Part(Kind.ENTITY_CUTOUT, RELAY);

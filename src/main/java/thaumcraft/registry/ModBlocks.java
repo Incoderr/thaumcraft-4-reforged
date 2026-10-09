@@ -25,6 +25,7 @@ import thaumcraft.alchemy.AlchemicalFurnaceBlock;
 import thaumcraft.alchemy.AlembicBlock;
 import thaumcraft.alchemy.BellowsBlock;
 import thaumcraft.alchemy.CrucibleBlock;
+import thaumcraft.alchemy.FluxBlock;
 import thaumcraft.alchemy.FluxGasBlock;
 import thaumcraft.alchemy.FluxGooBlock;
 import thaumcraft.alchemy.FluxScrubberBlock;
@@ -429,6 +430,7 @@ public final class ModBlocks {
             .strength(100.0F)
             .noLootTable()
             .randomTicks()
+            .lightLevel(state -> state.getValue(FluxBlock.LEVEL) * 7 / 8)
             .pushReaction(PushReaction.POPPED)
             .isSuffocating((state, level, pos) -> false)
             .isViewBlocking((state, level, pos, box) -> false)
@@ -444,6 +446,7 @@ public final class ModBlocks {
             .strength(100.0F)
             .noLootTable()
             .randomTicks()
+            .lightLevel(state -> state.getValue(FluxBlock.LEVEL) * 7 / 8)
             .sound(SoundType.SLIME_BLOCK)
             .pushReaction(PushReaction.POPPED)
     ));

@@ -40,6 +40,12 @@ public final class WorldRenderers {
         event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), CentrifugeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_CRYSTALLIZER.get(), EssentiaCrystallizerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_RESERVOIR.get(), EssentiaReservoirRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ARCANE_WORKBENCH.get(), ArcaneWorkbenchRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.VIS_CHARGE_RELAY.get(), ChargeRelayRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.DECONSTRUCTION_TABLE.get(), DeconstructionTableRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.PEDESTAL.get(), ArcanePedestalRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.INFUSION_PILLAR.get(), InfusionPillarRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.INFUSION_MATRIX.get(), RunicMatrixRenderer::new);
     }
 
     @SubscribeEvent
@@ -47,5 +53,7 @@ public final class WorldRenderers {
         event.register(Thaumcraft.id("node_stabilizer"), NodeDeviceSpecialRenderers.Stabilizer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("node_transducer"), NodeDeviceSpecialRenderers.Transducer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("vis_relay"), NodeDeviceSpecialRenderers.Relay.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("runic_matrix"), ArcaneSpecialRenderers.RunicMatrix.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("vis_charge_relay"), ArcaneSpecialRenderers.ChargeRelay.Unbaked.MAP_CODEC);
     }
 }
