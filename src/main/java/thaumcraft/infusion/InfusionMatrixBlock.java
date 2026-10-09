@@ -1,11 +1,15 @@
 package thaumcraft.infusion;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.registry.ModBlockEntities;
 
 public class InfusionMatrixBlock extends Block implements EntityBlock {
     public InfusionMatrixBlock(Properties properties) {
@@ -15,5 +19,13 @@ public class InfusionMatrixBlock extends Block implements EntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new InfusionMatrixBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (type != ModBlockEntities.INFUSION_MATRIX.get()) {
+            return null;
+        }
+        return (tickLevel, pos, tickState, entity) -> InfusionMatrixBlockEntity.tick(tickLevel, pos, tickState, (InfusionMatrixBlockEntity) entity);
     }
 }
