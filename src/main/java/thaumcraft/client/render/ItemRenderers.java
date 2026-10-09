@@ -20,6 +20,11 @@ public final class ItemRenderers {
         event.register(Thaumcraft.id("aura_node"), NodeItemRenderer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("node_jar"), NodeJarItemRenderer.Unbaked.MAP_CODEC);
         event.register(Thaumcraft.id("thaumometer"), ThaumometerItemRenderer.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("filled_jar"), EssentiaSpecialRenderers.FilledJar.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("centrifuge"), EssentiaSpecialRenderers.Centrifuge.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("essentia_crystallizer"), EssentiaSpecialRenderers.Crystallizer.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("essentia_reservoir"), EssentiaSpecialRenderers.Reservoir.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("tube_valve"), EssentiaSpecialRenderers.TubeValve.Unbaked.MAP_CODEC);
     }
 
     @SubscribeEvent

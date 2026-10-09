@@ -31,6 +31,15 @@ public final class WorldRenderers {
         event.registerBlockEntityRenderer(ModBlockEntities.VIS_RELAY.get(), VisRelayRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WAND_PEDESTAL.get(), WandPedestalRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.RESEARCH_TABLE.get(), ResearchTableRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.JAR.get(), EssentiaJarRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.VOID_JAR.get(), EssentiaJarRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.VALVE_TUBE.get(), TubeValveRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ONEWAY_TUBE.get(), TubeOnewayRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_BUFFER.get(), TubeBufferRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.FILTER_TUBE.get(), TubeFilterRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.CENTRIFUGE.get(), CentrifugeRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_CRYSTALLIZER.get(), EssentiaCrystallizerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ESSENTIA_RESERVOIR.get(), EssentiaReservoirRenderer::new);
     }
 
     @SubscribeEvent
