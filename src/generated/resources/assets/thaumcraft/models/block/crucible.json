@@ -3,7 +3,7 @@
   "textures": {
     "particle": "thaumcraft:block/crucible3",
     "side": "thaumcraft:block/crucible3",
-    "top": "thaumcraft:block/crucible4",
+    "top": "thaumcraft:block/crucible1",
     "bottom": "thaumcraft:block/crucible2",
     "inner": "thaumcraft:block/crucible5",
     "floor": "thaumcraft:block/crucible6"
