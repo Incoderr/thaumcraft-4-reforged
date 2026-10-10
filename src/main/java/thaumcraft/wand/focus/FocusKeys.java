@@ -18,6 +18,8 @@ public final class FocusKeys {
         ItemStack.OPTIONAL_LIST_STREAM_CODEC
     );
 
+    public static final StackKey<ItemStack> PICKED = StackKey.register("focus_picked_block", ItemStack.CODEC, ItemStack.STREAM_CODEC);
+
     private FocusKeys() {
     }
 
