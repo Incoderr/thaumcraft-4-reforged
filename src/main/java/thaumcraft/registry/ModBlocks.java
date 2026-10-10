@@ -29,6 +29,7 @@ import thaumcraft.alchemy.FluxBlock;
 import thaumcraft.alchemy.FluxGasBlock;
 import thaumcraft.alchemy.FluxGooBlock;
 import thaumcraft.alchemy.FluxScrubberBlock;
+import thaumcraft.arcane.FocalManipulatorBlock;
 import thaumcraft.alchemy.MnemonicMatrixBlock;
 import thaumcraft.alchemy.ThaumatoriumBlock;
 import thaumcraft.arcane.ArcaneWorkbenchBlock;
@@ -40,6 +41,7 @@ import thaumcraft.block.ChargedObsidianTotemBlock;
 import thaumcraft.block.CustomPlantBlock;
 import thaumcraft.block.FlammableBlock;
 import thaumcraft.block.GolemFetterBlock;
+import thaumcraft.block.HoleBlock;
 import thaumcraft.block.InfusedStoneBlock;
 import thaumcraft.block.LootBlock;
 import thaumcraft.block.MagicalLeavesBlock;
@@ -55,6 +57,7 @@ import thaumcraft.block.SilverwoodKnotBlock;
 import thaumcraft.block.TableBlock;
 import thaumcraft.block.TravelPavingStoneBlock;
 import thaumcraft.block.WandPedestalBlock;
+import thaumcraft.block.WardedBlock;
 import thaumcraft.block.WardingPavingStoneBlock;
 import thaumcraft.essentia.CentrifugeBlock;
 import thaumcraft.essentia.EssentiaBufferBlock;
@@ -450,6 +453,21 @@ public final class ModBlocks {
             .sound(SoundType.SLIME_BLOCK)
             .pushReaction(PushReaction.POPPED)
     ));
+    public static final DeferredBlock<FocalManipulatorBlock> FOCAL_MANIPULATOR = withItem(BLOCKS.registerBlock(
+        "focal_manipulator",
+        FocalManipulatorBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+    public static final DeferredBlock<HoleBlock> HOLE = BLOCKS.registerBlock(
+        "hole",
+        HoleBlock::new,
+        properties -> properties.mapColor(MapColor.NONE).strength(-1.0F, 6000000.0F).lightLevel(state -> 10).noLootTable().noOcclusion().pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredBlock<WardedBlock> WARDED_BLOCK = BLOCKS.registerBlock(
+        "warded_block",
+        WardedBlock::new,
+        properties -> properties.mapColor(MapColor.STONE).sound(SoundType.STONE).strength(-1.0F, 999.0F).noLootTable().noOcclusion().pushReaction(PushReaction.IMMOVEABLE)
+    );
     public static final DeferredBlock<FluxScrubberBlock> FLUX_SCRUBBER = withItem(BLOCKS.registerBlock(
         "flux_scrubber",
         FluxScrubberBlock::new,

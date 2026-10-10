@@ -17,6 +17,7 @@ import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModCapabilities;
 import thaumcraft.registry.ModCreativeTabs;
+import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModFeatures;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModMenus;
@@ -32,6 +33,7 @@ import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
+import thaumcraft.wand.focus.FocusKeys;
 
 @Mod(Thaumcraft.MODID)
 public class Thaumcraft {
@@ -41,6 +43,7 @@ public class Thaumcraft {
     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
         AspectKeys.init();
         WandKeys.init();
+        FocusKeys.init();
         NodeJarKeys.init();
         EssentiaKeys.init();
         InfusionKeys.init();
@@ -50,6 +53,7 @@ public class Thaumcraft {
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModEntities.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModSounds.register(modEventBus);
         ModFeatures.register(modEventBus);

@@ -49,6 +49,9 @@ public class WandItem extends Item {
 
     public float getConsumptionModifier(ItemStack stack, @Nullable Player player, Aspect aspect, boolean crafting) {
         float modifier = Wands.getCap(stack).getCostModifier(aspect);
+        if (Wands.getFocus(stack) != null && !crafting) {
+            modifier -= Wands.getFocusFrugal(stack) / 10.0F;
+        }
         if (player != null) {
             modifier -= WandManager.getTotalVisDiscount(player, aspect);
         }

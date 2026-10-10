@@ -19,10 +19,13 @@ import thaumcraft.alchemy.ThaumatoriumTopBlockEntity;
 import thaumcraft.arcane.ArcaneWorkbenchBlockEntity;
 import thaumcraft.arcane.DeconstructionTableBlockEntity;
 import thaumcraft.arcane.VisChargeRelayBlockEntity;
+import thaumcraft.arcane.FocalManipulatorBlockEntity;
+import thaumcraft.blockentity.HoleBlockEntity;
 import thaumcraft.blockentity.ManaPodBlockEntity;
 import thaumcraft.blockentity.NodeJarBlockEntity;
 import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.WandPedestalBlockEntity;
+import thaumcraft.blockentity.WardedBlockEntity;
 import thaumcraft.blockentity.WardingStoneBlockEntity;
 import thaumcraft.essentia.CentrifugeBlockEntity;
 import thaumcraft.essentia.EssentiaBufferBlockEntity;
@@ -167,6 +170,18 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<FluxScrubberBlockEntity>> FLUX_SCRUBBER = BLOCK_ENTITIES.register(
         "flux_scrubber",
         () -> new BlockEntityType<>(FluxScrubberBlockEntity::new, ModBlocks.FLUX_SCRUBBER.get())
+    );
+    public static final Supplier<BlockEntityType<FocalManipulatorBlockEntity>> FOCAL_MANIPULATOR = BLOCK_ENTITIES.register(
+        "focal_manipulator",
+        () -> new BlockEntityType<>(FocalManipulatorBlockEntity::new, ModBlocks.FOCAL_MANIPULATOR.get())
+    );
+    public static final Supplier<BlockEntityType<HoleBlockEntity>> HOLE = BLOCK_ENTITIES.register(
+        "hole",
+        () -> new BlockEntityType<>(HoleBlockEntity::new, ModBlocks.HOLE.get())
+    );
+    public static final Supplier<BlockEntityType<WardedBlockEntity>> WARDED = BLOCK_ENTITIES.register(
+        "warded_block",
+        () -> new BlockEntityType<>(WardedBlockEntity::new, ModBlocks.WARDED_BLOCK.get())
     );
     public static final Supplier<BlockEntityType<BellowsBlockEntity>> BELLOWS = BLOCK_ENTITIES.register(
         "arcane_bellows",
