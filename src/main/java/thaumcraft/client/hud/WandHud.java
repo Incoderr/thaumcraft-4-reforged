@@ -1,5 +1,11 @@
 package thaumcraft.client.hud;
 
+import java.text.DecimalFormat;
+import thaumcraft.aspect.AspectList;
+import thaumcraft.wand.WandItem;
+import thaumcraft.wand.WandManager;
+import thaumcraft.wand.focus.FocusItem;
+import thaumcraft.wand.focus.TradeFocus;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.DeltaTracker;
@@ -19,6 +25,8 @@ public final class WandHud {
     private static final Identifier TEXTURE = Thaumcraft.id("textures/gui/hud.png");
     private static final long SAMPLE_INTERVAL = 1000L;
     private static final Map<Integer, WandVis> OLD_VALUES = new HashMap<>();
+    private static final DecimalFormat COST_FORMAT = new DecimalFormat("#####.##");
+    private static final DecimalFormat COOLDOWN_FORMAT = new DecimalFormat("#######.#");
     private static long nextSample;
 
     private WandHud() {
@@ -47,6 +55,9 @@ public final class WandHud {
         }
         int max = Wands.getMaxVis(stack);
         boolean sneaking = player.isShiftKeyDown();
+        FocusItem focus = Wands.getFocus(stack);
+        ItemStack focusStack = Wands.getFocusItem(stack);
+        AspectList focusCost = focus == null ? null : focus.getVisCost(focusStack);
         graphics.pose().pushMatrix();
         graphics.pose().pushMatrix();
         graphics.pose().scale(0.5F, 0.5F);
@@ -64,21 +75,74 @@ public final class WandHud {
             int level = max <= 0 ? 0 : (int) (30.0F * amount / max);
             blit(graphics, -4, 35 - level, 104, 0, 8, level, 0xCC000000 | aspect.getColor());
             blit(graphics, -8, -3, 72, 0, 16, 42, 0xFFFFFFFF);
+            int shift = 0;
+            boolean costs = focusCost != null && focusCost.getAmount(aspect) > 0;
+            if (costs) {
+                blit(graphics, -4, -8, 136, 0, 8, 8, 0xFFFFFFFF);
+                shift = 8;
+            }
             int previous = old.get(aspect);
             if (previous > amount) {
-                blit(graphics, -4, -8, 128, 0, 8, 8, 0xFFFFFFFF);
+                blit(graphics, -4, -8 - shift, 128, 0, 8, 8, 0xFFFFFFFF);
             } else if (previous < amount) {
-                blit(graphics, -4, -8, 120, 0, 8, 8, 0xFFFFFFFF);
+                blit(graphics, -4, -8 - shift, 120, 0, 8, 8, 0xFFFFFFFF);
             }
             if (sneaking) {
                 graphics.pose().pushMatrix();
                 graphics.pose().rotate((float) Math.toRadians(-90.0F));
                 graphics.text(minecraft.font, String.valueOf(amount / 100), -32, -4, 0xFFFFFFFF, true);
                 graphics.pose().popMatrix();
+                if (costs) {
+                    float modifier = ((WandItem) stack.getItem()).getConsumptionModifier(stack, player, aspect, false);
+                    graphics.pose().pushMatrix();
+                    graphics.pose().rotate((float) Math.toRadians(-90.0F));
+                    graphics.text(minecraft.font, COST_FORMAT.format(focusCost.getAmount(aspect) * modifier / 100.0F), 8, -4, 0xFFFFFFFF, true);
+                    graphics.pose().popMatrix();
+                }
             }
             graphics.pose().popMatrix();
             count++;
         }
+        if (focus != null) {
+            ItemStack picked = focus instanceof TradeFocus ? TradeFocus.getPickedBlock(stack) : ItemStack.EMPTY;
+            if (!picked.isEmpty()) {
+                renderTrade(graphics, minecraft, player, picked);
+            } else {
+                graphics.item(focusStack, -8, -8);
+                float cooldown = WandManager.getCooldown(player);
+                if (cooldown > 0.0F) {
+                    graphics.pose().pushMatrix();
+                    graphics.pose().scale(0.5F, 0.5F);
+                    String seconds = COOLDOWN_FORMAT.format(cooldown) + "s";
+                    graphics.text(minecraft.font, seconds, -minecraft.font.width(seconds) / 2, -4, 0xFFFFFFFF, true);
+                    graphics.pose().popMatrix();
+                }
+            }
+        }
+        graphics.pose().popMatrix();
+    }
+
+    private static void renderTrade(GuiGraphicsExtractor graphics, Minecraft minecraft, Player player, ItemStack picked) {
+        int amount = 0;
+        for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
+            if (ItemStack.isSameItem(stack, picked)) {
+                amount += stack.getCount();
+            }
+        }
+        graphics.item(picked, -8, -8);
+        String text = String.valueOf(amount);
+        int width = minecraft.font.width(text);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(0.0F, -minecraft.font.lineHeight);
+        graphics.pose().scale(0.5F, 0.5F);
+        for (int a = -1; a <= 1; a++) {
+            for (int b = -1; b <= 1; b++) {
+                if ((a == 0 || b == 0) && (a != 0 || b != 0)) {
+                    graphics.text(minecraft.font, text, a + 16 - width, b + 24, 0xFF000000, false);
+                }
+            }
+        }
+        graphics.text(minecraft.font, text, 16 - width, 24, 0xFFFFFFFF, false);
         graphics.pose().popMatrix();
     }
 

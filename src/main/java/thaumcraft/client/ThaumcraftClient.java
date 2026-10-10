@@ -16,6 +16,9 @@ import thaumcraft.client.research.ThaumometerClient;
 import thaumcraft.client.screen.AlchemicalFurnaceScreen;
 import thaumcraft.client.screen.ArcaneWorkbenchScreen;
 import thaumcraft.client.screen.DeconstructionTableScreen;
+import thaumcraft.client.screen.FocalManipulatorScreen;
+import thaumcraft.client.screen.FocusPouchScreen;
+import thaumcraft.client.screen.HoverHarnessScreen;
 import thaumcraft.client.screen.ResearchTableScreen;
 import thaumcraft.client.screen.ThaumatoriumScreen;
 import thaumcraft.fx.Fx;
@@ -39,6 +42,9 @@ public final class ThaumcraftClient {
         event.register(ModMenus.DECONSTRUCTION_TABLE.get(), DeconstructionTableScreen::new);
         event.register(ModMenus.ALCHEMICAL_FURNACE.get(), AlchemicalFurnaceScreen::new);
         event.register(ModMenus.THAUMATORIUM.get(), ThaumatoriumScreen::new);
+        event.register(ModMenus.FOCAL_MANIPULATOR.get(), FocalManipulatorScreen::new);
+        event.register(ModMenus.FOCUS_POUCH.get(), FocusPouchScreen::new);
+        event.register(ModMenus.HOVER_HARNESS.get(), HoverHarnessScreen::new);
     }
 
     @SubscribeEvent

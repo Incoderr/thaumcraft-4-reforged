@@ -94,6 +94,18 @@ public final class ObjModel {
         }
     }
 
+    public void renderAll(org.joml.Matrix4f transform, thaumcraft.client.geom.QuadSink sink, int argb, int light) {
+        org.joml.Vector3f position = new org.joml.Vector3f();
+        for (List<float[][]> faces : groups.values()) {
+            for (float[][] face : faces) {
+                for (float[] vertex : face) {
+                    transform.transformPosition(vertex[0], vertex[1], vertex[2], position);
+                    sink.vertex(position.x, position.y, position.z, vertex[3], vertex[4], argb, light);
+                }
+            }
+        }
+    }
+
     public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int argb, int light) {
         for (String name : groups.keySet()) {
             renderPart(name, pose, buffer, argb, light);

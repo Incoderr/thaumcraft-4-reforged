@@ -33,5 +33,6 @@ public final class ItemRenderers {
     @SubscribeEvent
     static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, Thaumcraft.id("wand_hud"), WandHud::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, Thaumcraft.id("gear_hud"), thaumcraft.client.hud.GearHud::render);
     }
 }

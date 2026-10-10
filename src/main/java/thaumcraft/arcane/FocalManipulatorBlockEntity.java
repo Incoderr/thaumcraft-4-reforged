@@ -38,6 +38,7 @@ public class FocalManipulatorBlockEntity extends TcBlockEntity implements Contai
     private int upgrade = -1;
     private int rank = -1;
     private int ticks;
+    private boolean reset;
 
     public FocalManipulatorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FOCAL_MANIPULATOR.get(), pos, state);
@@ -49,6 +50,20 @@ public class FocalManipulatorBlockEntity extends TcBlockEntity implements Contai
 
     public int getSize() {
         return size;
+    }
+
+    public int getUpgrade() {
+        return upgrade;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public boolean consumeReset() {
+        boolean value = reset;
+        reset = false;
+        return value;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FocalManipulatorBlockEntity table) {
@@ -194,9 +209,11 @@ public class FocalManipulatorBlockEntity extends TcBlockEntity implements Contai
     }
 
     private void onSlotChanged() {
-        if (level != null && !level.isClientSide()) {
-            aspects = new AspectList();
+        if (level != null && level.isClientSide()) {
+            reset = true;
+            return;
         }
+        aspects = new AspectList();
         sync();
     }
 
