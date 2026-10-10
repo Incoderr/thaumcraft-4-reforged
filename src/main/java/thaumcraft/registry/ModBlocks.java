@@ -557,7 +557,7 @@ public final class ModBlocks {
     public static final DeferredBlock<thaumcraft.device.ArcaneEarBlock> ARCANE_EAR = withItem(BLOCKS.registerBlock(
         "arcane_ear",
         thaumcraft.device.ArcaneEarBlock::new,
-        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 10.0F)
+        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 10.0F).noOcclusion()
     ));
     public static final DeferredBlock<thaumcraft.device.ArcaneLevitatorBlock> ARCANE_LEVITATOR = withItem(BLOCKS.registerBlock(
         "arcane_levitator",

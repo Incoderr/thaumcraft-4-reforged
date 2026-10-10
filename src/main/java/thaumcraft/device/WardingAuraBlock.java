@@ -2,6 +2,7 @@ package thaumcraft.device;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -14,11 +15,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.blockentity.WardingStoneBlockEntity;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
 
@@ -43,6 +46,18 @@ public class WardingAuraBlock extends Block implements EntityBlock {
             }
         }
         return Shapes.empty();
+    }
+
+    @Override
+    public @Nullable PathType getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob) {
+        if (mob != null) {
+            for (int offset = 1; offset < 3; offset++) {
+                if (level.getBlockEntity(pos.below(offset)) instanceof WardingStoneBlockEntity) {
+                    return mob.level().hasNeighborSignal(pos.below(offset)) ? null : PathType.BLOCKED;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
