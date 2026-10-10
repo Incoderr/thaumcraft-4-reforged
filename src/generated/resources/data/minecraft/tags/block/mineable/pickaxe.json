@@ -70,6 +70,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:arcane_lamp",
+      "required": false
+    },
+    {
       "id": "thaumcraft:arcane_pedestal",
       "required": false
     },
@@ -167,6 +171,18 @@
     },
     {
       "id": "thaumcraft:infusion_pillar_top",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:item_grate",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:lamp_of_fertility",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:lamp_of_growth",
       "required": false
     },
     {

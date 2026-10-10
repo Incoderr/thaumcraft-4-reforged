@@ -6,6 +6,14 @@
       "required": false
     },
     {
+      "id": "thaumcraft:arcane_ear",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:arcane_levitator",
+      "required": false
+    },
+    {
       "id": "thaumcraft:arcane_worktable",
       "required": false
     },

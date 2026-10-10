@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "thaumcraft:item/air_crystal_cluster",
+    "model": {
+      "type": "thaumcraft:crystal_cluster",
+      "kind": 0
+    }
+  }
+}
