@@ -246,7 +246,7 @@ def blocks(ctx):
     ctx.simple_state("hole")
     ctx.write_loot("hole", [])
     gen_phase4.particle_model(ctx, "warded_block", "wardedstone")
-    ctx.simple_state("warded_block")
+    ctx.blockstate("warded_block", {"variants": {"": {"type": f"{NS}:warded", "fallback": {"model": "minecraft:block/stone"}}}})
     ctx.write_loot("warded_block", [])
     ctx.block_tags["thaumcraft:mineable/primal_crusher"].update(
         ["#minecraft:mineable/pickaxe", "#minecraft:mineable/shovel"]
