@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_crystal_cluster"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:air_shard",
+    "thaumcraft:air_shard",
+    "thaumcraft:air_shard",
+    "thaumcraft:air_shard",
+    "thaumcraft:air_shard",
+    "thaumcraft:air_shard"
+  ],
+  "result": {
+    "id": "thaumcraft:air_crystal_cluster"
+  }
+}

@@ -752,6 +752,7 @@ def main():
     gen_phase9_warded.generate(ctx)
     gen_phase9_machines.generate(ctx)
     gen_phase9_mirrors.generate(ctx)
+    gen_phase5.recipes(ctx)
     write_tags()
     validate_textures()
     validate_models()
