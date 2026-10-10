@@ -3,10 +3,12 @@ package thaumcraft.item.tool;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +57,40 @@ public final class ToolHarvest {
             return false;
         }
         return destroy(player, pos, followColor);
+    }
+
+    public static void breakArea(ItemStack stack, ServerLevel level, ServerPlayer player, BlockPos pos, Predicate<BlockState> effective, int followColor) {
+        int face = getFace(player).get3DDataValue();
+        for (int a = -1; a <= 1; a++) {
+            for (int b = -1; b <= 1; b++) {
+                int x = 0;
+                int y = 0;
+                int z = 0;
+                if (face <= 1) {
+                    x = a;
+                    z = b;
+                } else if (face <= 3) {
+                    x = a;
+                    y = b;
+                } else {
+                    z = a;
+                    y = b;
+                }
+                BlockPos target = pos.offset(x, y, z);
+                if (!level.mayInteract(player, target)) {
+                    continue;
+                }
+                BlockState state = level.getBlockState(target);
+                if (state.isAir() || state.getDestroySpeed(level, target) < 0.0F || !effective.test(state)) {
+                    continue;
+                }
+                stack.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+                destroy(player, target, followColor);
+                if (stack.isEmpty()) {
+                    return;
+                }
+            }
+        }
     }
 
     public static boolean isEffective(ItemStack stack, BlockState state) {

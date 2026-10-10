@@ -181,37 +181,7 @@ public class ElementalShovelItem extends Item implements Repairable, Architect {
         if (!(level instanceof ServerLevel serverLevel) || !(owner instanceof ServerPlayer player) || !isEffective(stack, state)) {
             return true;
         }
-        int face = ToolHarvest.getFace(player).get3DDataValue();
-        for (int a = -1; a <= 1; a++) {
-            for (int b = -1; b <= 1; b++) {
-                int x = 0;
-                int y = 0;
-                int z = 0;
-                if (face <= 1) {
-                    x = a;
-                    z = b;
-                } else if (face <= 3) {
-                    x = a;
-                    y = b;
-                } else {
-                    z = a;
-                    y = b;
-                }
-                BlockPos target = pos.offset(x, y, z);
-                if (!serverLevel.mayInteract(player, target)) {
-                    continue;
-                }
-                BlockState targetState = serverLevel.getBlockState(target);
-                if (targetState.isAir() || targetState.getDestroySpeed(serverLevel, target) < 0.0F || !isEffective(stack, targetState)) {
-                    continue;
-                }
-                stack.hurtAndBreak(1, player, InteractionHand.MAIN_HAND.asEquipmentSlot());
-                ToolHarvest.destroy(player, target, GRASS_COLOR);
-                if (stack.isEmpty()) {
-                    return true;
-                }
-            }
-        }
+        ToolHarvest.breakArea(stack, serverLevel, player, pos, target -> isEffective(stack, target), GRASS_COLOR);
         return true;
     }
 

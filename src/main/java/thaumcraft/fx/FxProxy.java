@@ -82,7 +82,7 @@ public interface FxProxy {
     default void smokeSpiral(Level level, double x, double y, double z, float radius, int start, int minY, int color) {
     }
 
-    default void oreScan(Level level, BlockPos center, int range, long durationMillis) {
+    default void oreScan(Level level, BlockPos center, int range, long until) {
     }
 
     default void blockBubble(Level level, BlockPos pos, int color) {

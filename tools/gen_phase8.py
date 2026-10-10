@@ -327,6 +327,29 @@ def enchantments(ctx):
     enchantment(ctx, "repair", 2, 2, 4, 20, 10, ["any"], f"#{NS}:enchantable/repair", "minecraft:unbreaking")
 
 
+DAMAGE_TYPES = {
+    "airarrow": ["minecraft:is_projectile", "minecraft:bypasses_armor", "minecraft:witch_resistant_to"],
+    "firearrow": ["minecraft:is_projectile", "minecraft:is_fire"],
+    "orderarrow": ["minecraft:is_projectile", "minecraft:bypasses_armor", "minecraft:witch_resistant_to"],
+}
+
+
+def damage_types(ctx):
+    if not ctx.profile.enchantment_json:
+        return
+    tags = {}
+    for name, names in DAMAGE_TYPES.items():
+        content = {"exhaustion": 0.1, "message_id": f"{NS}.{name}", "scaling": "when_caused_by_living_non_player"}
+        if "minecraft:is_fire" in names:
+            content["effects"] = "burning"
+        ctx.write(ctx.DATA / NS / "damage_type" / f"{name}.json", content)
+        for tag in names:
+            tags.setdefault(tag, []).append(f"{NS}:{name}")
+    for tag, values in tags.items():
+        namespace, path = tag.split(":")
+        ctx.write(ctx.DATA / namespace / "tags" / "damage_type" / f"{path}.json", {"replace": False, "values": sorted(values)})
+
+
 def generate(ctx):
     foci(ctx)
     tools(ctx)
@@ -337,3 +360,4 @@ def generate(ctx):
     blocks(ctx)
     tags(ctx)
     enchantments(ctx)
+    damage_types(ctx)
