@@ -8,6 +8,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.device.ArcaneKeyItem;
+import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.essentia.PhialItem;
 import thaumcraft.item.AspectContainerItem;
 import thaumcraft.item.CrystalEssenceItem;
@@ -263,6 +265,9 @@ public final class ModItems {
     public static final DeferredItem<VisAmuletItem> VIS_STONE = ITEMS.registerItem("vis_stone", properties -> new VisAmuletItem(properties, true), properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
     public static final DeferredItem<VisAmuletItem> VIS_AMULET = ITEMS.registerItem("vis_amulet", properties -> new VisAmuletItem(properties, false), properties -> properties.stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<HoverGirdleItem> THAUMOSTATIC_GIRDLE = ITEMS.registerItem("thaumostatic_girdle", HoverGirdleItem::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
+
+    public static final DeferredItem<ArcaneKeyItem> IRON_ARCANE_KEY = ITEMS.registerItem("iron_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.IRON), properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<ArcaneKeyItem> GOLD_ARCANE_KEY = ITEMS.registerItem("gold_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.GOLD), properties -> properties.rarity(Rarity.UNCOMMON));
 
     private ModItems() {
     }
