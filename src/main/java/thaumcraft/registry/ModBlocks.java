@@ -519,6 +519,60 @@ public final class ModBlocks {
 
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
+    public static final DeferredBlock<thaumcraft.device.NitorLightBlock> NITOR_LIGHT = BLOCKS.registerBlock(
+        "nitor_light",
+        thaumcraft.device.NitorLightBlock::new,
+        thaumcraft.device.DeviceProperties::nitorLight
+    );
+    public static final DeferredBlock<thaumcraft.device.ArcaneLampLightBlock> ARCANE_LAMP_LIGHT = BLOCKS.registerBlock(
+        "arcane_lamp_light",
+        thaumcraft.device.ArcaneLampLightBlock::new,
+        thaumcraft.device.DeviceProperties::lampLight
+    );
+    public static final DeferredBlock<thaumcraft.device.WardingAuraBlock> WARDING_AURA = BLOCKS.registerBlock(
+        "warding_aura",
+        thaumcraft.device.WardingAuraBlock::new,
+        thaumcraft.device.DeviceProperties::wardingAura
+    );
+    public static final DeferredBlock<thaumcraft.device.ArcaneLampBlock> ARCANE_LAMP = withItem(BLOCKS.registerBlock(
+        "arcane_lamp",
+        thaumcraft.device.ArcaneLampBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> 15)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ChargedLampBlock> LAMP_OF_GROWTH = withItem(BLOCKS.registerBlock(
+        "lamp_of_growth",
+        properties -> new thaumcraft.device.ChargedLampBlock(true, properties),
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> state.getValue(thaumcraft.device.ChargedLampBlock.LIT) ? 15 : 8)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ChargedLampBlock> LAMP_OF_FERTILITY = withItem(BLOCKS.registerBlock(
+        "lamp_of_fertility",
+        properties -> new thaumcraft.device.ChargedLampBlock(false, properties),
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> state.getValue(thaumcraft.device.ChargedLampBlock.LIT) ? 15 : 8)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ItemGrateBlock> ITEM_GRATE = withItem(BLOCKS.registerBlock(
+        "item_grate",
+        thaumcraft.device.ItemGrateBlock::new,
+        thaumcraft.device.DeviceProperties::metalDevice
+    ));
+    public static final DeferredBlock<thaumcraft.device.ArcaneEarBlock> ARCANE_EAR = withItem(BLOCKS.registerBlock(
+        "arcane_ear",
+        thaumcraft.device.ArcaneEarBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 10.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<thaumcraft.device.ArcaneLevitatorBlock> ARCANE_LEVITATOR = withItem(BLOCKS.registerBlock(
+        "arcane_levitator",
+        thaumcraft.device.ArcaneLevitatorBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 15.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> AIR_CRYSTAL_CLUSTER = crystalCluster("air_crystal_cluster", 0);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> FIRE_CRYSTAL_CLUSTER = crystalCluster("fire_crystal_cluster", 1);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> WATER_CRYSTAL_CLUSTER = crystalCluster("water_crystal_cluster", 2);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> EARTH_CRYSTAL_CLUSTER = crystalCluster("earth_crystal_cluster", 3);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> ORDER_CRYSTAL_CLUSTER = crystalCluster("order_crystal_cluster", 4);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> ENTROPY_CRYSTAL_CLUSTER = crystalCluster("entropy_crystal_cluster", 5);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> MIXED_CRYSTAL_CLUSTER = crystalCluster("mixed_crystal_cluster", 6);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> STRANGE_CRYSTALS = crystalCluster("strange_crystals", 7);
+
     private ModBlocks() {
     }
 
@@ -539,6 +593,14 @@ public final class ModBlocks {
             )));
         }
         return candles;
+    }
+
+    private static DeferredBlock<thaumcraft.device.CrystalClusterBlock> crystalCluster(String name, int kind) {
+        return withItem(BLOCKS.registerBlock(
+            name,
+            properties -> new thaumcraft.device.CrystalClusterBlock(kind, properties),
+            thaumcraft.device.DeviceProperties::crystal
+        ));
     }
 
     private static DeferredBlock<TubeBlock> tube(String name, TubeBlock.Kind kind) {

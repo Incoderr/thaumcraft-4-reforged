@@ -412,4 +412,19 @@ public final class ClientFx implements FxProxy {
         fx.alpha(0.8F);
         WorldFxRenderer.add(fx);
     }
+
+    @Override
+    public void nitorParticles(Level level, BlockPos pos) {
+        DeviceFx.nitorParticles(level, pos);
+    }
+
+    @Override
+    public void nitorSparkle(Level level, BlockPos pos) {
+        DeviceFx.nitorSparkle(level, pos);
+    }
+
+    @Override
+    public void crystalSpark(Level level, double x, double y, double z, float size, int color) {
+        DeviceFx.crystalSpark(level, x, y, z, size, color);
+    }
 }

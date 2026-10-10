@@ -212,6 +212,43 @@ public final class ModBlockEntities {
         () -> new BlockEntityType<>(InfusionPillarBlockEntity::new, ModBlocks.INFUSION_PILLAR.get())
     );
 
+    public static final Supplier<BlockEntityType<thaumcraft.device.NitorLightBlockEntity>> NITOR_LIGHT = BLOCK_ENTITIES.register(
+        "nitor_light",
+        () -> new BlockEntityType<>(thaumcraft.device.NitorLightBlockEntity::new, ModBlocks.NITOR_LIGHT.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.WardingAuraBlockEntity>> WARDING_AURA = BLOCK_ENTITIES.register(
+        "warding_aura",
+        () -> new BlockEntityType<>(thaumcraft.device.WardingAuraBlockEntity::new, ModBlocks.WARDING_AURA.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.ArcaneLampBlockEntity>> ARCANE_LAMP = BLOCK_ENTITIES.register(
+        "arcane_lamp",
+        () -> new BlockEntityType<>(thaumcraft.device.ArcaneLampBlockEntity::new, ModBlocks.ARCANE_LAMP.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.LampOfGrowthBlockEntity>> LAMP_OF_GROWTH = BLOCK_ENTITIES.register(
+        "lamp_of_growth",
+        () -> new BlockEntityType<>(thaumcraft.device.LampOfGrowthBlockEntity::new, ModBlocks.LAMP_OF_GROWTH.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.LampOfFertilityBlockEntity>> LAMP_OF_FERTILITY = BLOCK_ENTITIES.register(
+        "lamp_of_fertility",
+        () -> new BlockEntityType<>(thaumcraft.device.LampOfFertilityBlockEntity::new, ModBlocks.LAMP_OF_FERTILITY.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.ItemGrateBlockEntity>> ITEM_GRATE = BLOCK_ENTITIES.register(
+        "item_grate",
+        () -> new BlockEntityType<>(thaumcraft.device.ItemGrateBlockEntity::new, ModBlocks.ITEM_GRATE.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.ArcaneEarBlockEntity>> ARCANE_EAR = BLOCK_ENTITIES.register(
+        "arcane_ear",
+        () -> new BlockEntityType<>(thaumcraft.device.ArcaneEarBlockEntity::new, ModBlocks.ARCANE_EAR.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.ArcaneLevitatorBlockEntity>> ARCANE_LEVITATOR = BLOCK_ENTITIES.register(
+        "arcane_levitator",
+        () -> new BlockEntityType<>(thaumcraft.device.ArcaneLevitatorBlockEntity::new, ModBlocks.ARCANE_LEVITATOR.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.CrystalClusterBlockEntity>> CRYSTAL_CLUSTER = BLOCK_ENTITIES.register(
+        "crystal_cluster",
+        () -> new BlockEntityType<>(thaumcraft.device.CrystalClusterBlockEntity::new, ModBlocks.AIR_CRYSTAL_CLUSTER.get(), ModBlocks.FIRE_CRYSTAL_CLUSTER.get(), ModBlocks.WATER_CRYSTAL_CLUSTER.get(), ModBlocks.EARTH_CRYSTAL_CLUSTER.get(), ModBlocks.ORDER_CRYSTAL_CLUSTER.get(), ModBlocks.ENTROPY_CRYSTAL_CLUSTER.get(), ModBlocks.MIXED_CRYSTAL_CLUSTER.get(), ModBlocks.STRANGE_CRYSTALS.get())
+    );
+
     private ModBlockEntities() {
     }
 

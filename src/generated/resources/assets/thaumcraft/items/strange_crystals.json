@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "thaumcraft:item/strange_crystals",
+    "model": {
+      "type": "thaumcraft:crystal_cluster",
+      "kind": 7
+    }
+  }
+}

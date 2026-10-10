@@ -96,4 +96,13 @@ public interface FxProxy {
 
     default void focalManipulatorSparkle(Level level, double x, double y, double z) {
     }
+
+    default void nitorParticles(Level level, BlockPos pos) {
+    }
+
+    default void nitorSparkle(Level level, BlockPos pos) {
+    }
+
+    default void crystalSpark(Level level, double x, double y, double z, float size, int color) {
+    }
 }
