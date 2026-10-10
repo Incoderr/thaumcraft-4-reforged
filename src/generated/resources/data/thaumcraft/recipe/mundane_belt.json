@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:mundane_belt"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "minecraft:leather",
+    "I": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    " L ",
+    "L L",
+    " I "
+  ],
+  "result": {
+    "id": "thaumcraft:mundane_belt"
+  }
+}

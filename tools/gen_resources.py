@@ -13,6 +13,7 @@ import gen_loot
 import gen_phase4
 import gen_phase5
 import gen_phase6
+import gen_phase8
 import gen_villages
 import gen_world
 
@@ -685,6 +686,14 @@ def item_definition_models(definition):
             yield from item_definition_models(definition["fallback"])
     elif definition["type"] == "minecraft:special":
         yield definition["base"]
+    elif definition["type"] == "minecraft:condition":
+        yield from item_definition_models(definition["on_true"])
+        yield from item_definition_models(definition["on_false"])
+    elif definition["type"] == "minecraft:range_dispatch":
+        for entry in definition["entries"]:
+            yield from item_definition_models(entry["model"])
+        if "fallback" in definition:
+            yield from item_definition_models(definition["fallback"])
     elif definition["type"] == "minecraft:composite":
         for model in definition["models"]:
             yield from item_definition_models(model)
@@ -730,6 +739,7 @@ def main():
     gen_loot.generate(ctx)
     gen_villages.generate(ctx)
     gen_phase4.generate(ctx)
+    gen_phase8.generate(ctx)
     gen_phase5.generate(ctx)
     gen_phase6.generate(ctx)
     write_tags()

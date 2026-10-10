@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:thaumium_hoe"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/thaumium",
+    "S": "#c:rods/wooden"
+  },
+  "pattern": [
+    "II",
+    "S ",
+    "S "
+  ],
+  "result": {
+    "id": "thaumcraft:thaumium_hoe"
+  }
+}

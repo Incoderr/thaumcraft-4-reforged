@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_pickaxe"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/void_metal",
+    "S": "#c:rods/wooden"
+  },
+  "pattern": [
+    "III",
+    " S ",
+    " S "
+  ],
+  "result": {
+    "id": "thaumcraft:void_pickaxe"
+  }
+}

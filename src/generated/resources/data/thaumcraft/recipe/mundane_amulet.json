@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:mundane_amulet"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "minecraft:string",
+    "I": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    " S ",
+    "S S",
+    " I "
+  ],
+  "result": {
+    "id": "thaumcraft:mundane_amulet"
+  }
+}

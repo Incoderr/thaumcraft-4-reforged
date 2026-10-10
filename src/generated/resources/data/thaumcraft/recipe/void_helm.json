@@ -1,0 +1,20 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:void_helmet"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/void_metal"
+  },
+  "pattern": [
+    "III",
+    "I I"
+  ],
+  "result": {
+    "id": "thaumcraft:void_helmet"
+  }
+}
