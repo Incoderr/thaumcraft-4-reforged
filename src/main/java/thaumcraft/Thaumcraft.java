@@ -26,7 +26,10 @@ import thaumcraft.registry.ModVillagers;
 import thaumcraft.research.ConfigResearch;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchNoteKeys;
+import thaumcraft.item.armor.ArmorKeys;
+import thaumcraft.registry.ModRecipes;
 import thaumcraft.test.AlchemyGameTests;
+import thaumcraft.test.ArmorGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.HexGridGameTests;
@@ -47,6 +50,7 @@ public class Thaumcraft {
         NodeJarKeys.init();
         EssentiaKeys.init();
         InfusionKeys.init();
+        ArmorKeys.init();
         ResearchNoteKeys.init();
         Knowledge.init();
         Platform.register(modEventBus);
@@ -59,6 +63,7 @@ public class Thaumcraft {
         ModFeatures.register(modEventBus);
         ModVillagers.register(modEventBus);
         ModMenus.register(modEventBus);
+        ModRecipes.register(modEventBus);
         ModCapabilities.register();
         ModPayloads.register();
         ConfigRecipes.init();
@@ -69,6 +74,7 @@ public class Thaumcraft {
         AlchemyGameTests.register(modEventBus);
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
+        ArmorGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
