@@ -43,6 +43,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> FIRELOOP = register("fireloop");
     public static final DeferredHolder<SoundEvent, SoundEvent> ICE = register("ice");
     public static final DeferredHolder<SoundEvent, SoundEvent> JACOBS = register("jacobs");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHOCK = register("shock");
 
     private ModSounds() {
     }
