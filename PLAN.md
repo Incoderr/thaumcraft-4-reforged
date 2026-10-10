@@ -248,11 +248,13 @@ thaumcraft-4-reforged/
 - Дальше каждая фаза `main` завершается синхронизацией веток (`BACKPORT.md`: sha, `rewrite.py`, `git apply -3`). В ветках правятся только `platform/`, `client/platform/`, `compat/`, регистрация и ресурсы профиля; правка игровой логики в ветке считается сигналом, что не хватает шва на `main`.
 
 ### mc/1.21.1
-- `gradle.properties`/`build.gradle` по образцу TC3 `mc/1.21.1` (NeoForge 21.1.x, JEI 19.x, Parchment), `reference/1.21.1` из TC3
-- `platform/*` и `client/platform/*` под 1.21.1, `compat/ValueInput|ValueOutput` из TC3
-- Рендер: `RenderType` на `RenderStateShard`, `TextureSheetParticle`, `RenderLevelStageEvent`, модели предметов через `overrides` и `BlockEntityWithoutLevelRenderer`
-- Post-шейдеры в формате 1.21.1, профиль генераторов `1.21.1`
-- Вехи: M1 (сервер, данные, сохранение), M2 (клиент), M3 (паритет, `nightly-1.21.1`)
+- [x] `gradle.properties`/`build.gradle` по образцу TC3 `mc/1.21.1` (NeoForge 21.1.256, JEI 19.57, Parchment, TerraBlender 4.1.0.1, Curios 9.5.1), `reference/1.21.1` из TC3
+- [x] `platform/*` и `client/platform/*` под 1.21.1, `compat/ValueInput|ValueOutput` из TC3; бижутерия на Curios (решение пользователя), свои слоты только на `main`
+- [x] Рендер: `RenderType` на `RenderStateShard`, `RenderLevelStageEvent`, special-предметы через `BlockEntityWithoutLevelRenderer` по манифесту генератора (`WorldFx` остался своей системой вместо `TextureSheetParticle`)
+- [ ] Post-шейдеры в формате 1.21.1 (вместе с фазой 10); [x] профиль генераторов `1.21.1`
+- [x] Веха M1 (фазы 1–7 на `a4bd54f`): `compileJava`, `check_seams.py`, `validate_ids.py`, 20 GameTest-ов, `runServer` (генерация, биомы TerraBlender, команды, сохранение и загрузка), клиент грузится до меню без ошибок
+- [~] M2 (клиент) ждёт визуальной проверки; M3 (паритет, `nightly-1.21.1`) после remote
+- Отличия ветки и процедура синхронизации: `BACKPORT.md` в ветке, worktree `~/projects/thaumcraft-4-reforged-1.21.1`
 
 ### mc/1.19.2
 - legacyforge, `META-INF/mods.toml` + `pack.mcmeta`, Java 17 (без `getFirst/getLast/reversed`, `Math.clamp`), AT в SRG при необходимости
