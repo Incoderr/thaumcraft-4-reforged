@@ -235,7 +235,7 @@ public final class WandManager {
             return;
         }
         FocusItem focus = Wands.getFocus(wand);
-        if (focus == null || !focus.isUpgradedWith(Wands.getFocusItem(wand), FocusUpgradeType.ARCHITECT)) {
+        if (!(focus instanceof thaumcraft.wand.focus.Architect) || !focus.isUpgradedWith(Wands.getFocusItem(wand), FocusUpgradeType.ARCHITECT)) {
             return;
         }
         int dim = getAreaDim(wand);

@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +29,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.fx.Fx;
+import thaumcraft.item.tool.SpecialMining;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.wand.WandItem;
 import thaumcraft.wand.Wands;
@@ -50,15 +50,8 @@ public class ExcavationFocus extends FocusItem {
     private static final double RANGE = 10.0;
     private static final Map<String, State> STATES = new HashMap<>();
 
-    public static MiningResult miningResult = (drop, chance, random) -> drop;
-
     public ExcavationFocus(Properties properties) {
         super(properties);
-    }
-
-    @FunctionalInterface
-    public interface MiningResult {
-        ItemStack find(ItemStack drop, float chance, RandomSource random);
     }
 
     private static final class State {
@@ -84,7 +77,7 @@ public class ExcavationFocus extends FocusItem {
 
     @Override
     public net.minecraft.resources.@Nullable Identifier getFocusTexture(ItemStack focus) {
-        return Thaumcraft.id("textures/item/focus_excavation.png");
+        return Thaumcraft.id("item/focus_excavation");
     }
 
     @Override
@@ -116,8 +109,7 @@ public class ExcavationFocus extends FocusItem {
     @Override
     public void onUsingFocusTick(ItemStack stack, Player player, int count) {
         WandItem wand = (WandItem)stack.getItem();
-        ItemStack focusStack = Wands.getFocusItem(stack);
-        AspectList cost = getVisCost(focusStack);
+        AspectList cost = getVisCost(stack);
         if (!wand.consumeAllVis(stack, player, cost, false, false)) {
             player.stopUsingItem();
             return;
@@ -211,7 +203,7 @@ public class ExcavationFocus extends FocusItem {
             float chance = 0.2F + fortune * 0.075F;
             for (int index = 0; index < drops.size(); index++) {
                 ItemStack drop = drops.get(index);
-                ItemStack replaced = miningResult.find(drop, chance, serverLevel.getRandom());
+                ItemStack replaced = SpecialMining.find(blockState, drop, chance, serverLevel.getRandom());
                 if (!ItemStack.isSameItemSameComponents(drop, replaced)) {
                     drops.set(index, replaced);
                     serverLevel.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.2F, 0.7F + serverLevel.getRandom().nextFloat() * 0.2F);

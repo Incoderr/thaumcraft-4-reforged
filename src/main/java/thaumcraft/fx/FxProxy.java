@@ -93,4 +93,7 @@ public interface FxProxy {
 
     default void excavationCrack(Level level, Entity source, BlockPos pos, BlockState state, int progress) {
     }
+
+    default void focalManipulatorSparkle(Level level, double x, double y, double z) {
+    }
 }

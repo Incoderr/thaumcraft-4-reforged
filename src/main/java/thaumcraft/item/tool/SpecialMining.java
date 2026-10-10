@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.Nullable;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 
@@ -37,26 +38,34 @@ public final class SpecialMining {
         return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "ores/" + metal));
     }
 
-    public static boolean replaceDrops(BlockState state, List<ItemEntity> drops, float chance, RandomSource random) {
-        Rule match = null;
+    private static @Nullable Rule rule(BlockState state) {
         for (Rule rule : RULES) {
             if (rule.ore().test(state)) {
-                match = rule;
-                break;
+                return rule;
             }
         }
+        return null;
+    }
+
+    public static ItemStack find(BlockState state, ItemStack drop, float chance, RandomSource random) {
+        Rule match = rule(state);
         if (match == null) {
-            return false;
+            return drop;
         }
         Item cluster = match.cluster().get();
+        if (drop.is(cluster) || random.nextFloat() > chance * match.chance()) {
+            return drop;
+        }
+        return new ItemStack(cluster, drop.getCount());
+    }
+
+    public static boolean replaceDrops(BlockState state, List<ItemEntity> drops, float chance, RandomSource random) {
         boolean replaced = false;
         for (ItemEntity drop : drops) {
             ItemStack stack = drop.getItem();
-            if (stack.is(cluster)) {
-                continue;
-            }
-            if (random.nextFloat() <= chance * match.chance()) {
-                drop.setItem(new ItemStack(cluster, stack.getCount()));
+            ItemStack result = find(state, stack, chance, random);
+            if (result != stack) {
+                drop.setItem(result);
                 replaced = true;
             }
         }
