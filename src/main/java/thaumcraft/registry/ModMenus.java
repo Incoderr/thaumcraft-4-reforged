@@ -30,6 +30,7 @@ public final class ModMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<FocalManipulatorMenu>> FOCAL_MANIPULATOR = MENUS.register("focal_manipulator", () -> Menus.withPos(FocalManipulatorMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<FocusPouchMenu>> FOCUS_POUCH = MENUS.register("focus_pouch", () -> Menus.simple(FocusPouchMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<HoverHarnessMenu>> HOVER_HARNESS = MENUS.register("hover_harness", () -> Menus.simple(HoverHarnessMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<thaumcraft.device.HandMirrorMenu>> HAND_MIRROR = MENUS.register("hand_mirror", () -> Menus.simple(thaumcraft.device.HandMirrorMenu::new));
 
     public static final DeferredHolder<MenuType<?>, MenuType<ArcaneBoreMenu>> ARCANE_BORE = MENUS.register("arcane_bore", () -> Menus.withPos(ArcaneBoreMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<ArcaneSpaMenu>> ARCANE_SPA = MENUS.register("arcane_spa", () -> Menus.withPos(ArcaneSpaMenu::new));

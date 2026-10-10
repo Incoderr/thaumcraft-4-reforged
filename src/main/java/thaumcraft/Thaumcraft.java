@@ -61,6 +61,7 @@ public class Thaumcraft {
         ResearchNoteKeys.init();
         Knowledge.init();
         WardedKeys.init();
+        thaumcraft.device.MirrorKeys.init();
         Platform.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
@@ -87,6 +88,7 @@ public class Thaumcraft {
         DeviceGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
+        thaumcraft.test.MirrorGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {

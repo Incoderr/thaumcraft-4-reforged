@@ -18,5 +18,6 @@ public final class ModCapabilities {
         Transfer.exposeItems(ModBlockEntities.HUNGRY_CHEST, (entity, side) -> entity.exposedItems(side));
         Transfer.exposeItems(ModBlockEntities.ARCANE_SPA, (entity, side) -> entity.exposedItems(side));
         Transfer.exposeFluids(ModBlockEntities.ARCANE_SPA, (entity, side) -> entity.exposedFluids(side));
+        Transfer.exposeItems(ModBlockEntities.MAGIC_MIRROR, (entity, side) -> entity.exposedItems(side));
     }
 }

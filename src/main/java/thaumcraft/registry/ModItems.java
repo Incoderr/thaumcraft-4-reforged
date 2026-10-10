@@ -268,6 +268,9 @@ public final class ModItems {
 
     public static final DeferredItem<ArcaneKeyItem> IRON_ARCANE_KEY = ITEMS.registerItem("iron_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.IRON), properties -> properties.rarity(Rarity.UNCOMMON));
     public static final DeferredItem<ArcaneKeyItem> GOLD_ARCANE_KEY = ITEMS.registerItem("gold_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.GOLD), properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<thaumcraft.device.HandMirrorItem> HAND_MIRROR = ITEMS.registerItem("hand_mirror", thaumcraft.device.HandMirrorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<thaumcraft.device.ResonatorItem> ESSENTIA_RESONATOR = ITEMS.registerItem("essentia_resonator", thaumcraft.device.ResonatorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> SINISTER_LODESTONE = ITEMS.registerItem("sinister_lodestone", Item::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
 
     private ModItems() {
     }
