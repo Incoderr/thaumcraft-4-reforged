@@ -27,6 +27,11 @@ import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.WandPedestalBlockEntity;
 import thaumcraft.blockentity.WardedBlockEntity;
 import thaumcraft.blockentity.WardingStoneBlockEntity;
+import thaumcraft.device.ArcaneBoreBaseBlockEntity;
+import thaumcraft.device.ArcaneBoreBlockEntity;
+import thaumcraft.device.ArcaneSpaBlockEntity;
+import thaumcraft.device.InfernalFurnaceBlockEntity;
+import thaumcraft.device.InfernalFurnaceNozzleBlockEntity;
 import thaumcraft.essentia.CentrifugeBlockEntity;
 import thaumcraft.essentia.EssentiaBufferBlockEntity;
 import thaumcraft.essentia.EssentiaCrystallizerBlockEntity;
@@ -210,6 +215,27 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<InfusionPillarBlockEntity>> INFUSION_PILLAR = BLOCK_ENTITIES.register(
         "infusion_pillar",
         () -> new BlockEntityType<>(InfusionPillarBlockEntity::new, ModBlocks.INFUSION_PILLAR.get())
+    );
+
+    public static final Supplier<BlockEntityType<InfernalFurnaceBlockEntity>> INFERNAL_FURNACE = BLOCK_ENTITIES.register(
+        "infernal_furnace",
+        () -> new BlockEntityType<>(InfernalFurnaceBlockEntity::new, ModBlocks.INFERNAL_FURNACE.get())
+    );
+    public static final Supplier<BlockEntityType<InfernalFurnaceNozzleBlockEntity>> INFERNAL_FURNACE_NOZZLE = BLOCK_ENTITIES.register(
+        "infernal_furnace_nozzle",
+        () -> new BlockEntityType<>(InfernalFurnaceNozzleBlockEntity::new, ModBlocks.INFERNAL_FURNACE.get())
+    );
+    public static final Supplier<BlockEntityType<ArcaneBoreBaseBlockEntity>> ARCANE_BORE_BASE = BLOCK_ENTITIES.register(
+        "arcane_bore_base",
+        () -> new BlockEntityType<>(ArcaneBoreBaseBlockEntity::new, ModBlocks.ARCANE_BORE_BASE.get())
+    );
+    public static final Supplier<BlockEntityType<ArcaneBoreBlockEntity>> ARCANE_BORE = BLOCK_ENTITIES.register(
+        "arcane_bore",
+        () -> new BlockEntityType<>(ArcaneBoreBlockEntity::new, ModBlocks.ARCANE_BORE.get())
+    );
+    public static final Supplier<BlockEntityType<ArcaneSpaBlockEntity>> ARCANE_SPA = BLOCK_ENTITIES.register(
+        "arcane_spa",
+        () -> new BlockEntityType<>(ArcaneSpaBlockEntity::new, ModBlocks.ARCANE_SPA.get())
     );
 
     private ModBlockEntities() {

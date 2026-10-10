@@ -74,6 +74,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:arcane_spa",
+      "required": false
+    },
+    {
       "id": "thaumcraft:arcane_stone",
       "required": false
     },
@@ -159,6 +163,10 @@
     },
     {
       "id": "thaumcraft:golem_fetter",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:infernal_furnace",
       "required": false
     },
     {

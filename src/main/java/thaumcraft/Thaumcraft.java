@@ -36,6 +36,7 @@ import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
+import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.focus.FocusKeys;
@@ -79,6 +80,7 @@ public class Thaumcraft {
         InfusionGameTests.register(modEventBus);
         ArmorGameTests.register(modEventBus);
         GearGameTests.register(modEventBus);
+        MachineGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
