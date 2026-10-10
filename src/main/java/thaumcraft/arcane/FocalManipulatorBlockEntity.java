@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -21,6 +22,7 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.blockentity.TcBlockEntity;
+import thaumcraft.fx.Fx;
 import thaumcraft.menu.FocalManipulatorMenu;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModSounds;
@@ -72,8 +74,8 @@ public class FocalManipulatorBlockEntity extends TcBlockEntity implements Contai
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, FocalManipulatorBlockEntity table) {
         if (table.size > 0) {
-            var random = level.getRandom();
-            thaumcraft.fx.Fx.get().focalManipulatorSparkle(
+            RandomSource random = level.getRandom();
+            Fx.get().focalManipulatorSparkle(
                 level,
                 pos.getX() + 0.5 + (random.nextFloat() - random.nextFloat()) * 0.3F,
                 pos.getY() + 1.25 + (random.nextFloat() - random.nextFloat()) * 0.3F,
