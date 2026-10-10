@@ -30,5 +30,7 @@ public final class ModPayloads {
         ModNetwork.toServer(FocusChangePayload.TYPE, FocusChangePayload.STREAM_CODEC, FocusChangePayload::handle);
         ModNetwork.toServer(MiscTogglePayload.TYPE, MiscTogglePayload.STREAM_CODEC, MiscTogglePayload::handle);
         ModNetwork.toServer(FocalManipulatorSelectPayload.TYPE, FocalManipulatorSelectPayload.STREAM_CODEC, FocalManipulatorSelectPayload::handle);
+        ModNetwork.toClient(BlockBubbleFxPayload.TYPE, BlockBubbleFxPayload.STREAM_CODEC);
+        ModNetwork.toServer(ToolOrientationPayload.TYPE, ToolOrientationPayload.STREAM_CODEC, ToolOrientationPayload::handle);
     }
 }

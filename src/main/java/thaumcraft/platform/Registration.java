@@ -1,8 +1,12 @@
 package thaumcraft.platform;
 
+import java.util.List;
 import java.util.Map;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
@@ -10,11 +14,13 @@ import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
@@ -72,6 +78,21 @@ public final class Registration {
 
     public static Item.Properties pickaxe(Item.Properties properties, TcToolMaterial material, float attackDamage, float attackSpeed) {
         return properties.pickaxe(convert(material), attackDamage, attackSpeed);
+    }
+
+    public static Item.Properties pickaxeAndShovel(Item.Properties properties, TcToolMaterial material, float attackDamage, float attackSpeed) {
+        HolderGetter<Block> blocks = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+        Tool tool = new Tool(
+            List.of(
+                Tool.Rule.deniesDrops(blocks.getOrThrow(material.incorrectForDrops())),
+                Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_PICKAXE), material.miningSpeed()),
+                Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_SHOVEL), material.miningSpeed())
+            ),
+            1.0F,
+            1,
+            true
+        );
+        return properties.pickaxe(convert(material), attackDamage, attackSpeed).component(DataComponents.TOOL, tool);
     }
 
     public static Item.Properties axe(Item.Properties properties, TcToolMaterial material, float attackDamage, float attackSpeed) {
