@@ -35,7 +35,7 @@ public class ArcaneSpaBlockEntity extends TcBlockEntity implements WorldlyContai
     private static final int[] SLOTS_TOP = {};
 
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-    private final Transfer.FluidTank tank = new Transfer.FluidTank(CAPACITY, stack -> true, true, this::sync);
+    private final Transfer.FluidTank tank = new Transfer.FluidTank(CAPACITY, stack -> true, true, this::onTankChanged);
     private boolean mix = true;
     private int counter;
 
@@ -45,6 +45,14 @@ public class ArcaneSpaBlockEntity extends TcBlockEntity implements WorldlyContai
 
     protected ArcaneSpaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    private void onTankChanged() {
+        if (level != null && !level.isClientSide()) {
+            sync();
+        } else {
+            setChanged();
+        }
     }
 
     public Transfer.@Nullable FluidTank exposedFluids(@Nullable Direction side) {
