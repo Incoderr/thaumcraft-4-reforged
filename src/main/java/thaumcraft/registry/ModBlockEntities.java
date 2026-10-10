@@ -211,6 +211,14 @@ public final class ModBlockEntities {
         "infusion_pillar",
         () -> new BlockEntityType<>(InfusionPillarBlockEntity::new, ModBlocks.INFUSION_PILLAR.get())
     );
+    public static final Supplier<BlockEntityType<thaumcraft.device.MirrorBlockEntity>> MAGIC_MIRROR = BLOCK_ENTITIES.register(
+        "magic_mirror",
+        () -> new BlockEntityType<>(thaumcraft.device.MirrorBlockEntity::new, ModBlocks.MAGIC_MIRROR.get())
+    );
+    public static final Supplier<BlockEntityType<thaumcraft.device.EssentiaMirrorBlockEntity>> ESSENTIA_MIRROR = BLOCK_ENTITIES.register(
+        "essentia_mirror",
+        () -> new BlockEntityType<>(thaumcraft.device.EssentiaMirrorBlockEntity::new, ModBlocks.ESSENTIA_MIRROR.get())
+    );
 
     private ModBlockEntities() {
     }

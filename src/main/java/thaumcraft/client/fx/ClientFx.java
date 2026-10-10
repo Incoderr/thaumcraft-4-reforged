@@ -412,4 +412,25 @@ public final class ClientFx implements FxProxy {
         fx.alpha(0.8F);
         WorldFxRenderer.add(fx);
     }
+
+    @Override
+    public void mirrorTransfer(Level level, BlockPos pos, net.minecraft.core.Direction facing) {
+        RandomSource random = level.getRandom();
+        for (int index = 0; index < particleCount(1); index++) {
+            level.addParticle(
+                net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, net.minecraft.util.ARGB.colorFromFloat(0.5F, 0.0F, 0.0F, 0.0F)),
+                pos.getX() + 0.33 + random.nextFloat() * 0.33F - facing.getStepX() / 2.0,
+                pos.getY() + 0.33 + random.nextFloat() * 0.33F - facing.getStepY() / 2.0,
+                pos.getZ() + 0.33 + random.nextFloat() * 0.33F - facing.getStepZ() / 2.0,
+                facing.getStepX() * 0.05,
+                facing.getStepY() * 0.05,
+                facing.getStepZ() * 0.05
+            );
+        }
+    }
+
+    @Override
+    public void sinisterNode(Level level, BlockPos pos) {
+        thaumcraft.client.render.device.SinisterNodes.add(level.dimension(), pos);
+    }
 }

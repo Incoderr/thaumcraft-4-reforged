@@ -264,6 +264,10 @@ public final class ModItems {
     public static final DeferredItem<VisAmuletItem> VIS_AMULET = ITEMS.registerItem("vis_amulet", properties -> new VisAmuletItem(properties, false), properties -> properties.stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<HoverGirdleItem> THAUMOSTATIC_GIRDLE = ITEMS.registerItem("thaumostatic_girdle", HoverGirdleItem::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
 
+    public static final DeferredItem<thaumcraft.device.HandMirrorItem> HAND_MIRROR = ITEMS.registerItem("hand_mirror", thaumcraft.device.HandMirrorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<thaumcraft.device.ResonatorItem> ESSENTIA_RESONATOR = ITEMS.registerItem("essentia_resonator", thaumcraft.device.ResonatorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> SINISTER_LODESTONE = ITEMS.registerItem("sinister_lodestone", Item::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
+
     private ModItems() {
     }
 

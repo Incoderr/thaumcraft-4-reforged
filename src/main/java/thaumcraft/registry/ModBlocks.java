@@ -519,6 +519,27 @@ public final class ModBlocks {
 
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
+    public static final DeferredBlock<thaumcraft.device.MirrorBlock> MAGIC_MIRROR = BLOCKS.registerBlock(
+        "magic_mirror",
+        properties -> new thaumcraft.device.MirrorBlock(false, properties),
+        properties -> properties.mapColor(MapColor.NONE).noCollision().noOcclusion().strength(1.0F, 10.0F).pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredBlock<thaumcraft.device.MirrorBlock> ESSENTIA_MIRROR = BLOCKS.registerBlock(
+        "essentia_mirror",
+        properties -> new thaumcraft.device.MirrorBlock(true, properties),
+        properties -> properties.mapColor(MapColor.NONE).noCollision().noOcclusion().strength(1.0F, 10.0F).pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredItem<thaumcraft.device.MirrorItem> MAGIC_MIRROR_ITEM = ModItems.ITEMS.registerItem(
+        "magic_mirror",
+        properties -> new thaumcraft.device.MirrorItem(MAGIC_MIRROR.get(), properties),
+        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+    );
+    public static final DeferredItem<thaumcraft.device.MirrorItem> ESSENTIA_MIRROR_ITEM = ModItems.ITEMS.registerItem(
+        "essentia_mirror",
+        properties -> new thaumcraft.device.MirrorItem(ESSENTIA_MIRROR.get(), properties),
+        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+    );
+
     private ModBlocks() {
     }
 
