@@ -36,7 +36,7 @@ public class ArcaneKeyItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return DeviceKeys.KEY_LINK.has(stack);
+        return WardedKeys.KEY_LINK.has(stack);
     }
 
     @Override
@@ -61,11 +61,11 @@ public class ArcaneKeyItem extends Item {
             return InteractionResult.SUCCESS;
         }
         UUID id = player.getUUID();
-        DeviceKeys.KeyLink link = DeviceKeys.KEY_LINK.get(stack);
+        WardedKeys.KeyLink link = WardedKeys.KEY_LINK.get(stack);
         if (link == null) {
             if (owned.isOwner(id) || owned.hasAccess(id, OwnedBlockEntity.GOLD) && keyType == OwnedBlockEntity.IRON) {
                 ItemStack bound = new ItemStack(this);
-                DeviceKeys.KEY_LINK.set(bound, new DeviceKeys.KeyLink(target, type));
+                WardedKeys.KEY_LINK.set(bound, new WardedKeys.KeyLink(target, type));
                 if (!level.isClientSide()) {
                     if (!player.getInventory().add(bound)) {
                         level.addFreshEntity(new ItemEntity(level, player.getX(), player.getY(), player.getZ(), bound));
@@ -111,7 +111,7 @@ public class ArcaneKeyItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        DeviceKeys.KeyLink link = DeviceKeys.KEY_LINK.get(stack);
+        WardedKeys.KeyLink link = WardedKeys.KEY_LINK.get(stack);
         if (link != null) {
             BlockPos pos = link.pos();
             builder.accept(styled(Component.translatable("tc.key9")));

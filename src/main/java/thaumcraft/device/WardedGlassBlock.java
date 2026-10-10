@@ -51,7 +51,7 @@ public class WardedGlassBlock extends TransparentBlock implements EntityBlock, W
     @Override
     public InteractionResult onWandUseOn(Level level, BlockPos pos, Player player, ItemStack wand, Direction side) {
         OwnedBlockEntity owned = OwnedBlockEntity.at(level, pos);
-        if (DeviceConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
+        if (WardedConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {

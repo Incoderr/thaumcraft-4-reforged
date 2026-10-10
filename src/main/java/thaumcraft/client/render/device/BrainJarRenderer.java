@@ -39,6 +39,6 @@ public class BrainJarRenderer implements BlockEntityRenderer<BrainJarBlockEntity
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        DeviceRendering.brainJar(collector, poseStack, state.lightCoords, state.rotation, DeviceRendering.viewerTicks());
+        WardedRendering.brainJar(collector, poseStack, state.lightCoords, state.rotation, WardedRendering.viewerTicks());
     }
 }

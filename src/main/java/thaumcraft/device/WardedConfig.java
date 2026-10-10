@@ -1,8 +1,8 @@
 package thaumcraft.device;
 
-public final class DeviceConfig {
+public final class WardedConfig {
     public static final boolean WARDED_STONE = true;
 
-    private DeviceConfig() {
+    private WardedConfig() {
     }
 }

@@ -17,7 +17,7 @@ import thaumcraft.client.geom.QuadSink;
 import thaumcraft.client.platform.ItemGeometry;
 import thaumcraft.registry.ModBlocks;
 
-public final class DeviceRendering {
+public final class WardedRendering {
     private static final Identifier CHEST_TEXTURE = Thaumcraft.id("textures/model/chesthungry.png");
     private static final Identifier BANNER_BLANK = Thaumcraft.id("textures/model/banner_blank.png");
     private static final Identifier BANNER_CULTIST = Thaumcraft.id("textures/model/banner_cultist.png");
@@ -26,7 +26,7 @@ public final class DeviceRendering {
     private static final int WHITE = 0xFFFFFFFF;
     private static final float DEGREES = 180.0F / (float) Math.PI;
 
-    private DeviceRendering() {
+    private WardedRendering() {
     }
 
     public static int viewerTicks() {

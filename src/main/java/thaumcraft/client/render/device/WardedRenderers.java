@@ -10,8 +10,8 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.registry.ModBlockEntities;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
-public final class DeviceRenderers {
-    private DeviceRenderers() {
+public final class WardedRenderers {
+    private WardedRenderers() {
     }
 
     @SubscribeEvent
@@ -23,9 +23,9 @@ public final class DeviceRenderers {
 
     @SubscribeEvent
     static void registerSpecialRenderers(RegisterSpecialModelRendererEvent event) {
-        event.register(Thaumcraft.id("hungry_chest"), DeviceSpecialRenderers.HungryChest.Unbaked.MAP_CODEC);
-        event.register(Thaumcraft.id("brain_jar"), DeviceSpecialRenderers.BrainJar.Unbaked.MAP_CODEC);
-        event.register(Thaumcraft.id("banner"), DeviceSpecialRenderers.Banner.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("hungry_chest"), WardedSpecialRenderers.HungryChest.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("brain_jar"), WardedSpecialRenderers.BrainJar.Unbaked.MAP_CODEC);
+        event.register(Thaumcraft.id("banner"), WardedSpecialRenderers.Banner.Unbaked.MAP_CODEC);
     }
 
     @SubscribeEvent

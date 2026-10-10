@@ -28,7 +28,7 @@ public class BannerItem extends BlockItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        Integer color = DeviceKeys.BANNER_COLOR.get(stack);
+        Integer color = WardedKeys.BANNER_COLOR.get(stack);
         if (color != null && color >= 0 && color < ModBlocks.CANDLE_COLORS.length) {
             return Component.translatable("block.thaumcraft.banner." + ModBlocks.CANDLE_COLORS[color]);
         }
@@ -59,11 +59,11 @@ public class BannerItem extends BlockItem {
                     default -> 0;
                 });
             }
-            Aspect aspect = DeviceKeys.BANNER_ASPECT.get(stack);
+            Aspect aspect = WardedKeys.BANNER_ASPECT.get(stack);
             if (aspect != null) {
                 banner.setAspect(aspect);
             }
-            Integer color = DeviceKeys.BANNER_COLOR.get(stack);
+            Integer color = WardedKeys.BANNER_COLOR.get(stack);
             if (color != null) {
                 banner.setColor(color);
             }
@@ -79,7 +79,7 @@ public class BannerItem extends BlockItem {
         }
         for (int color = 0; color < 16; color++) {
             ItemStack banner = new ItemStack(ModBlocks.BANNER.get());
-            DeviceKeys.BANNER_COLOR.set(banner, color);
+            WardedKeys.BANNER_COLOR.set(banner, color);
             event.accept(banner);
         }
     }

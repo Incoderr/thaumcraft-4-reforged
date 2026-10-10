@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.platform.StackKey;
 
-public final class DeviceKeys {
+public final class WardedKeys {
     public record KeyLink(BlockPos pos, int type) {
         public static final Codec<KeyLink> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockPos.CODEC.fieldOf("location").forGetter(KeyLink::pos),
@@ -26,7 +26,7 @@ public final class DeviceKeys {
     public static final StackKey<Integer> BANNER_COLOR = StackKey.register("banner_color", Codec.INT, ByteBufCodecs.VAR_INT);
     public static final StackKey<Aspect> BANNER_ASPECT = StackKey.register("banner_aspect", Aspect.CODEC, Aspect.STREAM_CODEC);
 
-    private DeviceKeys() {
+    private WardedKeys() {
     }
 
     public static void init() {

@@ -217,7 +217,7 @@ public class ArcanePressurePlateBlock extends Block implements EntityBlock, Wand
             return InteractionResult.PASS;
         }
         OwnedBlockEntity owned = OwnedBlockEntity.at(level, pos);
-        if (DeviceConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
+        if (WardedConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {

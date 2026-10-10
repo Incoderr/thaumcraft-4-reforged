@@ -64,9 +64,9 @@ public class BannerBlock extends Block implements EntityBlock {
     public static ItemStack createDrop(BannerBlock block, BannerBlockEntity banner) {
         ItemStack drop = new ItemStack(block);
         if (banner.getColor() >= 0 || banner.getAspect() != null) {
-            DeviceKeys.BANNER_COLOR.set(drop, banner.getColor());
+            WardedKeys.BANNER_COLOR.set(drop, banner.getColor());
             if (banner.getAspect() != null) {
-                DeviceKeys.BANNER_ASPECT.set(drop, banner.getAspect());
+                WardedKeys.BANNER_ASPECT.set(drop, banner.getAspect());
             }
         }
         return drop;

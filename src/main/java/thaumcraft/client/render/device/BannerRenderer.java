@@ -43,11 +43,11 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
         state.facing = entity.getFacing();
         state.onWall = entity.isOnWall();
         long time = entity.getLevel() == null ? 0L : entity.getLevel().getGameTime();
-        state.swing = DeviceRendering.bannerSwing(state.blockPos.getX(), state.blockPos.getY(), state.blockPos.getZ(), time, partialTicks);
+        state.swing = WardedRendering.bannerSwing(state.blockPos.getX(), state.blockPos.getY(), state.blockPos.getZ(), time, partialTicks);
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        DeviceRendering.banner(collector, poseStack, state.lightCoords, state.color, state.aspect, true, state.facing, state.onWall, state.swing);
+        WardedRendering.banner(collector, poseStack, state.lightCoords, state.color, state.aspect, true, state.facing, state.onWall, state.swing);
     }
 }

@@ -37,6 +37,6 @@ public class HungryChestRenderer implements BlockEntityRenderer<HungryChestBlock
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        DeviceRendering.hungryChest(collector, poseStack, state.lightCoords, state.facing, state.lid);
+        WardedRendering.hungryChest(collector, poseStack, state.lightCoords, state.facing, state.lid);
     }
 }

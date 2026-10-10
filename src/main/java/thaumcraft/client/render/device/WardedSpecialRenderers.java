@@ -13,10 +13,10 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.Aspect;
-import thaumcraft.device.DeviceKeys;
+import thaumcraft.device.WardedKeys;
 
-public final class DeviceSpecialRenderers {
-    private DeviceSpecialRenderers() {
+public final class WardedSpecialRenderers {
+    private WardedSpecialRenderers() {
     }
 
     private static void extents(Consumer<Vector3fc> output, float minY, float maxY) {
@@ -40,7 +40,7 @@ public final class DeviceSpecialRenderers {
         public void submit(PoseStack poseStack, SubmitNodeCollector collector, int lightCoords, int overlayCoords, boolean hasFoil, int outlineColor) {
             poseStack.pushPose();
             inventoryTurn(poseStack);
-            DeviceRendering.hungryChest(collector, poseStack, lightCoords, Direction.SOUTH, 0.0F);
+            WardedRendering.hungryChest(collector, poseStack, lightCoords, Direction.SOUTH, 0.0F);
             poseStack.popPose();
         }
 
@@ -69,7 +69,7 @@ public final class DeviceSpecialRenderers {
         public void submit(PoseStack poseStack, SubmitNodeCollector collector, int lightCoords, int overlayCoords, boolean hasFoil, int outlineColor) {
             poseStack.pushPose();
             inventoryTurn(poseStack);
-            DeviceRendering.brainJar(collector, poseStack, lightCoords, 0.0F, DeviceRendering.viewerTicks());
+            WardedRendering.brainJar(collector, poseStack, lightCoords, 0.0F, WardedRendering.viewerTicks());
             poseStack.popPose();
         }
 
@@ -112,7 +112,7 @@ public final class DeviceSpecialRenderers {
             poseStack.translate(0.5F, 0.5F, 0.5F);
             poseStack.rotateDegrees(Axis.YP, 180.0F);
             poseStack.translate(-0.5F, -1.0F, -0.5F);
-            DeviceRendering.banner(collector, poseStack, lightCoords, banner.color(), banner.aspect(), false, 0, false, DeviceRendering.bannerSwing(0, 0, 0, 0L, 0.0F));
+            WardedRendering.banner(collector, poseStack, lightCoords, banner.color(), banner.aspect(), false, 0, false, WardedRendering.bannerSwing(0, 0, 0, 0L, 0.0F));
             poseStack.popPose();
         }
 
@@ -123,8 +123,8 @@ public final class DeviceSpecialRenderers {
 
         @Override
         public @Nullable BannerData extractArgument(ItemStack stack) {
-            Integer color = DeviceKeys.BANNER_COLOR.get(stack);
-            return new BannerData(color == null ? -1 : color, DeviceKeys.BANNER_ASPECT.get(stack));
+            Integer color = WardedKeys.BANNER_COLOR.get(stack);
+            return new BannerData(color == null ? -1 : color, WardedKeys.BANNER_ASPECT.get(stack));
         }
 
         public record Unbaked() implements SpecialModelRenderer.Unbaked<BannerData> {

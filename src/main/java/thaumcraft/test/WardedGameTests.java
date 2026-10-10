@@ -50,7 +50,7 @@ import thaumcraft.device.BannerBlock;
 import thaumcraft.device.BannerBlockEntity;
 import thaumcraft.device.BannerItem;
 import thaumcraft.device.BrainJarBlockEntity;
-import thaumcraft.device.DeviceKeys;
+import thaumcraft.device.WardedKeys;
 import thaumcraft.device.HungryChestBlockEntity;
 import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.registry.ModBlocks;
@@ -118,7 +118,7 @@ public final class WardedGameTests {
 
     private static ItemStack boundKey(ServerPlayer player) {
         for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
-            if (DeviceKeys.KEY_LINK.has(stack)) {
+            if (WardedKeys.KEY_LINK.has(stack)) {
                 return stack;
             }
         }
@@ -153,7 +153,7 @@ public final class WardedGameTests {
         ModItems.IRON_ARCANE_KEY.get().onItemUseFirst(blank, new UseOnContext(level, owner, InteractionHand.MAIN_HAND, blank, hit(top, Direction.NORTH)));
         ItemStack bound = boundKey(owner);
         helper.assertFalse(bound.isEmpty(), "owner got no bound key");
-        helper.assertValueEqual(DeviceKeys.KEY_LINK.get(bound).pos(), base, "key location is the lower half");
+        helper.assertValueEqual(WardedKeys.KEY_LINK.get(bound).pos(), base, "key location is the lower half");
         helper.assertValueEqual(blank.getCount(), 1, "blank key not consumed");
 
         stranger.setItemInHand(InteractionHand.MAIN_HAND, bound);
@@ -285,8 +285,8 @@ public final class WardedGameTests {
         helper.assertValueEqual(copy.getFacing(), 7, "loaded facing");
 
         ItemStack drop = BannerBlock.createDrop(ModBlocks.BANNER.get(), banner);
-        helper.assertValueEqual(DeviceKeys.BANNER_COLOR.get(drop), 5, "dropped color");
-        helper.assertTrue(DeviceKeys.BANNER_ASPECT.get(drop) == Aspect.FIRE, "dropped aspect");
+        helper.assertValueEqual(WardedKeys.BANNER_COLOR.get(drop), 5, "dropped color");
+        helper.assertTrue(WardedKeys.BANNER_ASPECT.get(drop) == Aspect.FIRE, "dropped aspect");
         Component name = drop.getItem().getName(drop);
         helper.assertTrue(name.getContents() instanceof TranslatableContents contents && contents.getKey().equals("block.thaumcraft.banner.lime"), "colored banner name key");
         helper.assertTrue(ModBlocks.BANNER_ITEM.get().getName(new ItemStack(ModBlocks.BANNER_ITEM.get())).getContents() instanceof TranslatableContents plain && plain.getKey().equals("block.thaumcraft.banner"), "crimson banner name key");
