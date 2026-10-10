@@ -27,6 +27,8 @@ public final class ModPayloads {
         ModNetwork.toServer(AspectCombinePayload.TYPE, AspectCombinePayload.STREAM_CODEC, ResearchTableBlockEntity::handleCombine);
         ModNetwork.toServer(HoverTogglePayload.TYPE, HoverTogglePayload.STREAM_CODEC, HoverTogglePayload::handle);
         ModNetwork.toClient(ShockZapPayload.TYPE, ShockZapPayload.STREAM_CODEC);
+        ModNetwork.toClient(RunicChargePayload.TYPE, RunicChargePayload.STREAM_CODEC);
+        ModNetwork.toClient(ShieldFxPayload.TYPE, ShieldFxPayload.STREAM_CODEC);
         ModNetwork.toServer(FocusChangePayload.TYPE, FocusChangePayload.STREAM_CODEC, FocusChangePayload::handle);
         ModNetwork.toServer(MiscTogglePayload.TYPE, MiscTogglePayload.STREAM_CODEC, MiscTogglePayload::handle);
         ModNetwork.toClient(BlockBubbleFxPayload.TYPE, BlockBubbleFxPayload.STREAM_CODEC);

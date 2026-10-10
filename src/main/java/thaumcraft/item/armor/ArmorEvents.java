@@ -118,7 +118,7 @@ public final class ArmorEvents {
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         DamageSource source = event.getSource();
         float amount = event.getAmount();
-        Entity attacker = source.getEntity();
+        Entity attacker = source.getDirectEntity();
         if (attacker instanceof Player player && FortressArmorItem.getMask(player) == 2 && player.getRandom().nextFloat() < amount / 12.0F) {
             player.heal(1.0F);
         }
