@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.entity.monster.FireBat;
 import thaumcraft.entity.projectile.Ember;
+import thaumcraft.entity.projectile.ExplosiveOrb;
 import thaumcraft.entity.projectile.FrostShard;
 import thaumcraft.entity.projectile.PechBlast;
 import thaumcraft.entity.projectile.PrimalArrow;
@@ -31,6 +32,7 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<PechBlast>> PECH_BLAST = projectile("pech_blast", PechBlast::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<ShockOrb>> SHOCK_ORB = projectile("shock_orb", ShockOrb::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<Ember>> EMBER = projectile("ember", Ember::new, 0.25F);
+    public static final DeferredHolder<EntityType<?>, EntityType<ExplosiveOrb>> EXPLOSIVE_ORB = projectile("explosive_orb", ExplosiveOrb::new, 0.25F);
 
     private ModEntities() {
     }
