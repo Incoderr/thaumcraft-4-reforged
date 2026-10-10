@@ -11,11 +11,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.device.ArcaneBoreBaseBlockEntity;
 import thaumcraft.device.LampBlock;
 
 public class LampNozzleRenderer<T extends BlockEntity> implements BlockEntityRenderer<T, LampNozzleRenderer.State> {
     public static class State extends BlockEntityRenderState {
         Direction facing = Direction.DOWN;
+        boolean boreBase;
     }
 
     public LampNozzleRenderer(BlockEntityRendererProvider.Context context) {
@@ -30,10 +32,11 @@ public class LampNozzleRenderer<T extends BlockEntity> implements BlockEntityRen
     public void extractRenderState(T entity, State state, float partialTicks, Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(entity, state, partialTicks, cameraPosition, breakProgress);
         state.facing = entity.getBlockState().getValue(LampBlock.FACING);
+        state.boreBase = entity.getLevel() != null && entity.getLevel().getBlockEntity(entity.getBlockPos().relative(state.facing)) instanceof ArcaneBoreBaseBlockEntity;
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        DeviceRendering.lampNozzle(collector, poseStack, state.lightCoords, state.facing);
+        DeviceRendering.lampNozzle(collector, poseStack, state.lightCoords, state.facing, state.boreBase);
     }
 }

@@ -28,7 +28,17 @@ public final class DeviceRendering {
     private DeviceRendering() {
     }
 
-    public static void lampNozzle(SubmitNodeCollector collector, PoseStack poseStack, int light, Direction facing) {
+    public static void lampNozzle(SubmitNodeCollector collector, PoseStack poseStack, int light, Direction facing, boolean boreBase) {
+        if (boreBase) {
+            poseStack.pushPose();
+            poseStack.translate(facing.getStepX(), facing.getStepY(), facing.getStepZ());
+            nozzle(collector, poseStack, light, facing.getOpposite());
+            poseStack.popPose();
+        }
+        nozzle(collector, poseStack, light, facing);
+    }
+
+    private static void nozzle(SubmitNodeCollector collector, PoseStack poseStack, int light, Direction facing) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.0F, 0.5F);
         switch (facing) {

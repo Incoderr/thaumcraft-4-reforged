@@ -13,7 +13,10 @@ import thaumcraft.client.fx.ClientFx;
 import thaumcraft.client.platform.ModRenderPipelines;
 import thaumcraft.client.research.ResearchBrowserScreen;
 import thaumcraft.client.research.ThaumometerClient;
+import thaumcraft.client.fx.MachineClientFx;
 import thaumcraft.client.screen.AlchemicalFurnaceScreen;
+import thaumcraft.client.screen.ArcaneBoreScreen;
+import thaumcraft.client.screen.ArcaneSpaScreen;
 import thaumcraft.client.screen.ArcaneWorkbenchScreen;
 import thaumcraft.client.screen.DeconstructionTableScreen;
 import thaumcraft.client.screen.FocalManipulatorScreen;
@@ -21,6 +24,7 @@ import thaumcraft.client.screen.FocusPouchScreen;
 import thaumcraft.client.screen.HoverHarnessScreen;
 import thaumcraft.client.screen.ResearchTableScreen;
 import thaumcraft.client.screen.ThaumatoriumScreen;
+import thaumcraft.device.MachineFx;
 import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModMenus;
 import thaumcraft.research.ResearchClientHooks;
@@ -31,6 +35,7 @@ public final class ThaumcraftClient {
     public ThaumcraftClient(IEventBus modEventBus, ModContainer container) {
         ClientPayloadHandlers.register();
         Fx.set(new ClientFx());
+        MachineFx.set(new MachineClientFx());
         ResearchClientHooks.setBookOpener(ResearchBrowserScreen::open);
         ThaumometerClient.register();
     }
@@ -45,6 +50,8 @@ public final class ThaumcraftClient {
         event.register(ModMenus.FOCAL_MANIPULATOR.get(), FocalManipulatorScreen::new);
         event.register(ModMenus.FOCUS_POUCH.get(), FocusPouchScreen::new);
         event.register(ModMenus.HOVER_HARNESS.get(), HoverHarnessScreen::new);
+        event.register(ModMenus.ARCANE_BORE.get(), ArcaneBoreScreen::new);
+        event.register(ModMenus.ARCANE_SPA.get(), ArcaneSpaScreen::new);
     }
 
     @SubscribeEvent

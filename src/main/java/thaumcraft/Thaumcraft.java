@@ -38,6 +38,7 @@ import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
+import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.test.WardedGameTests;
 import thaumcraft.wand.WandKeys;
@@ -85,6 +86,7 @@ public class Thaumcraft {
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
+        MachineGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {

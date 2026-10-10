@@ -68,6 +68,10 @@ import thaumcraft.device.BannerItem;
 import thaumcraft.device.BrainJarBlock;
 import thaumcraft.device.HungryChestBlock;
 import thaumcraft.device.WardedGlassBlock;
+import thaumcraft.device.ArcaneBoreBaseBlock;
+import thaumcraft.device.ArcaneBoreBlock;
+import thaumcraft.device.ArcaneSpaBlock;
+import thaumcraft.device.InfernalFurnaceBlock;
 import thaumcraft.essentia.CentrifugeBlock;
 import thaumcraft.essentia.EssentiaBufferBlock;
 import thaumcraft.essentia.EssentiaCrystallizerBlock;
@@ -567,6 +571,26 @@ public final class ModBlocks {
         properties -> new BannerItem(BANNER.get(), properties),
         properties -> properties.useBlockDescriptionPrefix()
     );
+    public static final DeferredBlock<InfernalFurnaceBlock> INFERNAL_FURNACE = BLOCKS.registerBlock(
+        "infernal_furnace",
+        InfernalFurnaceBlock::new,
+        properties -> rock(properties, 10.0F, 500.0F).lightLevel(InfernalFurnaceBlock::lightLevel)
+    );
+    public static final DeferredBlock<ArcaneBoreBaseBlock> ARCANE_BORE_BASE = withItem(BLOCKS.registerBlock(
+        "arcane_bore_base",
+        ArcaneBoreBaseBlock::new,
+        properties -> wood(properties, 2.5F, 10.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<ArcaneBoreBlock> ARCANE_BORE = withItem(BLOCKS.registerBlock(
+        "arcane_bore",
+        ArcaneBoreBlock::new,
+        properties -> wood(properties, 2.5F, 10.0F).noOcclusion().dynamicShape()
+    ));
+    public static final DeferredBlock<ArcaneSpaBlock> ARCANE_SPA = withItem(BLOCKS.registerBlock(
+        "arcane_spa",
+        ArcaneSpaBlock::new,
+        properties -> stoneDevice(properties)
+    ));
 
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
 
