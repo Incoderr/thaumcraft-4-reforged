@@ -29,6 +29,11 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.crafting.ArcaneRecipe;
+import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.TcRecipe;
+import thaumcraft.crafting.TcRecipes;
+import thaumcraft.crafting.TcStack;
 import thaumcraft.device.ArcaneBoreBlock;
 import thaumcraft.device.ArcaneBoreBlockEntity;
 import thaumcraft.device.ArcaneSpaBlockEntity;
@@ -39,6 +44,7 @@ import thaumcraft.device.SmeltingBonuses;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import thaumcraft.research.Knowledge;
+import thaumcraft.research.ResearchCategories;
 import thaumcraft.wand.WandRegistry;
 import thaumcraft.wand.WandTriggers;
 import thaumcraft.wand.Wands;
@@ -51,7 +57,8 @@ public final class MachineGameTests {
         "infernal_furnace_bonus_nuggets",
         "infernal_furnace_collapses",
         "arcane_bore_digs_block",
-        "arcane_spa_places_water"
+        "arcane_spa_places_water",
+        "device_recipes_resolve"
     };
 
     static {
@@ -60,6 +67,7 @@ public final class MachineGameTests {
         FUNCTIONS.register(TESTS[2], () -> MachineGameTests::furnaceCollapses);
         FUNCTIONS.register(TESTS[3], () -> MachineGameTests::boreDigs);
         FUNCTIONS.register(TESTS[4], () -> MachineGameTests::spaPlacesWater);
+        FUNCTIONS.register(TESTS[5], () -> MachineGameTests::deviceRecipesResolve);
     }
 
     private MachineGameTests() {
@@ -204,5 +212,20 @@ public final class MachineGameTests {
             helper.assertBlockPresent(Blocks.WATER, pos.above());
             helper.assertValueEqual(spa.getTank().getAmount(), 4000, "tank after placing");
         });
+    }
+
+    private static void deviceRecipesResolve(GameTestHelper helper) {
+        for (String key : new String[] {"ArcaneSpa", "ArcaneBoreBase", "ArcaneBore"}) {
+            TcRecipe recipe = TcRecipes.get(key);
+            helper.assertTrue(recipe != null, "recipe missing: " + key);
+            TcStack result = recipe instanceof ArcaneRecipe arcane ? arcane.result() : recipe instanceof InfusionRecipe infusion ? infusion.result() : null;
+            helper.assertTrue(result != null && result.exists(), "recipe result unresolved: " + key);
+            helper.assertTrue(hasResearch(recipe.research()), "research missing: " + recipe.research());
+        }
+        helper.succeed();
+    }
+
+    private static boolean hasResearch(String key) {
+        return ResearchCategories.getResearch(key) != null;
     }
 }
