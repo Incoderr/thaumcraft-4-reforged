@@ -87,4 +87,10 @@ public interface FxProxy {
 
     default void blockBubble(Level level, BlockPos pos, int color) {
     }
+
+    default void excavationBeam(Level level, Entity source, double x, double y, double z, int impact) {
+    }
+
+    default void excavationCrack(Level level, Entity source, BlockPos pos, BlockState state, int progress) {
+    }
 }

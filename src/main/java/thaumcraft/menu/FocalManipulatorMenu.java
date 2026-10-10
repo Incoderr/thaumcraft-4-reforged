@@ -19,6 +19,9 @@ public class FocalManipulatorMenu extends AbstractContainerMenu {
         return pos;
     }
 
+    public void startCraft(net.minecraft.server.level.ServerPlayer player, int upgrade) {
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         return ItemStack.EMPTY;

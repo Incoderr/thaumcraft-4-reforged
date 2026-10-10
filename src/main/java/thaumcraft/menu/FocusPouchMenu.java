@@ -48,7 +48,6 @@ public class FocusPouchMenu extends AbstractContainerMenu {
             for (int slot = 0; slot < POUCH_SLOTS; slot++) {
                 pouchContainer.setItem(slot, contents.get(slot));
             }
-            pouchContainer.addListener(container -> save());
         }
         for (int slot = 0; slot < POUCH_SLOTS; slot++) {
             addSlot(new FocusSlot(pouchContainer, slot, 37 + slot % 6 * 18, 51 + slot / 6 * 18));
@@ -76,6 +75,15 @@ public class FocusPouchMenu extends AbstractContainerMenu {
             contents.add(pouchContainer.getItem(slot));
         }
         FocusPouchItem.setInventory(pouch, contents);
+    }
+
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        if (!player.level().isClientSide()) {
+            save();
+            player.getInventory().setChanged();
+        }
     }
 
     @Override

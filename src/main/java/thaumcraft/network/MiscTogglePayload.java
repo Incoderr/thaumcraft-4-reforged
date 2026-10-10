@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.Thaumcraft;
+import thaumcraft.item.tool.ElementalShovelItem;
 import thaumcraft.wand.WandManager;
 import thaumcraft.wand.Wands;
 
@@ -22,6 +23,9 @@ public record MiscTogglePayload(boolean sneak) implements CustomPacketPayload {
         ItemStack held = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (Wands.isWand(held)) {
             WandManager.toggleMisc(held, player.level(), player, payload.sneak());
+        }
+        if (held.getItem() instanceof ElementalShovelItem) {
+            ElementalShovelItem.cycleOrientation(player);
         }
     }
 
