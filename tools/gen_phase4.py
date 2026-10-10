@@ -43,12 +43,12 @@ LEGACY_VIEWS = [
 ]
 
 
-def legacy_special_item(ctx, name, model, particle):
+def legacy_special_item(ctx, name, model, particle, kind="minecraft:special"):
     ctx.item_model(name, {"gui_light": "side", "textures": {"particle": ctx.ref(particle, "item")}})
     base = ctx.ref(name, "item")
 
     def special(view):
-        return {"type": "minecraft:special", "base": base, "model": {**model, "view": view}}
+        return {"type": kind, "base": base, "model": {**model, "view": view}}
 
     ctx.write(ctx.ASSETS / "items" / f"{name}.json", {
         "model": {
@@ -189,7 +189,7 @@ def jar(ctx):
 
 
 def wands(ctx):
-    legacy_special_item(ctx, "wand", {"type": f"{NS}:wand"}, "wand_rod_greatwood")
+    legacy_special_item(ctx, "wand", {"type": f"{NS}:wand"}, "wand_rod_greatwood", f"{NS}:special_owner")
     for cap, texture in CAPS.items():
         ctx.generated_item(f"{cap}_wand_cap", texture)
     for rod, texture in RODS.items():

@@ -64,7 +64,7 @@ public final class WorldFxRenderer {
         for (WorldFx fx : frame.effects()) {
             collector.submitCustomGeometry(
                 poseStack,
-                TcRenderTypes.byBlend(fx.texture(), fx.blendMode()),
+                TcRenderTypes.byBlend(fx.texture(), fx.blendMode(), fx.depthTest()),
                 (pose, buffer) -> fx.render(new VertexQuadSink(pose, buffer), frame.partialTick(), camera, yaw, pitch)
             );
         }

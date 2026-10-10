@@ -1,6 +1,7 @@
 package thaumcraft.wand;
 
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -111,20 +112,20 @@ public final class Wands {
     }
 
     public static @Nullable FocusItem getFocus(ItemStack stack) {
-        ItemStack focus = WandKeys.FOCUS.get(stack);
-        return focus != null && focus.getItem() instanceof FocusItem item ? item : null;
+        ItemStackTemplate focus = WandKeys.FOCUS.get(stack);
+        return focus != null && focus.item().value() instanceof FocusItem item ? item : null;
     }
 
     public static ItemStack getFocusItem(ItemStack stack) {
-        ItemStack focus = WandKeys.FOCUS.get(stack);
-        return focus == null ? ItemStack.EMPTY : focus;
+        ItemStackTemplate focus = WandKeys.FOCUS.get(stack);
+        return focus == null ? ItemStack.EMPTY : focus.create();
     }
 
     public static void setFocus(ItemStack stack, ItemStack focus) {
         if (focus.isEmpty()) {
             WandKeys.FOCUS.remove(stack);
         } else {
-            WandKeys.FOCUS.set(stack, focus.copyWithCount(1));
+            WandKeys.FOCUS.set(stack, ItemStackTemplate.fromNonEmptyStack(focus, 1));
         }
     }
 

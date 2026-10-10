@@ -246,7 +246,7 @@ def blocks(ctx):
     ctx.simple_state("hole")
     ctx.write_loot("hole", [])
     gen_phase4.particle_model(ctx, "warded_block", "wardedstone")
-    ctx.simple_state("warded_block")
+    ctx.blockstate("warded_block", {"variants": {"": {"type": f"{NS}:warded", "fallback": {"model": "minecraft:block/stone"}}}})
     ctx.write_loot("warded_block", [])
     ctx.block_tags["thaumcraft:mineable/primal_crusher"].update(
         ["#minecraft:mineable/pickaxe", "#minecraft:mineable/shovel"]
@@ -320,11 +320,39 @@ def enchantment(ctx, name, max_level, weight, anvil_cost, min_base, min_step, sl
     ctx.write(ctx.DATA / NS / "enchantment" / f"{name}.json", content)
 
 
+ENCHANTMENT_TAGS = ["in_enchanting_table", "non_treasure", "on_random_loot", "tradeable", "on_mob_spawn_equipment", "on_traded_equipment"]
+
+
 def enchantments(ctx):
     if not ctx.profile.enchantment_json:
         return
     enchantment(ctx, "haste", 3, 3, 2, 15, 9, ["feet", "chest"], f"#{NS}:enchantable/haste")
     enchantment(ctx, "repair", 2, 2, 4, 20, 10, ["any"], f"#{NS}:enchantable/repair", "minecraft:unbreaking")
+    for tag in ENCHANTMENT_TAGS:
+        ctx.write(ctx.DATA / "minecraft" / "tags" / "enchantment" / f"{tag}.json", {"replace": False, "values": [f"{NS}:haste", f"{NS}:repair"]})
+
+
+DAMAGE_TYPES = {
+    "airarrow": ["minecraft:is_projectile", "minecraft:bypasses_armor", "minecraft:witch_resistant_to"],
+    "firearrow": ["minecraft:is_projectile", "minecraft:is_fire"],
+    "orderarrow": ["minecraft:is_projectile", "minecraft:bypasses_armor", "minecraft:witch_resistant_to"],
+}
+
+
+def damage_types(ctx):
+    if not ctx.profile.enchantment_json:
+        return
+    tags = {}
+    for name, names in DAMAGE_TYPES.items():
+        content = {"exhaustion": 0.1, "message_id": f"{NS}.{name}", "scaling": "when_caused_by_living_non_player"}
+        if "minecraft:is_fire" in names:
+            content["effects"] = "burning"
+        ctx.write(ctx.DATA / NS / "damage_type" / f"{name}.json", content)
+        for tag in names:
+            tags.setdefault(tag, []).append(f"{NS}:{name}")
+    for tag, values in tags.items():
+        namespace, path = tag.split(":")
+        ctx.write(ctx.DATA / namespace / "tags" / "damage_type" / f"{path}.json", {"replace": False, "values": sorted(values)})
 
 
 def generate(ctx):
@@ -337,3 +365,4 @@ def generate(ctx):
     blocks(ctx)
     tags(ctx)
     enchantments(ctx)
+    damage_types(ctx)

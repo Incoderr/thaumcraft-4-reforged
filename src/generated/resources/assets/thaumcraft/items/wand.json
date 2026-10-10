@@ -8,7 +8,7 @@
           "gui"
         ],
         "model": {
-          "type": "minecraft:special",
+          "type": "thaumcraft:special_owner",
           "base": "thaumcraft:item/wand",
           "model": {
             "type": "thaumcraft:wand",
@@ -22,7 +22,7 @@
           "thirdperson_righthand"
         ],
         "model": {
-          "type": "minecraft:special",
+          "type": "thaumcraft:special_owner",
           "base": "thaumcraft:item/wand",
           "model": {
             "type": "thaumcraft:wand",
@@ -36,7 +36,7 @@
           "firstperson_righthand"
         ],
         "model": {
-          "type": "minecraft:special",
+          "type": "thaumcraft:special_owner",
           "base": "thaumcraft:item/wand",
           "model": {
             "type": "thaumcraft:wand",
@@ -46,7 +46,7 @@
       }
     ],
     "fallback": {
-      "type": "minecraft:special",
+      "type": "thaumcraft:special_owner",
       "base": "thaumcraft:item/wand",
       "model": {
         "type": "thaumcraft:wand",

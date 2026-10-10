@@ -4,10 +4,13 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.hud.GearHud;
 import thaumcraft.client.hud.WandHud;
+import thaumcraft.client.wand.FocusRadial;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
 public final class ItemRenderers {
@@ -31,7 +34,14 @@ public final class ItemRenderers {
     }
 
     @SubscribeEvent
+    static void registerItemModels(RegisterItemModelsEvent event) {
+        event.register(Thaumcraft.id("special_owner"), OwnerSpecialModel.Unbaked.MAP_CODEC);
+    }
+
+    @SubscribeEvent
     static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.HOTBAR, Thaumcraft.id("wand_hud"), WandHud::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, Thaumcraft.id("gear_hud"), GearHud::render);
+        event.registerAbove(VanillaGuiLayers.HOTBAR, Thaumcraft.id("focus_radial"), FocusRadial::render);
     }
 }

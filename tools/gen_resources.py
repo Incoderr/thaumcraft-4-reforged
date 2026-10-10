@@ -684,7 +684,7 @@ def item_definition_models(definition):
             yield from item_definition_models(case["model"])
         if "fallback" in definition:
             yield from item_definition_models(definition["fallback"])
-    elif definition["type"] == "minecraft:special":
+    elif definition["type"] in ("minecraft:special", f"{NS}:special_owner"):
         yield definition["base"]
     elif definition["type"] == "minecraft:condition":
         yield from item_definition_models(definition["on_true"])
@@ -714,6 +714,7 @@ def validate_models():
         entries = content["variants"].values() if "variants" in content else [part["apply"] for part in content["multipart"]]
         for entry in entries:
             for variant in entry if isinstance(entry, list) else [entry]:
+                variant = variant.get("fallback", variant)
                 namespace, _, location = variant["model"].partition(":")
                 if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
                     missing.append(f"{path.name}: {variant['model']}")

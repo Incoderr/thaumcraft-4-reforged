@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -466,7 +467,7 @@ public final class ModBlocks {
     public static final DeferredBlock<WardedBlock> WARDED_BLOCK = BLOCKS.registerBlock(
         "warded_block",
         WardedBlock::new,
-        properties -> properties.mapColor(MapColor.STONE).sound(SoundType.STONE).strength(-1.0F, 999.0F).noLootTable().noOcclusion().pushReaction(PushReaction.IMMOVEABLE)
+        properties -> properties.mapColor(MapColor.STONE).sound(SoundType.STONE).strength(-1.0F, 999.0F).noLootTable().isValidSpawn(Blocks::never).pushReaction(PushReaction.IMMOVEABLE)
     );
     public static final DeferredBlock<FluxScrubberBlock> FLUX_SCRUBBER = withItem(BLOCKS.registerBlock(
         "flux_scrubber",

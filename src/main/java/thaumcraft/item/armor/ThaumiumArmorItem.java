@@ -1,9 +1,17 @@
 package thaumcraft.item.armor;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import thaumcraft.item.gear.Repairable;
+import thaumcraft.item.gear.RunicArmor;
 
-public class ThaumiumArmorItem extends Item {
+public class ThaumiumArmorItem extends Item implements Repairable, RunicArmor {
     public ThaumiumArmorItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public int getRunicCharge(ItemStack stack) {
+        return 0;
     }
 }
