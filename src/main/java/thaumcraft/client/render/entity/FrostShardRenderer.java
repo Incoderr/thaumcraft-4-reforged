@@ -6,10 +6,10 @@ import java.util.Random;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.client.render.model.ObjModel;
 import thaumcraft.entity.projectile.FrostShard;
 
@@ -44,7 +44,7 @@ public class FrostShardRenderer extends EntityRenderer<FrostShard, SpriteRenderS
         float base = state.damage * 0.1F;
         poseStack.scale(base + random.nextFloat() * 0.1F, base + random.nextFloat() * 0.1F, base + random.nextFloat() * 0.1F);
         int light = state.lightCoords;
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TEXTURE), (pose, buffer) -> ObjModel.get(MODEL).renderAll(pose, buffer, 0xFFFFFFFF, light));
+        collector.submitCustomGeometry(poseStack, TcRenderTypes.entityTranslucent(TEXTURE), (pose, buffer) -> ObjModel.get(MODEL).renderAll(pose, buffer, 0xFFFFFFFF, light));
         poseStack.popPose();
         super.submit(state, poseStack, collector, camera);
     }

@@ -6,10 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.Equippable;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -18,6 +16,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.Thaumcraft;
+import thaumcraft.item.armor.ArmorSupport;
 import thaumcraft.registry.ModItems;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
@@ -55,8 +54,8 @@ public final class ArmorModels {
         if (MODELS.isEmpty()) {
             bake(Minecraft.getInstance().getEntityModels());
         }
-        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
-        return equippable == null ? null : MODELS.get(kind).get(equippable.slot());
+        EquipmentSlot slot = ArmorSupport.slotOf(stack);
+        return slot == null ? null : MODELS.get(kind).get(slot);
     }
 
     private static IClientItemExtensions extensions(ArmorKind kind) {

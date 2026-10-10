@@ -5,11 +5,11 @@ import java.util.Random;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.ARGB;
 import org.joml.Quaternionf;
 import thaumcraft.client.fx.ParticleFx;
+import thaumcraft.client.platform.Billboards;
 import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.entity.projectile.PrimalOrb;
 
@@ -38,7 +38,7 @@ public class PrimalOrbRenderer extends EntityRenderer<PrimalOrb, SpriteRenderSta
         float spin = age / 80.0F;
         float grow = Math.min(age, 10) / 10.0F;
         int seed = state.seed;
-        collector.submitCustomGeometry(poseStack, RenderTypes.dragonRays(), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, TcRenderTypes.dragonRays(), (pose, buffer) -> {
             Random random = new Random(seed);
             Quaternionf rotation = new Quaternionf();
             for (int index = 0; index < 12; index++) {

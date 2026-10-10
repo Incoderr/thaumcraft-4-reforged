@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.Billboards;
 import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.entity.projectile.ExplosiveOrb;
 

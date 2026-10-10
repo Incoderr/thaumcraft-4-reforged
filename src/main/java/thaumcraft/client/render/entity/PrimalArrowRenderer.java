@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.Billboards;
 import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.entity.projectile.PrimalArrow;
 

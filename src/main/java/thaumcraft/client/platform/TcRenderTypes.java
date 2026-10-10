@@ -94,6 +94,10 @@ public final class TcRenderTypes {
         return RenderTypes.entityCutout(texture);
     }
 
+    public static RenderType dragonRays() {
+        return RenderTypes.dragonRays();
+    }
+
     public static RenderType entityTranslucent(Identifier texture) {
         return RenderTypes.entityTranslucent(texture);
     }

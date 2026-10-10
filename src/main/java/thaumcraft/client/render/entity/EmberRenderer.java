@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import thaumcraft.client.fx.ParticleFx;
+import thaumcraft.client.platform.Billboards;
 import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.entity.projectile.Ember;
 

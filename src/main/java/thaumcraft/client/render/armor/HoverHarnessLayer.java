@@ -8,13 +8,13 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.geom.QuadSink;
 import thaumcraft.client.platform.ItemGeometry;
+import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.client.render.model.ObjModel;
 import thaumcraft.item.armor.Hover;
 import thaumcraft.item.armor.HoverHarnessItem;
@@ -41,7 +41,7 @@ public class HoverHarnessLayer extends RenderLayer<AvatarRenderState, PlayerMode
             poseStack.rotateDegrees(Axis.XP, 28.64789F);
         }
         poseStack.translate(0.0F, 0.33F, -3.7F);
-        collector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, buffer) -> ObjModel.get(MODEL).renderAll(pose, buffer, 0xFFFFFFFF, lightCoords));
+        collector.submitCustomGeometry(poseStack, TcRenderTypes.entityCutout(TEXTURE), (pose, buffer) -> ObjModel.get(MODEL).renderAll(pose, buffer, 0xFFFFFFFF, lightCoords));
         poseStack.popPose();
         if (!Hover.isHovering(state.chestEquipment)) {
             return;

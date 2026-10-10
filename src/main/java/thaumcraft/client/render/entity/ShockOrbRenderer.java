@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import thaumcraft.client.fx.ParticleFx;
+import thaumcraft.client.platform.Billboards;
 import thaumcraft.client.platform.TcRenderTypes;
 
 public class ShockOrbRenderer<T extends Entity> extends EntityRenderer<T, EntityRenderState> {

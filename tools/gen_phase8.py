@@ -320,11 +320,16 @@ def enchantment(ctx, name, max_level, weight, anvil_cost, min_base, min_step, sl
     ctx.write(ctx.DATA / NS / "enchantment" / f"{name}.json", content)
 
 
+ENCHANTMENT_TAGS = ["in_enchanting_table", "non_treasure", "on_random_loot", "tradeable", "on_mob_spawn_equipment", "on_traded_equipment"]
+
+
 def enchantments(ctx):
     if not ctx.profile.enchantment_json:
         return
     enchantment(ctx, "haste", 3, 3, 2, 15, 9, ["feet", "chest"], f"#{NS}:enchantable/haste")
     enchantment(ctx, "repair", 2, 2, 4, 20, 10, ["any"], f"#{NS}:enchantable/repair", "minecraft:unbreaking")
+    for tag in ENCHANTMENT_TAGS:
+        ctx.write(ctx.DATA / "minecraft" / "tags" / "enchantment" / f"{tag}.json", {"replace": False, "values": [f"{NS}:haste", f"{NS}:repair"]})
 
 
 DAMAGE_TYPES = {

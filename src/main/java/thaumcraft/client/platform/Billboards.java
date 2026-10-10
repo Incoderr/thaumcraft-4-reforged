@@ -1,4 +1,4 @@
-package thaumcraft.client.render.entity;
+package thaumcraft.client.platform;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
