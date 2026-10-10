@@ -60,6 +60,14 @@ import thaumcraft.block.TravelPavingStoneBlock;
 import thaumcraft.block.WandPedestalBlock;
 import thaumcraft.block.WardedBlock;
 import thaumcraft.block.WardingPavingStoneBlock;
+import thaumcraft.device.ArcaneDoorBlock;
+import thaumcraft.device.ArcaneDoorItem;
+import thaumcraft.device.ArcanePressurePlateBlock;
+import thaumcraft.device.BannerBlock;
+import thaumcraft.device.BannerItem;
+import thaumcraft.device.BrainJarBlock;
+import thaumcraft.device.HungryChestBlock;
+import thaumcraft.device.WardedGlassBlock;
 import thaumcraft.essentia.CentrifugeBlock;
 import thaumcraft.essentia.EssentiaBufferBlock;
 import thaumcraft.essentia.EssentiaCrystallizerBlock;
@@ -515,6 +523,49 @@ public final class ModBlocks {
         "infusion_pillar_top",
         properties -> new InfusionPillarBlock(true, properties),
         properties -> stoneDevice(properties)
+    );
+
+    public static final DeferredBlock<WardedGlassBlock> WARDED_GLASS = withItem(BLOCKS.registerBlock(
+        "warded_glass",
+        WardedGlassBlock::new,
+        properties -> properties.mapColor(MapColor.NONE).strength(-1.0F, 999.0F).sound(SoundType.STONE).noOcclusion()
+    ));
+    public static final DeferredBlock<ArcaneDoorBlock> ARCANE_DOOR = BLOCKS.registerBlock(
+        "arcane_door",
+        ArcaneDoorBlock::new,
+        properties -> properties.mapColor(MapColor.METAL).strength(-1.0F, 999.0F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredItem<ArcaneDoorItem> ARCANE_DOOR_ITEM = ModItems.ITEMS.registerItem(
+        "arcane_door",
+        ArcaneDoorItem::new,
+        properties -> properties.stacksTo(1).useBlockDescriptionPrefix()
+    );
+    public static final DeferredBlock<ArcanePressurePlateBlock> ARCANE_PRESSURE_PLATE = withItem(BLOCKS.registerBlock(
+        "arcane_pressure_plate",
+        ArcanePressurePlateBlock::new,
+        properties -> properties
+            .mapColor(MapColor.WOOD)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(-1.0F, 999.0F)
+            .sound(SoundType.WOOD)
+            .noCollision()
+            .pushReaction(PushReaction.POPPED)
+    ));
+    public static final DeferredBlock<HungryChestBlock> HUNGRY_CHEST = withItem(BLOCKS.registerBlock(
+        "hungry_chest",
+        HungryChestBlock::new,
+        properties -> wood(properties, 2.5F, 12.5F).noOcclusion()
+    ));
+    public static final DeferredBlock<BrainJarBlock> BRAIN_JAR = withItem(BLOCKS.registerBlock("brain_jar", BrainJarBlock::new, ModBlocks::jar));
+    public static final DeferredBlock<BannerBlock> BANNER = BLOCKS.registerBlock(
+        "banner",
+        BannerBlock::new,
+        properties -> wood(properties, 2.5F, 12.5F).noCollision().noOcclusion()
+    );
+    public static final DeferredItem<BannerItem> BANNER_ITEM = ModItems.ITEMS.registerItem(
+        "banner",
+        properties -> new BannerItem(BANNER.get(), properties),
+        properties -> properties.useBlockDescriptionPrefix()
     );
 
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();

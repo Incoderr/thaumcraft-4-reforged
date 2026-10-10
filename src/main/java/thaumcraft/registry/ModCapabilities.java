@@ -14,5 +14,6 @@ public final class ModCapabilities {
         Transfer.exposeItems(ModBlockEntities.DECONSTRUCTION_TABLE, (entity, side) -> entity.exposedItems(side));
         Transfer.exposeItems(ModBlockEntities.PEDESTAL, (entity, side) -> entity.exposedItems(side));
         Transfer.exposeFluids(ModBlockEntities.CRUCIBLE, (entity, side) -> entity.exposedFluids(side));
+        Transfer.exposeItems(ModBlockEntities.HUNGRY_CHEST, (entity, side) -> entity.exposedItems(side));
     }
 }

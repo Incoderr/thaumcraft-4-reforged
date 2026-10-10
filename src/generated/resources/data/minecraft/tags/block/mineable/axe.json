@@ -10,6 +10,10 @@
       "required": false
     },
     {
+      "id": "thaumcraft:banner",
+      "required": false
+    },
+    {
       "id": "thaumcraft:deconstruction_table",
       "required": false
     },
@@ -27,6 +31,10 @@
     },
     {
       "id": "thaumcraft:greatwood_stairs",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:hungry_chest",
       "required": false
     },
     {

@@ -27,6 +27,10 @@ import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.blockentity.WandPedestalBlockEntity;
 import thaumcraft.blockentity.WardedBlockEntity;
 import thaumcraft.blockentity.WardingStoneBlockEntity;
+import thaumcraft.device.BannerBlockEntity;
+import thaumcraft.device.BrainJarBlockEntity;
+import thaumcraft.device.HungryChestBlockEntity;
+import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.essentia.CentrifugeBlockEntity;
 import thaumcraft.essentia.EssentiaBufferBlockEntity;
 import thaumcraft.essentia.EssentiaCrystallizerBlockEntity;
@@ -210,6 +214,23 @@ public final class ModBlockEntities {
     public static final Supplier<BlockEntityType<InfusionPillarBlockEntity>> INFUSION_PILLAR = BLOCK_ENTITIES.register(
         "infusion_pillar",
         () -> new BlockEntityType<>(InfusionPillarBlockEntity::new, ModBlocks.INFUSION_PILLAR.get())
+    );
+
+    public static final Supplier<BlockEntityType<OwnedBlockEntity>> OWNED = BLOCK_ENTITIES.register(
+        "owned",
+        () -> new BlockEntityType<>(OwnedBlockEntity::new, ModBlocks.WARDED_GLASS.get(), ModBlocks.ARCANE_DOOR.get(), ModBlocks.ARCANE_PRESSURE_PLATE.get())
+    );
+    public static final Supplier<BlockEntityType<HungryChestBlockEntity>> HUNGRY_CHEST = BLOCK_ENTITIES.register(
+        "hungry_chest",
+        () -> new BlockEntityType<>(HungryChestBlockEntity::new, ModBlocks.HUNGRY_CHEST.get())
+    );
+    public static final Supplier<BlockEntityType<BrainJarBlockEntity>> BRAIN_JAR = BLOCK_ENTITIES.register(
+        "brain_jar",
+        () -> new BlockEntityType<>(BrainJarBlockEntity::new, ModBlocks.BRAIN_JAR.get())
+    );
+    public static final Supplier<BlockEntityType<BannerBlockEntity>> BANNER = BLOCK_ENTITIES.register(
+        "banner",
+        () -> new BlockEntityType<>(BannerBlockEntity::new, ModBlocks.BANNER.get())
     );
 
     private ModBlockEntities() {
