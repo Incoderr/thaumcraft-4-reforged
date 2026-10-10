@@ -11,6 +11,7 @@ import thaumcraft.crafting.ConfigRecipes;
 import thaumcraft.essentia.EssentiaKeys;
 import thaumcraft.infusion.InfusionKeys;
 import thaumcraft.item.NodeJarKeys;
+import thaumcraft.item.tool.ToolKeys;
 import thaumcraft.network.ModPayloads;
 import thaumcraft.platform.Platform;
 import thaumcraft.registry.ModBlockEntities;
@@ -44,6 +45,7 @@ public class Thaumcraft {
         AspectKeys.init();
         WandKeys.init();
         FocusKeys.init();
+        ToolKeys.init();
         NodeJarKeys.init();
         EssentiaKeys.init();
         InfusionKeys.init();

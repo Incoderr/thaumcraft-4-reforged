@@ -25,5 +25,7 @@ public final class ModPayloads {
         ModNetwork.toServer(PlayerCompletePayload.TYPE, PlayerCompletePayload.STREAM_CODEC, ResearchManager::handlePlayerComplete);
         ModNetwork.toServer(AspectPlacePayload.TYPE, AspectPlacePayload.STREAM_CODEC, ResearchTableBlockEntity::handlePlace);
         ModNetwork.toServer(AspectCombinePayload.TYPE, AspectCombinePayload.STREAM_CODEC, ResearchTableBlockEntity::handleCombine);
+        ModNetwork.toClient(BlockBubbleFxPayload.TYPE, BlockBubbleFxPayload.STREAM_CODEC);
+        ModNetwork.toServer(ToolOrientationPayload.TYPE, ToolOrientationPayload.STREAM_CODEC, ToolOrientationPayload::handle);
     }
 }
