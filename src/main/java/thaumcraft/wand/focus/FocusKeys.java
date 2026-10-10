@@ -3,7 +3,8 @@ package thaumcraft.wand.focus;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.component.ItemContainerContents;
 import thaumcraft.platform.StackKey;
 
 public final class FocusKeys {
@@ -12,13 +13,8 @@ public final class FocusKeys {
         Codec.INT.listOf(),
         ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list())
     );
-    public static final StackKey<List<ItemStack>> POUCH = StackKey.register(
-        "focus_pouch",
-        ItemStack.OPTIONAL_CODEC.listOf(),
-        ItemStack.OPTIONAL_LIST_STREAM_CODEC
-    );
-
-    public static final StackKey<ItemStack> PICKED = StackKey.register("focus_picked_block", ItemStack.CODEC, ItemStack.STREAM_CODEC);
+    public static final StackKey<ItemContainerContents> POUCH = StackKey.register("focus_pouch", ItemContainerContents.CODEC, ItemContainerContents.STREAM_CODEC);
+    public static final StackKey<ItemStackTemplate> PICKED = StackKey.register("focus_picked_block", ItemStackTemplate.CODEC, ItemStackTemplate.STREAM_CODEC);
 
     private FocusKeys() {
     }

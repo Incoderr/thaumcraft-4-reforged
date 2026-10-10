@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -127,12 +128,16 @@ public class TradeFocus extends FocusItem implements Architect {
     }
 
     public static void storePickedBlock(ItemStack wand, ItemStack picked) {
-        FocusKeys.PICKED.set(wand, picked);
+        if (picked.isEmpty()) {
+            FocusKeys.PICKED.remove(wand);
+        } else {
+            FocusKeys.PICKED.set(wand, ItemStackTemplate.fromNonEmptyStack(picked));
+        }
     }
 
     public static ItemStack getPickedBlock(ItemStack wand) {
-        ItemStack picked = FocusKeys.PICKED.get(wand);
-        return picked == null ? ItemStack.EMPTY : picked;
+        ItemStackTemplate picked = FocusKeys.PICKED.get(wand);
+        return picked == null ? ItemStack.EMPTY : picked.create();
     }
 
     @Override

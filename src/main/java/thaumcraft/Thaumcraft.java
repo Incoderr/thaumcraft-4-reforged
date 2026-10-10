@@ -33,6 +33,7 @@ import thaumcraft.test.AlchemyGameTests;
 import thaumcraft.test.ArmorGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
+import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
@@ -77,6 +78,7 @@ public class Thaumcraft {
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
         ArmorGameTests.register(modEventBus);
+        GearGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
