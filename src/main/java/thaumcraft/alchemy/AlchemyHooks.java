@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.essentia.EssentiaKeys;
@@ -23,12 +24,16 @@ public final class AlchemyHooks {
     }
 
     public static boolean spawnThaumicSlime(ServerLevel level, BlockPos pos, int size) {
+        return spawnThaumicSlime(level, Vec3.atBottomCenterOf(pos), size);
+    }
+
+    public static boolean spawnThaumicSlime(ServerLevel level, Vec3 position, int size) {
         ThaumicSlime slime = ModEntities.THAUMIC_SLIME.get().create(level, EntitySpawnReason.TRIGGERED);
         if (slime == null) {
             return false;
         }
         slime.setSlimeSize(size);
-        slime.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+        slime.setPos(position);
         return level.addFreshEntity(slime);
     }
 
