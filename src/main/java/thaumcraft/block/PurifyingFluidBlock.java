@@ -11,13 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FlowingFluid;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
 public class PurifyingFluidBlock extends LiquidBlock {
-    public PurifyingFluidBlock(Fluid fluid, Properties properties) {
+    public PurifyingFluidBlock(FlowingFluid fluid, Properties properties) {
         super(fluid, properties);
     }
 

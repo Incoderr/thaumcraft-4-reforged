@@ -24,6 +24,7 @@ import thaumcraft.client.screen.FocusPouchScreen;
 import thaumcraft.client.screen.HoverHarnessScreen;
 import thaumcraft.client.screen.ResearchTableScreen;
 import thaumcraft.client.screen.ThaumatoriumScreen;
+import thaumcraft.client.screen.PechTradeScreen;
 import thaumcraft.device.MachineFx;
 import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModMenus;
@@ -52,6 +53,7 @@ public final class ThaumcraftClient {
         event.register(ModMenus.HOVER_HARNESS.get(), HoverHarnessScreen::new);
         event.register(ModMenus.ARCANE_BORE.get(), ArcaneBoreScreen::new);
         event.register(ModMenus.ARCANE_SPA.get(), ArcaneSpaScreen::new);
+        event.register(ModMenus.PECH_TRADE.get(), PechTradeScreen::new);
     }
 
     @SubscribeEvent
