@@ -12,6 +12,13 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.entity.monster.FireBat;
+import thaumcraft.entity.monster.BrainyZombie;
+import thaumcraft.entity.monster.GiantBrainyZombie;
+import thaumcraft.entity.monster.InhabitedZombie;
+import thaumcraft.entity.monster.Pech;
+import thaumcraft.entity.monster.ThaumicSlime;
+import thaumcraft.entity.monster.Wisp;
+import thaumcraft.entity.monster.eldritch.EldritchCrab;
 import thaumcraft.entity.projectile.Ember;
 import thaumcraft.entity.projectile.ExplosiveOrb;
 import thaumcraft.entity.projectile.FrostShard;
@@ -64,6 +71,13 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<TaintedPig>> TAINTED_PIG = mob("tainted_pig", TaintedPig::new, 0.9F, 0.9F);
     public static final DeferredHolder<EntityType<?>, EntityType<TaintedSheep>> TAINTED_SHEEP = mob("tainted_sheep", TaintedSheep::new, 0.9F, 1.3F);
     public static final DeferredHolder<EntityType<?>, EntityType<TaintedVillager>> TAINTED_VILLAGER = mob("tainted_villager", TaintedVillager::new, 0.6F, 1.95F);
+    public static final DeferredHolder<EntityType<?>, EntityType<BrainyZombie>> BRAINY_ZOMBIE = mob("brainy_zombie", BrainyZombie::new, 0.6F, 1.95F);
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantBrainyZombie>> GIANT_BRAINY_ZOMBIE = mob("giant_brainy_zombie", GiantBrainyZombie::new, 0.72F, 2.34F);
+    public static final DeferredHolder<EntityType<?>, EntityType<Wisp>> WISP = mob("wisp", Wisp::new, 0.9F, 0.9F);
+    public static final DeferredHolder<EntityType<?>, EntityType<Pech>> PECH = mob("pech", Pech::new, 0.6F, 1.8F);
+    public static final DeferredHolder<EntityType<?>, EntityType<ThaumicSlime>> THAUMIC_SLIME = mob("thaumic_slime", ThaumicSlime::new, 0.5F, 0.5F);
+    public static final DeferredHolder<EntityType<?>, EntityType<InhabitedZombie>> INHABITED_ZOMBIE = mob("inhabited_zombie", InhabitedZombie::new, 0.6F, 1.95F);
+    public static final DeferredHolder<EntityType<?>, EntityType<EldritchCrab>> ELDRITCH_CRAB = mob("eldritch_crab", EldritchCrab::new, 0.8F, 0.6F);
 
     private ModEntities() {
     }
@@ -96,6 +110,13 @@ public final class ModEntities {
         event.put(TAINTED_PIG.get(), TaintedPig.createAttributes().build());
         event.put(TAINTED_SHEEP.get(), TaintedSheep.createAttributes().build());
         event.put(TAINTED_VILLAGER.get(), TaintedVillager.createAttributes().build());
+        event.put(BRAINY_ZOMBIE.get(), BrainyZombie.createAttributes().build());
+        event.put(GIANT_BRAINY_ZOMBIE.get(), GiantBrainyZombie.createAttributes().build());
+        event.put(WISP.get(), Wisp.createAttributes().build());
+        event.put(PECH.get(), Pech.createAttributes().build());
+        event.put(THAUMIC_SLIME.get(), ThaumicSlime.createAttributes().build());
+        event.put(INHABITED_ZOMBIE.get(), InhabitedZombie.createAttributes().build());
+        event.put(ELDRITCH_CRAB.get(), EldritchCrab.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
@@ -104,6 +125,13 @@ public final class ModEntities {
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             Taintacle::canSpawnNaturally,
+            RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+        event.register(
+            PECH.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            Pech::checkPechSpawnRules,
             RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
     }
