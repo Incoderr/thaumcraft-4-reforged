@@ -1,0 +1,150 @@
+{
+  "variants": {
+    "": {
+      "type": "thaumcraft:warded_glass",
+      "models": [
+        {
+          "model": "thaumcraft:block/warded_glass_1"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_2"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_3"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_4"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_5"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_6"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_7"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_8"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_9"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_10"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_11"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_12"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_13"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_14"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_15"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_16"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_17"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_18"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_19"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_20"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_21"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_22"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_23"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_24"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_25"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_26"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_27"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_28"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_29"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_30"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_31"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_32"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_33"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_34"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_35"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_36"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_37"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_38"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_39"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_40"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_41"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_42"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_43"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_44"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_45"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_46"
+        },
+        {
+          "model": "thaumcraft:block/warded_glass_47"
+        }
+      ]
+    }
+  }
+}

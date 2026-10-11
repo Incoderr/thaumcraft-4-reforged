@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "thaumcraft:item/arcane_levitator",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -16736256
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -1127169
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:air_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:entropy_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:mixed_crystal_cluster"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:order_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:air_shard",
+    "thaumcraft:fire_shard",
+    "thaumcraft:water_shard",
+    "thaumcraft:earth_shard",
+    "thaumcraft:order_shard",
+    "thaumcraft:entropy_shard"
+  ],
+  "result": {
+    "id": "thaumcraft:mixed_crystal_cluster"
+  }
+}

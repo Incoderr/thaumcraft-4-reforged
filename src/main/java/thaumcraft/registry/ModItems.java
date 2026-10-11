@@ -8,6 +8,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.device.ArcaneKeyItem;
+import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.essentia.PhialItem;
 import thaumcraft.item.AspectContainerItem;
 import thaumcraft.item.CrystalEssenceItem;
@@ -77,7 +79,7 @@ public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
 
     public static final DeferredItem<Item> ALUMENTUM = ITEMS.registerSimpleItem("alumentum", properties -> Registration.fuel(properties, 6400));
-    public static final DeferredItem<Item> NITOR = ITEMS.registerSimpleItem("nitor");
+    public static final DeferredItem<Item> NITOR = ITEMS.registerItem("nitor", properties -> new net.minecraft.world.item.BlockItem(ModBlocks.NITOR_LIGHT.get(), properties));
     public static final DeferredItem<Item> THAUMIUM_INGOT = ITEMS.registerSimpleItem("thaumium_ingot");
     public static final DeferredItem<Item> QUICKSILVER = ITEMS.registerSimpleItem("quicksilver");
     public static final DeferredItem<Item> MAGIC_TALLOW = ITEMS.registerSimpleItem("magic_tallow");
@@ -263,6 +265,12 @@ public final class ModItems {
     public static final DeferredItem<VisAmuletItem> VIS_STONE = ITEMS.registerItem("vis_stone", properties -> new VisAmuletItem(properties, true), properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
     public static final DeferredItem<VisAmuletItem> VIS_AMULET = ITEMS.registerItem("vis_amulet", properties -> new VisAmuletItem(properties, false), properties -> properties.stacksTo(1).rarity(Rarity.RARE));
     public static final DeferredItem<HoverGirdleItem> THAUMOSTATIC_GIRDLE = ITEMS.registerItem("thaumostatic_girdle", HoverGirdleItem::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
+
+    public static final DeferredItem<ArcaneKeyItem> IRON_ARCANE_KEY = ITEMS.registerItem("iron_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.IRON), properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<ArcaneKeyItem> GOLD_ARCANE_KEY = ITEMS.registerItem("gold_arcane_key", properties -> new ArcaneKeyItem(properties, OwnedBlockEntity.GOLD), properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<thaumcraft.device.HandMirrorItem> HAND_MIRROR = ITEMS.registerItem("hand_mirror", thaumcraft.device.HandMirrorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<thaumcraft.device.ResonatorItem> ESSENTIA_RESONATOR = ITEMS.registerItem("essentia_resonator", thaumcraft.device.ResonatorItem::new, properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> SINISTER_LODESTONE = ITEMS.registerItem("sinister_lodestone", Item::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
 
     private ModItems() {
     }

@@ -1,5 +1,6 @@
 package thaumcraft.crafting;
 
+import java.util.Arrays;
 import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -9,6 +10,8 @@ import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.device.WardedKeys;
+import thaumcraft.registry.ModBlocks;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.WandParts;
 
@@ -59,6 +62,12 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects, 
         }
         if (data.containsKey("cap") && data.containsKey("rod")) {
             WandKeys.PARTS.set(stack, new WandParts(data.get("cap"), data.get("rod"), false));
+        }
+        if (data.containsKey("color")) {
+            int color = Arrays.asList(ModBlocks.CANDLE_COLORS).indexOf(data.get("color"));
+            if (color >= 0) {
+                WardedKeys.BANNER_COLOR.set(stack, color);
+            }
         }
         return stack;
     }

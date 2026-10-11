@@ -60,6 +60,18 @@ import thaumcraft.block.TravelPavingStoneBlock;
 import thaumcraft.block.WandPedestalBlock;
 import thaumcraft.block.WardedBlock;
 import thaumcraft.block.WardingPavingStoneBlock;
+import thaumcraft.device.ArcaneDoorBlock;
+import thaumcraft.device.ArcaneDoorItem;
+import thaumcraft.device.ArcanePressurePlateBlock;
+import thaumcraft.device.BannerBlock;
+import thaumcraft.device.BannerItem;
+import thaumcraft.device.BrainJarBlock;
+import thaumcraft.device.HungryChestBlock;
+import thaumcraft.device.WardedGlassBlock;
+import thaumcraft.device.ArcaneBoreBaseBlock;
+import thaumcraft.device.ArcaneBoreBlock;
+import thaumcraft.device.ArcaneSpaBlock;
+import thaumcraft.device.InfernalFurnaceBlock;
 import thaumcraft.essentia.CentrifugeBlock;
 import thaumcraft.essentia.EssentiaBufferBlock;
 import thaumcraft.essentia.EssentiaCrystallizerBlock;
@@ -517,7 +529,144 @@ public final class ModBlocks {
         properties -> stoneDevice(properties)
     );
 
+    public static final DeferredBlock<WardedGlassBlock> WARDED_GLASS = withItem(BLOCKS.registerBlock(
+        "warded_glass",
+        WardedGlassBlock::new,
+        properties -> properties.mapColor(MapColor.NONE).strength(-1.0F, 999.0F).sound(SoundType.STONE).noOcclusion()
+    ));
+    public static final DeferredBlock<ArcaneDoorBlock> ARCANE_DOOR = BLOCKS.registerBlock(
+        "arcane_door",
+        ArcaneDoorBlock::new,
+        properties -> properties.mapColor(MapColor.METAL).strength(-1.0F, 999.0F).sound(SoundType.METAL).noOcclusion().pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredItem<ArcaneDoorItem> ARCANE_DOOR_ITEM = ModItems.ITEMS.registerItem(
+        "arcane_door",
+        ArcaneDoorItem::new,
+        properties -> properties.stacksTo(1).useBlockDescriptionPrefix()
+    );
+    public static final DeferredBlock<ArcanePressurePlateBlock> ARCANE_PRESSURE_PLATE = withItem(BLOCKS.registerBlock(
+        "arcane_pressure_plate",
+        ArcanePressurePlateBlock::new,
+        properties -> properties
+            .mapColor(MapColor.WOOD)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(-1.0F, 999.0F)
+            .sound(SoundType.WOOD)
+            .noCollision()
+            .pushReaction(PushReaction.POPPED)
+    ));
+    public static final DeferredBlock<HungryChestBlock> HUNGRY_CHEST = withItem(BLOCKS.registerBlock(
+        "hungry_chest",
+        HungryChestBlock::new,
+        properties -> wood(properties, 2.5F, 12.5F).noOcclusion()
+    ));
+    public static final DeferredBlock<BrainJarBlock> BRAIN_JAR = withItem(BLOCKS.registerBlock("brain_jar", BrainJarBlock::new, ModBlocks::jar));
+    public static final DeferredBlock<BannerBlock> BANNER = BLOCKS.registerBlock(
+        "banner",
+        BannerBlock::new,
+        properties -> wood(properties, 2.5F, 12.5F).noCollision().noOcclusion()
+    );
+    public static final DeferredItem<BannerItem> BANNER_ITEM = ModItems.ITEMS.registerItem(
+        "banner",
+        properties -> new BannerItem(BANNER.get(), properties),
+        properties -> properties.useBlockDescriptionPrefix()
+    );
+    public static final DeferredBlock<InfernalFurnaceBlock> INFERNAL_FURNACE = BLOCKS.registerBlock(
+        "infernal_furnace",
+        InfernalFurnaceBlock::new,
+        properties -> rock(properties, 10.0F, 500.0F).lightLevel(InfernalFurnaceBlock::lightLevel)
+    );
+    public static final DeferredBlock<ArcaneBoreBaseBlock> ARCANE_BORE_BASE = withItem(BLOCKS.registerBlock(
+        "arcane_bore_base",
+        ArcaneBoreBaseBlock::new,
+        properties -> wood(properties, 2.5F, 10.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<ArcaneBoreBlock> ARCANE_BORE = withItem(BLOCKS.registerBlock(
+        "arcane_bore",
+        ArcaneBoreBlock::new,
+        properties -> wood(properties, 2.5F, 10.0F).noOcclusion().dynamicShape()
+    ));
+    public static final DeferredBlock<ArcaneSpaBlock> ARCANE_SPA = withItem(BLOCKS.registerBlock(
+        "arcane_spa",
+        ArcaneSpaBlock::new,
+        properties -> stoneDevice(properties)
+    ));
+
     public static final Map<String, DeferredBlock<CandleBlock>> CANDLES = candles();
+
+    public static final DeferredBlock<thaumcraft.device.NitorLightBlock> NITOR_LIGHT = BLOCKS.registerBlock(
+        "nitor_light",
+        thaumcraft.device.NitorLightBlock::new,
+        thaumcraft.device.DeviceProperties::nitorLight
+    );
+    public static final DeferredBlock<thaumcraft.device.ArcaneLampLightBlock> ARCANE_LAMP_LIGHT = BLOCKS.registerBlock(
+        "arcane_lamp_light",
+        thaumcraft.device.ArcaneLampLightBlock::new,
+        thaumcraft.device.DeviceProperties::lampLight
+    );
+    public static final DeferredBlock<thaumcraft.device.WardingAuraBlock> WARDING_AURA = BLOCKS.registerBlock(
+        "warding_aura",
+        thaumcraft.device.WardingAuraBlock::new,
+        thaumcraft.device.DeviceProperties::wardingAura
+    );
+    public static final DeferredBlock<thaumcraft.device.ArcaneLampBlock> ARCANE_LAMP = withItem(BLOCKS.registerBlock(
+        "arcane_lamp",
+        thaumcraft.device.ArcaneLampBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> 15)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ChargedLampBlock> LAMP_OF_GROWTH = withItem(BLOCKS.registerBlock(
+        "lamp_of_growth",
+        properties -> new thaumcraft.device.ChargedLampBlock(true, properties),
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> state.getValue(thaumcraft.device.ChargedLampBlock.LIT) ? 15 : 8)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ChargedLampBlock> LAMP_OF_FERTILITY = withItem(BLOCKS.registerBlock(
+        "lamp_of_fertility",
+        properties -> new thaumcraft.device.ChargedLampBlock(false, properties),
+        properties -> thaumcraft.device.DeviceProperties.metalDevice(properties).lightLevel(state -> state.getValue(thaumcraft.device.ChargedLampBlock.LIT) ? 15 : 8)
+    ));
+    public static final DeferredBlock<thaumcraft.device.ItemGrateBlock> ITEM_GRATE = withItem(BLOCKS.registerBlock(
+        "item_grate",
+        thaumcraft.device.ItemGrateBlock::new,
+        thaumcraft.device.DeviceProperties::metalDevice
+    ));
+    public static final DeferredBlock<thaumcraft.device.ArcaneEarBlock> ARCANE_EAR = withItem(BLOCKS.registerBlock(
+        "arcane_ear",
+        thaumcraft.device.ArcaneEarBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 10.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<thaumcraft.device.ArcaneLevitatorBlock> ARCANE_LEVITATOR = withItem(BLOCKS.registerBlock(
+        "arcane_levitator",
+        thaumcraft.device.ArcaneLevitatorBlock::new,
+        properties -> thaumcraft.device.DeviceProperties.woodDevice(properties, 15.0F).noOcclusion()
+    ));
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> AIR_CRYSTAL_CLUSTER = crystalCluster("air_crystal_cluster", 0);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> FIRE_CRYSTAL_CLUSTER = crystalCluster("fire_crystal_cluster", 1);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> WATER_CRYSTAL_CLUSTER = crystalCluster("water_crystal_cluster", 2);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> EARTH_CRYSTAL_CLUSTER = crystalCluster("earth_crystal_cluster", 3);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> ORDER_CRYSTAL_CLUSTER = crystalCluster("order_crystal_cluster", 4);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> ENTROPY_CRYSTAL_CLUSTER = crystalCluster("entropy_crystal_cluster", 5);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> MIXED_CRYSTAL_CLUSTER = crystalCluster("mixed_crystal_cluster", 6);
+    public static final DeferredBlock<thaumcraft.device.CrystalClusterBlock> STRANGE_CRYSTALS = crystalCluster("strange_crystals", 7);
+    public static final DeferredBlock<thaumcraft.device.MirrorBlock> MAGIC_MIRROR = BLOCKS.registerBlock(
+        "magic_mirror",
+        properties -> new thaumcraft.device.MirrorBlock(false, properties),
+        properties -> properties.mapColor(MapColor.NONE).noCollision().noOcclusion().strength(1.0F, 10.0F).pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredBlock<thaumcraft.device.MirrorBlock> ESSENTIA_MIRROR = BLOCKS.registerBlock(
+        "essentia_mirror",
+        properties -> new thaumcraft.device.MirrorBlock(true, properties),
+        properties -> properties.mapColor(MapColor.NONE).noCollision().noOcclusion().strength(1.0F, 10.0F).pushReaction(PushReaction.IMMOVEABLE)
+    );
+    public static final DeferredItem<thaumcraft.device.MirrorItem> MAGIC_MIRROR_ITEM = ModItems.ITEMS.registerItem(
+        "magic_mirror",
+        properties -> new thaumcraft.device.MirrorItem(MAGIC_MIRROR.get(), properties),
+        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+    );
+    public static final DeferredItem<thaumcraft.device.MirrorItem> ESSENTIA_MIRROR_ITEM = ModItems.ITEMS.registerItem(
+        "essentia_mirror",
+        properties -> new thaumcraft.device.MirrorItem(ESSENTIA_MIRROR.get(), properties),
+        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+    );
 
     private ModBlocks() {
     }
@@ -539,6 +688,14 @@ public final class ModBlocks {
             )));
         }
         return candles;
+    }
+
+    private static DeferredBlock<thaumcraft.device.CrystalClusterBlock> crystalCluster(String name, int kind) {
+        return withItem(BLOCKS.registerBlock(
+            name,
+            properties -> new thaumcraft.device.CrystalClusterBlock(kind, properties),
+            thaumcraft.device.DeviceProperties::crystal
+        ));
     }
 
     private static DeferredBlock<TubeBlock> tube(String name, TubeBlock.Kind kind) {

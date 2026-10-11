@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_crystal_cluster"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:fire_shard"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:fire_shard",
+    "thaumcraft:fire_shard",
+    "thaumcraft:fire_shard",
+    "thaumcraft:fire_shard",
+    "thaumcraft:fire_shard",
+    "thaumcraft:fire_shard"
+  ],
+  "result": {
+    "id": "thaumcraft:fire_crystal_cluster"
+  }
+}

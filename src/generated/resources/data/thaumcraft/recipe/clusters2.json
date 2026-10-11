@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_crystal_cluster"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:water_shard"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:water_shard",
+    "thaumcraft:water_shard",
+    "thaumcraft:water_shard",
+    "thaumcraft:water_shard",
+    "thaumcraft:water_shard",
+    "thaumcraft:water_shard"
+  ],
+  "result": {
+    "id": "thaumcraft:water_crystal_cluster"
+  }
+}

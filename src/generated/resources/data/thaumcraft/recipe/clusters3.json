@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_crystal_cluster"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    },
+    {
+      "type": "neoforge:registered",
+      "value": "thaumcraft:earth_shard"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "thaumcraft:earth_shard",
+    "thaumcraft:earth_shard",
+    "thaumcraft:earth_shard",
+    "thaumcraft:earth_shard",
+    "thaumcraft:earth_shard",
+    "thaumcraft:earth_shard"
+  ],
+  "result": {
+    "id": "thaumcraft:earth_crystal_cluster"
+  }
+}

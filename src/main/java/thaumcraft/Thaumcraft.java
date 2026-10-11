@@ -8,6 +8,7 @@ import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.crafting.ConfigRecipes;
+import thaumcraft.device.WardedKeys;
 import thaumcraft.essentia.EssentiaKeys;
 import thaumcraft.infusion.InfusionKeys;
 import thaumcraft.item.NodeJarKeys;
@@ -31,12 +32,15 @@ import thaumcraft.item.armor.ArmorKeys;
 import thaumcraft.registry.ModRecipes;
 import thaumcraft.test.AlchemyGameTests;
 import thaumcraft.test.ArmorGameTests;
+import thaumcraft.test.DeviceGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
+import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
+import thaumcraft.test.WardedGameTests;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.focus.FocusKeys;
 
@@ -56,6 +60,8 @@ public class Thaumcraft {
         ArmorKeys.init();
         ResearchNoteKeys.init();
         Knowledge.init();
+        WardedKeys.init();
+        thaumcraft.device.MirrorKeys.init();
         Platform.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
@@ -79,6 +85,10 @@ public class Thaumcraft {
         InfusionGameTests.register(modEventBus);
         ArmorGameTests.register(modEventBus);
         GearGameTests.register(modEventBus);
+        DeviceGameTests.register(modEventBus);
+        WardedGameTests.register(modEventBus);
+        MachineGameTests.register(modEventBus);
+        thaumcraft.test.MirrorGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
