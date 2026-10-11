@@ -16,6 +16,7 @@ public final class TaintBiomes {
         Registries.BIOME,
         Identifier.fromNamespaceAndPath(Thaumcraft.MODID, "tainted_land")
     );
+    public static final ResourceKey<Biome> OUTER_LANDS = key("eldritch");
     public static final ResourceKey<Biome> EERIE = key("eerie");
     public static final ResourceKey<Biome> MAGICAL_FOREST = key("magical_forest");
 

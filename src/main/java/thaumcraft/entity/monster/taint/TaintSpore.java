@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -54,7 +55,7 @@ public class TaintSpore extends Monster implements TaintedMob {
         spore.stalkPos = stalkPos.immutable();
         spore.entityData.set(DATA_ATTACHED, true);
         spore.setNoAi(true);
-        spore.absMoveTo(stalkPos.getX() + 0.5, stalkPos.getY() + 1.0, stalkPos.getZ() + 0.5, 0.0F, 0.0F);
+        spore.absSnapTo(stalkPos.getX() + 0.5, stalkPos.getY() + 1.0, stalkPos.getZ() + 0.5, 0.0F, 0.0F);
         return spore;
     }
 
@@ -72,7 +73,7 @@ public class TaintSpore extends Monster implements TaintedMob {
     public void setSporeSize(int size) {
         this.entityData.set(DATA_SIZE, size);
         this.refreshDimensions();
-        this.experienceReward = size;
+        this.xpReward = size;
     }
 
     public int getSporeSize() {
@@ -89,7 +90,7 @@ public class TaintSpore extends Monster implements TaintedMob {
     }
 
     @Override
-    public boolean canBeCollidedWith() {
+    public boolean canBeCollidedWith(@Nullable Entity other) {
         return true;
     }
 
@@ -121,7 +122,7 @@ public class TaintSpore extends Monster implements TaintedMob {
                 this.burstIntoSpiders();
                 return;
             }
-            this.absMoveTo(this.stalkPos.getX() + 0.5, this.stalkPos.getY() + 1.0, this.stalkPos.getZ() + 0.5, this.getYRot(), this.getXRot());
+            this.absSnapTo(this.stalkPos.getX() + 0.5, this.stalkPos.getY() + 1.0, this.stalkPos.getZ() + 0.5, this.getYRot(), this.getXRot());
             this.setDeltaMovement(Vec3.ZERO);
             if (this.getSporeSize() < 10 && this.growthTicks++ == 1200) {
                 this.setSporeSize(this.getSporeSize() + 1);
@@ -163,7 +164,7 @@ public class TaintSpore extends Monster implements TaintedMob {
             if (spider == null) {
                 continue;
             }
-            spider.absMoveTo(this.getX() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), this.getY() + level.getRandom().nextFloat(),
+            spider.absSnapTo(this.getX() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), this.getY() + level.getRandom().nextFloat(),
                 this.getZ() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), level.getRandom().nextFloat() * 360.0F, 0.0F);
             level.addFreshEntity(spider);
         }
