@@ -57,36 +57,32 @@ public final class TaintSpread {
     }
 
     public static boolean taintFromFlux(ServerLevel level, BlockPos pos) {
-        if (!level.hasChunkAt(pos)) {
+        if (!level.hasChunkAt(pos) || !level.isEmptyBlock(pos.above())) {
             return false;
         }
-        BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos);
-        boolean placed = false;
-        if (level.isEmptyBlock(surface) && hasAdjacentSolid(level, surface)) {
-            placed = level.setBlockAndUpdate(surface, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
-        } else if (isSoil(level.getBlockState(surface)) && adjacentTaint(level, surface) >= 1) {
-            placed = level.setBlockAndUpdate(surface, ModBlocks.TAINTED_SOIL.get().defaultBlockState());
-        }
-        boolean biomeChanged = TaintBiomes.set(level, surface, TaintBiomes.TAINTED_LAND);
+        boolean biomeChanged = TaintBiomes.set(level, pos, TaintBiomes.TAINTED_LAND);
+        boolean placed = level.setBlockAndUpdate(pos, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
         return placed || biomeChanged;
     }
 
-    public static void tick(ServerLevel level, BlockPos pos) {
+    public static boolean tick(ServerLevel level, BlockPos pos) {
         int adjacent = adjacentTaint(level, pos);
         RandomSource random = level.getRandom();
-        TaintBiomes.spread(level, pos, adjacent, 200);
         BlockPos target = pos.offset(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
         if (TaintBiomes.isTainted(level, target)) {
             BlockState blockState = level.getBlockState(target);
-            if (!spreadFibres(level, target)) {
-                int nearby = adjacentTaint(level, target);
-                if (nearby >= 2 && isLogGourdOrCactus(blockState)) {
-                    level.setBlockAndUpdate(target, ModBlocks.CRUSTED_TAINT.get().defaultBlockState());
-                } else if (nearby >= 3 && !blockState.isAir() && isSoil(blockState)) {
-                    level.setBlockAndUpdate(target, ModBlocks.TAINTED_SOIL.get().defaultBlockState());
-                }
+            if (spreadFibres(level, target)) {
+                return false;
             }
+            int nearby = adjacentTaint(level, target);
+            if (nearby >= 2 && isLogGourdOrCactus(blockState)) {
+                level.setBlockAndUpdate(target, ModBlocks.CRUSTED_TAINT.get().defaultBlockState());
+            } else if (nearby >= 3 && !blockState.isAir() && isSoil(blockState)) {
+                level.setBlockAndUpdate(target, ModBlocks.TAINTED_SOIL.get().defaultBlockState());
+            }
+            return true;
         }
+        return false;
     }
 
     public static boolean isTaintBlock(BlockState state) {

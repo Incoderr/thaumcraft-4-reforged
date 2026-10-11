@@ -5,29 +5,32 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.registry.ModEntities;
+import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.npc.villager.Villager;
 
 public final class TaintMobFactory {
     private TaintMobFactory() {
     }
 
     public static @Nullable Entity createReplacement(LivingEntity original) {
-        EntityType<?> type = original.getType();
         EntityType<? extends Entity> replacementType;
-        if (type == vanilla("chicken")) {
+        if (original instanceof Chicken) {
             replacementType = ModEntities.TAINTED_CHICKEN.get();
-        } else if (type == vanilla("cow") || type == vanilla("mooshroom")) {
+        } else if (original instanceof Cow) {
             replacementType = ModEntities.TAINTED_COW.get();
-        } else if (type == vanilla("creeper")) {
+        } else if (original instanceof Creeper) {
             replacementType = ModEntities.TAINTED_CREEPER.get();
-        } else if (type == vanilla("pig")) {
+        } else if (original instanceof Pig) {
             replacementType = ModEntities.TAINTED_PIG.get();
-        } else if (type == vanilla("sheep")) {
+        } else if (original instanceof Sheep) {
             replacementType = ModEntities.TAINTED_SHEEP.get();
-        } else if (type == vanilla("villager")) {
+        } else if (original instanceof Villager) {
             replacementType = ModEntities.TAINTED_VILLAGER.get();
         } else {
             return null;
@@ -36,7 +39,7 @@ public final class TaintMobFactory {
         if (replacement == null) {
             return null;
         }
-        replacement.moveTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
+        replacement.absMoveTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
         replacement.setDeltaMovement(original.getDeltaMovement());
         replacement.setCustomName(original.getCustomName());
         replacement.setCustomNameVisible(original.isCustomNameVisible());
@@ -46,7 +49,4 @@ public final class TaintMobFactory {
         return replacement;
     }
 
-    private static EntityType<?> vanilla(String name) {
-        return BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.fromNamespaceAndPath("minecraft", name));
-    }
 }

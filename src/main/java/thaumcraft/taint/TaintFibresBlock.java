@@ -25,7 +25,6 @@ public class TaintFibresBlock extends Block {
         MATURE_STALK
     }
 
-    private static final VoxelShape SHAPE = Block.box(6.4, 0.0, 6.4, 9.6, 9.6, 9.6);
     private final Kind kind;
 
     public TaintFibresBlock(Kind kind, Properties properties) {
@@ -39,7 +38,23 @@ public class TaintFibresBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        if (kind != Kind.FIBRES) {
+            return Block.box(3.2, 0.0, 3.2, 12.8, 12.8, 12.8);
+        }
+        for (Direction direction : Direction.values()) {
+            BlockPos support = pos.relative(direction);
+            if (level.getBlockState(support).isFaceSturdy(level, support, direction.getOpposite())) {
+                return switch (direction) {
+                    case DOWN -> Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
+                    case UP -> Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
+                    case NORTH -> Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
+                    case SOUTH -> Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
+                    case WEST -> Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
+                    case EAST -> Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+                };
+            }
+        }
+        return Block.box(7.0, 0.0, 7.0, 9.0, 2.0, 9.0);
     }
 
     @Override
@@ -49,12 +64,14 @@ public class TaintFibresBlock extends Block {
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        int adjacent = TaintSpread.adjacentTaint(level, pos);
+        TaintBiomes.spread(level, pos, adjacent, 200);
         if (kind == Kind.FIBRES && TaintSpread.onlyAdjacentToTaint(level, pos) || !TaintBiomes.isTainted(level, pos)) {
             level.removeBlock(pos, false);
             return;
         }
-        TaintSpread.tick(level, pos);
-        if (kind == Kind.STALK && random.nextInt(10) == 0 && level.isEmptyBlock(pos.above())) {
+        boolean selectedTaintTarget = TaintSpread.tick(level, pos);
+        if (selectedTaintTarget && kind == Kind.STALK && random.nextInt(10) == 0 && level.isEmptyBlock(pos.above())) {
             level.setBlockAndUpdate(pos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
             thaumcraft.entity.monster.taint.TaintSpore spore = thaumcraft.entity.monster.taint.TaintSpore.create(level, pos);
             if (spore != null) {
@@ -62,7 +79,7 @@ public class TaintFibresBlock extends Block {
             } else {
                 level.setBlockAndUpdate(pos, ModBlocks.SPORE_STALK.get().defaultBlockState());
             }
-        } else if (kind == Kind.MATURE_STALK && level.getEntitiesOfClass(
+        } else if (selectedTaintTarget && kind == Kind.MATURE_STALK && level.getEntitiesOfClass(
             thaumcraft.entity.monster.taint.TaintSpore.class,
             new net.minecraft.world.phys.AABB(pos.getX(), pos.getY() + 1, pos.getZ(), pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1)
         ).isEmpty()) {
@@ -71,8 +88,18 @@ public class TaintFibresBlock extends Block {
     }
 
     @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        if (!level.isClientSide() && TaintSpread.onlyAdjacentToTaint(level, pos)) {
+            level.removeBlock(pos, false);
+        }
+        super.neighborChanged(state, level, pos, neighborBlock, neighborPos, movedByPiston);
+    }
+
+    @Override
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
-        if (!level.isClientSide() && entity instanceof LivingEntity living && !(living instanceof thaumcraft.entity.TaintedMob) && level.getRandom().nextInt(living instanceof net.minecraft.world.entity.player.Player ? 1000 : 500) == 0) {
+        if (!level.isClientSide() && entity instanceof LivingEntity living && !(living instanceof thaumcraft.entity.TaintedMob)
+            && !living.getType().builtInRegistryHolder().is(net.minecraft.tags.EntityTypeTags.UNDEAD)
+            && level.getRandom().nextInt(living instanceof net.minecraft.world.entity.player.Player ? 1000 : 500) == 0) {
             EffectHooks.applyTaintPoison(living, living instanceof net.minecraft.world.entity.player.Player ? 80 : 160, 0);
         }
         super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
