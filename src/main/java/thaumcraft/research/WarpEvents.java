@@ -32,7 +32,7 @@ public final class WarpEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-        if (player.tickCount % 2000 == 0) {
+        if (player.tickCount > 0 && player.tickCount % 2000 == 0) {
             checkWarpEvent(player);
         }
         if (player.tickCount % 10 == 0 && player.hasEffect(ModEffects.DEATH_GAZE)) {
@@ -52,7 +52,7 @@ public final class WarpEvents {
 
         if (warpCounter > 0 && warp > 0 && level.getRandom().nextInt(100) <= Math.sqrt(warpCounter)) {
             int eventWarp = Math.min(100, (warp + warp + warpCounter) / 3);
-            warpCounter -= (int) Math.max(5.0, Math.sqrt(warpCounter) * 2.0);
+            warpCounter = (int) (warpCounter - Math.max(5.0, Math.sqrt(warpCounter) * 2.0));
             knowledge.setWarpCounter(warpCounter);
             Knowledge.sync(player);
             int effect = level.getRandom().nextInt(eventWarp);
@@ -61,9 +61,9 @@ public final class WarpEvents {
             }
             ModNetwork.sendToPlayer(player, new WarpEventPayload(0));
             applyWarpEvent(player, eventWarp, effect);
+            unlockWarpResearch(player, actualWarp);
         }
 
-        unlockWarpResearch(player, actualWarp);
         if (Warp.get(player, WarpType.TEMPORARY) > 0) {
             Warp.set(player, Warp.get(player, WarpType.TEMPORARY) - 1, WarpType.TEMPORARY);
         }
@@ -129,7 +129,7 @@ public final class WarpEvents {
                 Warp.add(player, -1, WarpType.STICKY);
             }
             whisper(player, 14);
-        } else if (effect <= 80) {
+        } else if (effect >= 76 && effect <= 80) {
             applyEffect(player, ModEffects.UNNATURAL_HUNGER, 6000, amplifier);
             whisper(player, 2);
         } else if (effect <= 84) {
@@ -199,8 +199,10 @@ public final class WarpEvents {
             if (living instanceof Player && !player.level().isPvpAllowed()) {
                 continue;
             }
-            Vec3 direction = living.getEyePosition().subtract(player.getEyePosition()).normalize();
-            if (look.dot(direction) < 0.75) {
+            Vec3 target = new Vec3(living.getX(), living.getBoundingBox().minY + living.getBbHeight() / 2.0, living.getZ());
+            Vec3 direction = target.subtract(player.getEyePosition());
+            double distance = direction.length();
+            if (distance > range || distance == 0.0 || look.dot(direction.scale(1.0 / distance)) <= Math.cos(0.75 / 2.0)) {
                 continue;
             }
             living.setLastHurtByPlayer(player, 100);
