@@ -3,12 +3,14 @@ package thaumcraft.node;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.taint.TaintSpread;
 
 public final class NodeHooks {
     private NodeHooks() {
     }
 
     public static void spreadTaintFibres(ServerLevel level, BlockPos pos) {
+        TaintSpread.spreadFibres(level, pos);
     }
 
     public static boolean spawnAspectOrb(ServerLevel level, BlockPos pos, Aspect aspect, int amount) {
