@@ -660,12 +660,12 @@ public final class ModBlocks {
     public static final DeferredItem<thaumcraft.device.MirrorItem> MAGIC_MIRROR_ITEM = ModItems.ITEMS.registerItem(
         "magic_mirror",
         properties -> new thaumcraft.device.MirrorItem(MAGIC_MIRROR.get(), properties),
-        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+        properties -> properties.useBlockDescriptionPrefix().rarity(net.minecraft.world.item.Rarity.UNCOMMON)
     );
     public static final DeferredItem<thaumcraft.device.MirrorItem> ESSENTIA_MIRROR_ITEM = ModItems.ITEMS.registerItem(
         "essentia_mirror",
         properties -> new thaumcraft.device.MirrorItem(ESSENTIA_MIRROR.get(), properties),
-        properties -> properties.rarity(net.minecraft.world.item.Rarity.UNCOMMON)
+        properties -> properties.useBlockDescriptionPrefix().rarity(net.minecraft.world.item.Rarity.UNCOMMON)
     );
 
     private ModBlocks() {
