@@ -21,7 +21,7 @@ public final class TaintPoisonEvents {
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
         LivingEntity original = event.getEntity();
-        if (!(original.level() instanceof ServerLevel level) || original instanceof TaintedMob || !original.hasEffect(ModEffects.TAINT_POISON.get())) {
+        if (!(original.level() instanceof ServerLevel level) || original instanceof TaintedMob || !original.hasEffect(ModEffects.TAINT_POISON)) {
             return;
         }
         Entity replacement = TaintMobFactory.createReplacement(original);

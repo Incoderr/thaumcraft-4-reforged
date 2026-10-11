@@ -7,11 +7,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.registry.ModEntities;
-import net.minecraft.world.entity.animal.Chicken;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.animal.Pig;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.npc.villager.Villager;
 
 public final class TaintMobFactory {
@@ -39,7 +39,7 @@ public final class TaintMobFactory {
         if (replacement == null) {
             return null;
         }
-        replacement.absMoveTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
+        replacement.absSnapTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
         replacement.setDeltaMovement(original.getDeltaMovement());
         replacement.setCustomName(original.getCustomName());
         replacement.setCustomNameVisible(original.isCustomNameVisible());

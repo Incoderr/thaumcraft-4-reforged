@@ -10,7 +10,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.IShearable;
@@ -57,7 +57,7 @@ public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
     public List<ItemStack> onSheared(Player player, ItemStack item, Level level, BlockPos pos) {
         this.setSheared(true);
         int count = 1 + this.random.nextInt(3);
-        return List.of(new ItemStack(Items.BLACK_WOOL, count));
+        return List.of(new ItemStack(Blocks.WOOL.black().asItem(), count));
     }
 
     @Override
