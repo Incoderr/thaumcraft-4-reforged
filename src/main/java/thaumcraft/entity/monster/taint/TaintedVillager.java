@@ -11,6 +11,19 @@ public class TaintedVillager extends TaintedAnimalMonster {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return TaintedAnimalMonster.createAttributes().add(Attributes.MAX_HEALTH, 20.0).add(Attributes.ATTACK_DAMAGE, 3.0);
+        return TaintedAnimalMonster.createAttributes(30.0, 0.3, 4.0, 0.0);
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        this.dropTaintResource(level, 2, 0.5F);
+        int looting = source.getEntity() instanceof net.minecraft.world.entity.LivingEntity killer
+            ? killer.getMainHandItem().getEnchantmentLevel(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                .getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING))
+            : 0;
+        if (level.getRandom().nextInt(13) < 1 + looting) {
+            this.spawnAtLocation(thaumcraft.registry.ModItems.GOLD_COIN.get());
+        }
     }
 }

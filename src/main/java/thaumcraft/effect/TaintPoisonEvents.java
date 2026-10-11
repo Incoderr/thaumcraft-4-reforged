@@ -3,6 +3,7 @@ package thaumcraft.effect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -10,6 +11,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.alchemy.AlchemyHooks;
 import thaumcraft.entity.TaintedMob;
 import thaumcraft.entity.monster.taint.TaintMobFactory;
+import thaumcraft.registry.ModEffects;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class TaintPoisonEvents {
@@ -19,7 +21,7 @@ public final class TaintPoisonEvents {
     @SubscribeEvent
     public static void onLivingDeath(LivingDeathEvent event) {
         LivingEntity original = event.getEntity();
-        if (!(original.level() instanceof ServerLevel level) || original instanceof TaintedMob || !EffectHooks.hasTaintPoison(original)) {
+        if (!(original.level() instanceof ServerLevel level) || original instanceof TaintedMob || !original.hasEffect(ModEffects.TAINT_POISON.get())) {
             return;
         }
         Entity replacement = TaintMobFactory.createReplacement(original);
@@ -30,6 +32,6 @@ public final class TaintPoisonEvents {
             return;
         }
         int size = (int) (1.0F + Math.min(original.getMaxHealth() / 10.0F, 6.0F));
-        AlchemyHooks.spawnThaumicSlime(level, original.blockPosition(), size);
+        AlchemyHooks.spawnThaumicSlime(level, new Vec3(original.getX(), original.getY(), original.getZ()), size);
     }
 }

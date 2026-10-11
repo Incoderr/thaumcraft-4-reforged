@@ -36,13 +36,13 @@ public final class TaintBiomes {
     }
 
     public static boolean spread(ServerLevel level, BlockPos pos, int adjacentTaint, int spreadRate) {
-        if (spreadRate <= 0 || adjacentTaint < 2 || level.getRandom().nextInt(spreadRate * 5) != 0) {
+        if (spreadRate <= 0) {
             return false;
         }
         int xOffset = level.getRandom().nextInt(3) - 1;
         int zOffset = level.getRandom().nextInt(3) - 1;
         BlockPos target = pos.offset(xOffset, 0, zOffset);
-        if (isTainted(level, target)) {
+        if (isTainted(level, target) || level.getRandom().nextInt(spreadRate * 5) != 0 || adjacentTaint < 2) {
             return false;
         }
         return set(level, target, TAINTED_LAND);
