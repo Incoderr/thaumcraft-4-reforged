@@ -54,7 +54,7 @@ public final class FluidGameTests {
 
     @SubscribeEvent
     static void registerTests(RegisterGameTestsEvent event) {
-        var environment = event.registerEnvironment(Thaumcraft.id("default"), new TestEnvironmentDefinition.AllOf());
+        var environment = event.registerEnvironment(Thaumcraft.id("fluid_default"), new TestEnvironmentDefinition.AllOf());
         for (String name : TESTS) {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(
