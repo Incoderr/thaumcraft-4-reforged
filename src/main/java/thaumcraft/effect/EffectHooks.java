@@ -20,4 +20,8 @@ public final class EffectHooks {
     public static boolean isTainted(LivingEntity entity) {
         return entity instanceof TaintedMob;
     }
+
+    public static boolean hasTaintPoison(LivingEntity entity) {
+        return entity.hasEffect(ModEffects.TAINT_POISON);
+    }
 }
