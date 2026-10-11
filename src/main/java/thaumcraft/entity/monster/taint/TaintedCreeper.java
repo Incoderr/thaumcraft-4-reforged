@@ -8,8 +8,21 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.SwellGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.feline.Ocelot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.effect.EffectHooks;
@@ -19,7 +32,7 @@ import thaumcraft.registry.ModItems;
 import thaumcraft.taint.TaintBiomes;
 
 public class TaintedCreeper extends Creeper implements TaintedMob {
-    private boolean taintBurstHandled;
+    private int taintFuse;
 
     public TaintedCreeper(EntityType<? extends TaintedCreeper> type, Level level) {
         super(type, level);
@@ -34,18 +47,58 @@ public class TaintedCreeper extends Creeper implements TaintedMob {
     }
 
     @Override
+    protected void registerGoals() {
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new SwellGoal(this));
+        this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Ocelot.class, 6.0F, 1.0, 1.2));
+        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
+        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+    }
+
+    @Override
     public void tick() {
-        if (!this.level().isClientSide() && this.isAlive() && !this.taintBurstHandled && this.getSwellDir() > 0 && this.getSwelling(1.0F) >= 1.0F) {
-            this.taintBurstHandled = true;
-            this.infectExplosionArea((ServerLevel) this.level());
+        if (!this.level().isClientSide() && this.isAlive()) {
+            if (this.getSwellDir() > 0) {
+                this.taintFuse++;
+            } else if (this.taintFuse > 0) {
+                this.taintFuse--;
+            }
+            if (this.taintFuse >= 30) {
+                ServerLevel level = (ServerLevel) this.level();
+                level.explode(this, this.getX(), this.getY() + this.getBbHeight() / 2.0, this.getZ(), 1.5F, false, Level.ExplosionInteraction.NONE);
+                this.infectExplosionArea(level);
+                this.discard();
+                return;
+            }
         }
         super.tick();
     }
 
     @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("TaintFuse", this.taintFuse);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.taintFuse = input.getIntOr("TaintFuse", 0);
+    }
+
+    @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
-        this.spawnAtLocation(new ItemStack(level.getRandom().nextBoolean() ? ModItems.TAINTED_GOO.get() : ModItems.TAINT_TENDRIL.get()));
+        this.spawnAtLocation(level, new ItemStack(level.getRandom().nextBoolean() ? ModItems.TAINTED_GOO.get() : ModItems.TAINT_TENDRIL.get()));
     }
 
     private void infectExplosionArea(ServerLevel level) {

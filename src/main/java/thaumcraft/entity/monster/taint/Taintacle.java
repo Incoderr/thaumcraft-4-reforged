@@ -9,17 +9,27 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.TaintedMob;
+import thaumcraft.damage.ModDamageTypes;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModSounds;
 import thaumcraft.taint.TaintBiomes;
 import thaumcraft.taint.TaintSpread;
 
@@ -38,6 +48,8 @@ public class Taintacle extends Monster implements TaintedMob {
 
     @Override
     protected void registerGoals() {
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
     public static boolean canSpawnNaturally(EntityType<Taintacle> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
@@ -52,7 +64,7 @@ public class Taintacle extends Monster implements TaintedMob {
     }
 
     @Override
-    public boolean canBeCollidedWith() {
+    public boolean canBeCollidedWith(@Nullable Entity other) {
         return true;
     }
 
@@ -64,6 +76,11 @@ public class Taintacle extends Monster implements TaintedMob {
     @Override
     public void travel(Vec3 input) {
         super.travel(new Vec3(0.0, Math.min(input.y, 0.0), 0.0));
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        super.move(type, new Vec3(0.0, Math.min(movement.y, 0.0), 0.0));
     }
 
     @Override
@@ -92,7 +109,10 @@ public class Taintacle extends Monster implements TaintedMob {
         double distance = this.distanceTo(this.target);
         if (distance <= this.getBbHeight() && verticalOverlap(this, this.target)) {
             this.attackTime = 20;
-            this.doHurtTarget((ServerLevel) this.level(), this.target);
+            ServerLevel level = (ServerLevel) this.level();
+            this.target.hurtServer(level, level.damageSources().source(ModDamageTypes.TENTACLE, this),
+                (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            this.playSound(ModSounds.TENTACLE.get(), this.getSoundVolume(), this.getVoicePitch());
         } else if (distance > this.getBbHeight() && this.target.onGround()) {
             this.spawnTentacle(this.target);
         }
@@ -113,20 +133,27 @@ public class Taintacle extends Monster implements TaintedMob {
         BlockPos pos = victim.blockPosition();
         boolean onTaint = TaintBiomes.isTainted(level, pos)
             && (TaintSpread.isTaintBlock(level.getBlockState(pos)) || TaintSpread.isTaintBlock(level.getBlockState(pos.below())));
-        if (!onTaint && !level.getBiome(pos).is(TaintBiomes.EERIE)) {
+        boolean outerLands = level.getBiome(pos).is(TaintBiomes.OUTER_LANDS);
+        if (!onTaint && !outerLands) {
             return;
         }
         this.attackTime = 40 + level.getRandom().nextInt(20);
         TaintacleTiny tiny = ModEntities.TAINTACLE_TINY.get().create(level, EntitySpawnReason.TRIGGERED);
         if (tiny != null) {
-            tiny.absMoveTo(victim.getX() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), victim.getY(),
-                victim.getZ() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), 0.0F, 0.0F);
+            tiny.absSnapTo(victim.getX() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), victim.getY(),
+                victim.getZ() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), level.getRandom().nextFloat() * 360.0F, 0.0F);
             level.addFreshEntity(tiny);
         }
-        if (!onTaint && level.isEmptyBlock(pos) && hasAdjacentSolid(level, pos)) {
+        if (outerLands && level.isEmptyBlock(pos) && hasAdjacentSolid(level, pos)) {
             TaintBiomes.set(level, pos, TaintBiomes.TAINTED_LAND);
             level.setBlockAndUpdate(pos, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
         }
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        this.spawnAtLocation(level, new ItemStack(level.getRandom().nextBoolean() ? ModItems.TAINTED_GOO.get() : ModItems.TAINT_TENDRIL.get()));
     }
 
     @Nullable

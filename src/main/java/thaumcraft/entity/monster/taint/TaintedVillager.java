@@ -23,7 +23,7 @@ public class TaintedVillager extends TaintedAnimalMonster {
                 .getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING))
             : 0;
         if (level.getRandom().nextInt(13) < 1 + looting) {
-            this.spawnAtLocation(thaumcraft.registry.ModItems.GOLD_COIN.get());
+            this.spawnAtLocation(level, thaumcraft.registry.ModItems.GOLD_COIN.get());
         }
     }
 }

@@ -69,7 +69,7 @@ public class TaintSwarmer extends TaintSpore {
         for (int index = 0; index < count; index++) {
             TaintSwarm swarm = ModEntities.TAINT_SWARM.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
             if (swarm != null) {
-                swarm.absMoveTo(this.getX(), this.getY() + 0.5, this.getZ(), level.getRandom().nextFloat() * 360.0F, 0.0F);
+                swarm.absSnapTo(this.getX(), this.getY() + 0.5, this.getZ(), level.getRandom().nextFloat() * 360.0F, 0.0F);
                 level.addFreshEntity(swarm);
             }
         }
