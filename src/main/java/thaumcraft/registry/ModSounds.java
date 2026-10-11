@@ -51,6 +51,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> SWING = register("swing");
     public static final DeferredHolder<SoundEvent, SoundEvent> DOORFAIL = register("doorfail");
     public static final DeferredHolder<SoundEvent, SoundEvent> BRAIN = register("brain");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEARTBEAT = register("heartbeat");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROOTS = register("roots");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PECH_IDLE = register("pech_idle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PECH_HIT = register("pech_hit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PECH_DEATH = register("pech_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PECH_TRADE = register("pech_trade");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PECH_CHARGE = register("pech_charge");
 
     private ModSounds() {
     }

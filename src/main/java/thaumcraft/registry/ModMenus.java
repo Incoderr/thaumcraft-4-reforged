@@ -34,7 +34,6 @@ public final class ModMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ArcaneBoreMenu>> ARCANE_BORE = MENUS.register("arcane_bore", () -> Menus.withPos(ArcaneBoreMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<ArcaneSpaMenu>> ARCANE_SPA = MENUS.register("arcane_spa", () -> Menus.withPos(ArcaneSpaMenu::new));
-
     private ModMenus() {
     }
 
