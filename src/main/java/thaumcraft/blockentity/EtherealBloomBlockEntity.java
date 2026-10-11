@@ -15,6 +15,9 @@ public class EtherealBloomBlockEntity extends TcBlockEntity {
     }
 
     public static void serverTick(ServerLevel level, BlockPos pos, EtherealBloomBlockEntity bloom) {
+        if (bloom.counter == 0) {
+            bloom.counter = level.getRandom().nextInt(100);
+        }
         if (++bloom.counter % 20 != 0) {
             return;
         }

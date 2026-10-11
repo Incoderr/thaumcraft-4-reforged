@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -22,6 +23,10 @@ public class BottleTaint extends ThrowableProjectile {
     @Override
     protected double getDefaultGravity() {
         return 0.05;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder entityData) {
     }
 
     @Override
@@ -45,10 +50,10 @@ public class BottleTaint extends ThrowableProjectile {
                 continue;
             }
             TaintBiomes.set(serverLevel, target, TaintBiomes.TAINTED_LAND);
-            BlockPos fibre = target.above();
-            if (serverLevel.getBlockState(target).isFaceSturdy(serverLevel, target, net.minecraft.core.Direction.UP)
-                && serverLevel.getBlockState(fibre).canBeReplaced()) {
-                serverLevel.setBlockAndUpdate(fibre, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
+            BlockPos ground = target.below();
+            if (serverLevel.getBlockState(ground).isFaceSturdy(serverLevel, ground, net.minecraft.core.Direction.UP)
+                && serverLevel.getBlockState(target).canBeReplaced()) {
+                serverLevel.setBlockAndUpdate(target, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
             }
         }
         discard();

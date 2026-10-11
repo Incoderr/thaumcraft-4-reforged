@@ -21,7 +21,8 @@ public class BottledTaintItem extends Item {
         if (!player.getAbilities().instabuild) {
             player.getItemInHand(hand).shrink(1);
         }
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BOW, SoundSource.PLAYERS, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EXPERIENCE_BOTTLE_THROW, SoundSource.PLAYERS, 0.5F,
+            0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
         if (!level.isClientSide()) {
             BottleTaint bottle = new BottleTaint(ModEntities.BOTTLE_TAINT.get(), level);
             CombatUtils.launch(bottle, player, 0.5F);
