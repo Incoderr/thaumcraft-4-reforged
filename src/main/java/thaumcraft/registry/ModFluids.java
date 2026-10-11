@@ -6,7 +6,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -23,11 +26,11 @@ public final class ModFluids {
 
     public static final DeferredHolder<FluidType, FluidType> PURIFYING_FLUID_TYPE = FLUID_TYPES.register(
         "purifying_fluid",
-        () -> new FluidType(FluidType.Properties.create().density(1000).viscosity(1000).lightLevel(10).canConvertToSource(true).rarity(net.minecraft.world.item.Rarity.RARE))
+        () -> new FluidType(FluidType.Properties.create().density(1000).viscosity(1000).lightLevel(10).rarity(net.minecraft.world.item.Rarity.RARE))
     );
     public static final DeferredHolder<FluidType, FluidType> LIQUID_DEATH_TYPE = FLUID_TYPES.register(
         "liquid_death",
-        () -> new FluidType(FluidType.Properties.create().density(1000).viscosity(1000).rarity(net.minecraft.world.item.Rarity.UNCOMMON))
+        () -> new FluidType(FluidType.Properties.create().density(1000).viscosity(1500).lightLevel(8).rarity(net.minecraft.world.item.Rarity.RARE))
     );
 
     public static final DeferredHolder<Fluid, PurifyingSource> PURIFYING_FLUID = FLUIDS.register(
@@ -65,7 +68,7 @@ public final class ModFluids {
             .block(ModBlocks.LIQUID_DEATH)
             .slopeFindDistance(4)
             .levelDecreasePerBlock(1)
-            .tickRate(5);
+            .tickRate(7);
     }
 
     public static final class PurifyingSource extends BaseFlowingFluid.Source {
@@ -86,10 +89,9 @@ public final class ModFluids {
         }
 
         @Override
-        public void tick(Level level, BlockPos pos, net.minecraft.world.level.material.FluidState state) {
-            BlockState blockState = level.getBlockState(pos);
-            if (level instanceof ServerLevel serverLevel && blockState.getBlock() instanceof LiquidDeathBlock) {
-                blockState.tick(serverLevel, pos, level.getRandom());
+        public void tick(ServerLevel level, BlockPos pos, BlockState blockState, FluidState fluidState) {
+            if (blockState.getBlock() instanceof LiquidDeathBlock) {
+                blockState.tick(level, pos, level.getRandom());
             }
         }
 
@@ -103,6 +105,12 @@ public final class ModFluids {
             int level = isSource(state) ? 0 : LiquidDeathBlock.QUANTA_PER_BLOCK - getAmount(state);
             return ModBlocks.LIQUID_DEATH.get().defaultBlockState().setValue(LiquidBlock.LEVEL, level);
         }
+
+        @Override
+        protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> builder) {
+            super.createFluidStateDefinition(builder);
+            builder.add(FlowingFluid.LEVEL);
+        }
     }
 
     public static final class LiquidDeathSource extends LiquidDeathBase {
@@ -114,11 +122,26 @@ public final class ModFluids {
         public int getAmount(net.minecraft.world.level.material.FluidState state) {
             return 4;
         }
+
+        @Override
+        public boolean isSource(FluidState state) {
+            return true;
+        }
     }
 
     public static final class LiquidDeathFlowing extends LiquidDeathBase {
         private LiquidDeathFlowing(Properties properties) {
             super(properties);
+        }
+
+        @Override
+        public int getAmount(FluidState state) {
+            return state.getValue(FlowingFluid.LEVEL);
+        }
+
+        @Override
+        public boolean isSource(FluidState state) {
+            return false;
         }
     }
 

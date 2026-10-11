@@ -1,6 +1,5 @@
 package thaumcraft.block;
 
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,7 +16,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -29,9 +28,9 @@ import thaumcraft.registry.ModFluids;
 
 public class LiquidDeathBlock extends LiquidBlock {
     public static final int QUANTA_PER_BLOCK = 4;
-    private static final int TICK_RATE = 5;
+    private static final int TICK_RATE = 7;
 
-    public LiquidDeathBlock(Supplier<? extends FlowingFluid> fluid, Properties properties) {
+    public LiquidDeathBlock(Fluid fluid, Properties properties) {
         super(fluid, properties);
     }
 
@@ -68,7 +67,7 @@ public class LiquidDeathBlock extends LiquidBlock {
     }
 
     @Override
-    protected boolean canBeReplaced(BlockState state, FlowingFluid fluid) {
+    protected boolean canBeReplaced(BlockState state, Fluid fluid) {
         return getQuanta(state) <= 2;
     }
 
@@ -218,7 +217,7 @@ public class LiquidDeathBlock extends LiquidBlock {
     }
 
     @Override
-    protected void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(50) == 0) {
             level.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, pos.getX() + random.nextDouble(), pos.getY() + getQuanta(state) / 4.0, pos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
         }

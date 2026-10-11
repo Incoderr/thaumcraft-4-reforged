@@ -31,18 +31,20 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.block.LiquidDeathBlock;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModFluids;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class FluidGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"liquid_death_horizontal_quanta", "liquid_death_vertical_quanta", "sanitizing_soap_release_threshold"};
+    private static final String[] TESTS = {"liquid_death_horizontal_quanta", "liquid_death_vertical_quanta", "purifying_fluid_no_source_regeneration", "sanitizing_soap_release_threshold"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FluidGameTests::liquidDeathHorizontalQuanta);
         FUNCTIONS.register(TESTS[1], () -> FluidGameTests::liquidDeathVerticalQuanta);
-        FUNCTIONS.register(TESTS[2], () -> FluidGameTests::sanitizingSoapReleaseThreshold);
+        FUNCTIONS.register(TESTS[2], () -> FluidGameTests::purifyingFluidNoSourceRegeneration);
+        FUNCTIONS.register(TESTS[3], () -> FluidGameTests::sanitizingSoapReleaseThreshold);
     }
 
     private FluidGameTests() {
@@ -72,7 +74,7 @@ public final class FluidGameTests {
             }
         }
         helper.setBlock(source, ModBlocks.LIQUID_DEATH.get());
-        helper.runAfterDelay(6, () -> {
+        helper.runAfterDelay(8, () -> {
             boolean spread = false;
             for (int x = -1; x <= 1; x++) {
                 for (int z = -1; z <= 1; z++) {
@@ -96,13 +98,32 @@ public final class FluidGameTests {
             }
         }
         helper.setBlock(source, ModBlocks.LIQUID_DEATH.get());
-        helper.runAfterDelay(6, () -> {
+        helper.runAfterDelay(8, () -> {
             helper.assertValueEqual(totalQuanta(helper, source, -1, 1, -2, 0, -1, 1), LiquidDeathBlock.QUANTA_PER_BLOCK, "scheduled vertical flow changed liquid death quanta");
             helper.assertValueEqual(quanta(helper.getBlockState(source.below())), LiquidDeathBlock.QUANTA_PER_BLOCK, "scheduled vertical tick did not move all liquid death quanta");
             helper.runAfterDelay(15, () -> {
                 helper.assertValueEqual(totalQuanta(helper, source, -2, 2, -2, 0, -2, 2), LiquidDeathBlock.QUANTA_PER_BLOCK, "repeated scheduled vertical ticks duplicated or lost liquid death quanta");
                 helper.succeed();
             });
+        });
+    }
+
+    private static void purifyingFluidNoSourceRegeneration(GameTestHelper helper) {
+        BlockPos left = new BlockPos(1, 3, 2);
+        BlockPos center = new BlockPos(2, 3, 2);
+        BlockPos right = new BlockPos(3, 3, 2);
+        helper.setBlock(left.below(), Blocks.STONE);
+        helper.setBlock(center.below(), Blocks.STONE);
+        helper.setBlock(right.below(), Blocks.STONE);
+        helper.setBlock(left, ModBlocks.PURIFYING_FLUID.get());
+        helper.setBlock(center, ModBlocks.PURIFYING_FLUID.get());
+        helper.setBlock(right, ModBlocks.PURIFYING_FLUID.get());
+        helper.setBlock(center, Blocks.AIR);
+        helper.runAfterDelay(8, () -> {
+            BlockState state = helper.getBlockState(center);
+            helper.assertFalse(state.getFluidState().isSource(), "purifying fluid recreated a consumed source between adjacent sources");
+            helper.assertTrue(state.getFluidState().isEmpty() || state.getFluidState().getType() == ModFluids.FLOWING_PURIFYING_FLUID.get(), "consumed purifying source became an unrelated fluid");
+            helper.succeed();
         });
     }
 
