@@ -1,6 +1,5 @@
 package thaumcraft.block;
 
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -12,13 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
 public class PurifyingFluidBlock extends LiquidBlock {
-    public PurifyingFluidBlock(Supplier<? extends FlowingFluid> fluid, Properties properties) {
+    public PurifyingFluidBlock(Fluid fluid, Properties properties) {
         super(fluid, properties);
     }
 
@@ -27,13 +26,13 @@ public class PurifyingFluidBlock extends LiquidBlock {
         if (level instanceof ServerLevel serverLevel && state.getFluidState().isSource() && entity instanceof Player player && !player.hasEffect(ModEffects.WARP_WARD)) {
             int warp = Warp.get(player, WarpType.PERMANENT);
             int divisor = Math.max(1, (int) Math.sqrt(warp));
-            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(ModEffects.WARP_WARD, Math.min(32000, 200000 / divisor), 0, true));
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(ModEffects.WARP_WARD, Math.min(32000, 200000 / divisor), 0, true, true));
             serverLevel.setBlock(pos, Blocks.AIR.defaultBlockState(), UPDATE_ALL);
         }
     }
 
     @Override
-    protected void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (random.nextInt(4) == 0) {
             level.addParticle(ParticleTypes.BUBBLE, pos.getX() + random.nextDouble(), pos.getY() + 0.125, pos.getZ() + random.nextDouble(), 0.0, 0.02, 0.0);
         }

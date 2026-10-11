@@ -3,7 +3,7 @@ package thaumcraft.registry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.SpawnPlacementType;
+import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.bus.api.IEventBus;
@@ -101,7 +101,7 @@ public final class ModEntities {
     private static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
         event.register(
             TAINTACLE.get(),
-            SpawnPlacementType.ON_GROUND,
+            SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             Taintacle::canSpawnNaturally,
             RegisterSpawnPlacementsEvent.Operation.REPLACE

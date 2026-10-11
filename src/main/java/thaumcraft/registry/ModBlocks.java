@@ -102,13 +102,13 @@ public final class ModBlocks {
 
     public static final DeferredBlock<PurifyingFluidBlock> PURIFYING_FLUID = BLOCKS.registerBlock(
         "purifying_fluid",
-        properties -> new PurifyingFluidBlock(ModFluids.PURIFYING_FLUID, properties),
-        properties -> properties.mapColor(MapColor.WATER).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.POPPED).noLootTable().liquid().sound(SoundType.EMPTY)
+        properties -> new PurifyingFluidBlock(ModFluids.PURIFYING_FLUID.get(), properties),
+        properties -> properties.mapColor(MapColor.WATER).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.POPPED).lightLevel(state -> 10).noLootTable().liquid().sound(SoundType.EMPTY)
     );
     public static final DeferredBlock<LiquidDeathBlock> LIQUID_DEATH = BLOCKS.registerBlock(
         "liquid_death",
-        properties -> new LiquidDeathBlock(ModFluids.LIQUID_DEATH, properties),
-        properties -> properties.mapColor(MapColor.COLOR_PURPLE).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.POPPED).noLootTable().liquid().sound(SoundType.EMPTY)
+        properties -> new LiquidDeathBlock(ModFluids.LIQUID_DEATH.get(), properties),
+        properties -> properties.mapColor(MapColor.COLOR_PURPLE).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.POPPED).lightLevel(state -> 8).noLootTable().liquid().sound(SoundType.EMPTY)
     );
 
     public static final String[] CANDLE_COLORS = {
