@@ -56,7 +56,12 @@ public class TaintFibresBlock extends Block {
         TaintSpread.tick(level, pos);
         if (kind == Kind.STALK && random.nextInt(10) == 0 && level.isEmptyBlock(pos.above())) {
             level.setBlockAndUpdate(pos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
-            level.addFreshEntity(thaumcraft.entity.monster.taint.TaintSpore.create(level, pos.above()));
+            thaumcraft.entity.monster.taint.TaintSpore spore = thaumcraft.entity.monster.taint.TaintSpore.create(level, pos);
+            if (spore != null) {
+                level.addFreshEntity(spore);
+            } else {
+                level.setBlockAndUpdate(pos, ModBlocks.SPORE_STALK.get().defaultBlockState());
+            }
         } else if (kind == Kind.MATURE_STALK && level.getEntitiesOfClass(
             thaumcraft.entity.monster.taint.TaintSpore.class,
             new net.minecraft.world.phys.AABB(pos.getX(), pos.getY() + 1, pos.getZ(), pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1)

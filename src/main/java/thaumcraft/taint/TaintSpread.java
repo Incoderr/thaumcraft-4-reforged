@@ -96,11 +96,12 @@ public final class TaintSpread {
     }
 
     private static boolean isLogGourdOrCactus(BlockState state) {
-        return state.is(BlockTags.LOGS) || state.is(BlockTags.GOURDS) || state.is(Blocks.CACTUS);
+        return state.is(BlockTags.LOGS) || state.is(Blocks.PUMPKIN) || state.is(Blocks.MELON) || state.is(Blocks.CARVED_PUMPKIN)
+            || state.is(Blocks.JACK_O_LANTERN) || state.is(Blocks.CACTUS);
     }
 
     private static boolean isSoil(BlockState state) {
-        return state.is(BlockTags.SAND) || state.is(BlockTags.DIRT) || state.is(BlockTags.CLAY) || state.is(Blocks.GRASS_BLOCK);
+        return state.is(BlockTags.SAND) || state.is(BlockTags.DIRT) || state.is(Blocks.CLAY) || state.is(Blocks.GRASS_BLOCK);
     }
 
     public static boolean onlyAdjacentToTaint(Level level, BlockPos pos) {

@@ -52,12 +52,10 @@ public final class TaintBiomes {
         if (!level.hasChunkAt(pos)) {
             return false;
         }
-        if (isTainted(level, pos)) {
-            return set(level, pos, Biomes.PLAINS);
-        }
-        if (level.getBiome(pos).is(EERIE) || level.getBiome(pos).is(MAGICAL_FOREST)) {
-            return true;
-        }
-        return false;
+        Holder<Biome> tainted = level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(TAINTED_LAND);
+        Holder<Biome> eerie = level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(EERIE);
+        Holder<Biome> magicalForest = level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(MAGICAL_FOREST);
+        Holder<Biome> plains = level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
+        return BiomeEdit.restoreColumn(level, pos, tainted, plains, tainted, eerie, magicalForest);
     }
 }
