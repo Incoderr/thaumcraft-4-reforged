@@ -20,7 +20,9 @@ import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModCapabilities;
 import thaumcraft.registry.ModCreativeTabs;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.registry.ModEffects;
 import thaumcraft.registry.ModFeatures;
+import thaumcraft.registry.ModFluids;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModMenus;
 import thaumcraft.registry.ModSounds;
@@ -35,12 +37,14 @@ import thaumcraft.test.ArmorGameTests;
 import thaumcraft.test.DeviceGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
+import thaumcraft.test.FluidGameTests;
 import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
 import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.test.WardedGameTests;
+import thaumcraft.test.WarpGameTests;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.focus.FocusKeys;
 
@@ -63,6 +67,8 @@ public class Thaumcraft {
         WardedKeys.init();
         thaumcraft.device.MirrorKeys.init();
         Platform.register(modEventBus);
+        ModEffects.register(modEventBus);
+        ModFluids.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
@@ -80,6 +86,7 @@ public class Thaumcraft {
         ThaumcraftGameTests.register(modEventBus);
         HexGridGameTests.register(modEventBus);
         EssentiaGameTests.register(modEventBus);
+        FluidGameTests.register(modEventBus);
         AlchemyGameTests.register(modEventBus);
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
@@ -87,6 +94,7 @@ public class Thaumcraft {
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
+        WarpGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
         thaumcraft.test.MirrorGameTests.register(modEventBus);
     }
