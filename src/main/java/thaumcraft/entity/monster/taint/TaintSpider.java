@@ -13,6 +13,10 @@ public class TaintSpider extends Spider implements TaintedMob {
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return Spider.createAttributes().add(Attributes.MAX_HEALTH, 5.0).add(Attributes.ATTACK_DAMAGE, 2.0);
+        return net.minecraft.world.entity.monster.Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, 5.0)
+            .add(Attributes.MOVEMENT_SPEED, 0.3)
+            .add(Attributes.FOLLOW_RANGE, 12.0)
+            .add(Attributes.ATTACK_DAMAGE, 2.0);
     }
 }
