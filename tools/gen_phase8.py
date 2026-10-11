@@ -355,6 +355,11 @@ def damage_types(ctx):
         ctx.write(ctx.DATA / namespace / "tags" / "damage_type" / f"{path}.json", {"replace": False, "values": sorted(values)})
 
 
+def recipes(ctx):
+    for name in ["robe_armor_dye", "void_robe_armor_dye"]:
+        ctx.recipe(name, {"type": f"{NS}:{name}"}, [])
+
+
 def generate(ctx):
     foci(ctx)
     tools(ctx)
@@ -366,3 +371,4 @@ def generate(ctx):
     tags(ctx)
     enchantments(ctx)
     damage_types(ctx)
+    recipes(ctx)

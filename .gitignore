@@ -14,5 +14,6 @@ CONTINUE.md
 crash-report.md
 Thaumcraft-1.7.10-4.2.3.5.jar
 .claude/worktrees/
+.worktrees/
 .claude/*.lock
 cmds
