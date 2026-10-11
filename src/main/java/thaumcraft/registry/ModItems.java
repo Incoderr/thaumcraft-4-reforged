@@ -3,6 +3,7 @@ package thaumcraft.registry;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -12,6 +13,8 @@ import thaumcraft.device.ArcaneKeyItem;
 import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.essentia.PhialItem;
 import thaumcraft.item.AspectContainerItem;
+import thaumcraft.item.BathSaltsItem;
+import thaumcraft.item.BottledTaintItem;
 import thaumcraft.item.CrystalEssenceItem;
 import thaumcraft.item.GogglesItem;
 import thaumcraft.item.KnowledgeFragmentItem;
@@ -19,6 +22,7 @@ import thaumcraft.item.LootBagItem;
 import thaumcraft.item.PrimalCharmItem;
 import thaumcraft.item.ResearchNotesItem;
 import thaumcraft.item.ScribingToolsItem;
+import thaumcraft.item.SanitizingSoapItem;
 import thaumcraft.item.ThaumometerItem;
 import thaumcraft.item.ThaumonomiconItem;
 import thaumcraft.item.ZombieBrainItem;
@@ -77,6 +81,12 @@ import thaumcraft.wand.focus.WardingFocus;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
+
+    public static final DeferredItem<Item> PURIFYING_FLUID_BUCKET = ITEMS.registerItem("purifying_fluid_bucket", properties -> new BucketItem(ModFluids.PURIFYING_FLUID.get(), properties.stacksTo(1)));
+    public static final DeferredItem<Item> LIQUID_DEATH_BUCKET = ITEMS.registerItem("liquid_death_bucket", properties -> new BucketItem(ModFluids.LIQUID_DEATH.get(), properties.stacksTo(1)));
+    public static final DeferredItem<BathSaltsItem> BATH_SALTS = ITEMS.registerItem("bath_salts", BathSaltsItem::new);
+    public static final DeferredItem<SanitizingSoapItem> SANITIZING_SOAP = ITEMS.registerItem("sanitizing_soap", SanitizingSoapItem::new);
+    public static final DeferredItem<BottledTaintItem> BOTTLED_TAINT = ITEMS.registerItem("bottled_taint", BottledTaintItem::new);
 
     public static final DeferredItem<Item> ALUMENTUM = ITEMS.registerSimpleItem("alumentum", properties -> Registration.fuel(properties, 6400));
     public static final DeferredItem<Item> NITOR = ITEMS.registerItem("nitor", properties -> new net.minecraft.world.item.BlockItem(ModBlocks.NITOR_LIGHT.get(), properties));

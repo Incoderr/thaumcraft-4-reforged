@@ -8,6 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.world.biome.MagicalForestDecorationFeature;
+import thaumcraft.world.biome.TaintDecorationFeature;
 import thaumcraft.world.gen.ThaumcraftWorldGenFeature;
 
 public final class ModFeatures {
@@ -17,6 +18,10 @@ public final class ModFeatures {
     public static final Supplier<MapCodec<MagicalForestDecorationFeature>> MAGICAL_FOREST_DECORATION = FEATURE_TYPES.register(
         "magical_forest_decoration",
         () -> MagicalForestDecorationFeature.CODEC
+    );
+    public static final Supplier<MapCodec<TaintDecorationFeature>> TAINT_DECORATION = FEATURE_TYPES.register(
+        "taint_decoration",
+        () -> TaintDecorationFeature.CODEC
     );
 
     private ModFeatures() {
