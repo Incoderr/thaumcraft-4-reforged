@@ -1,0 +1,77 @@
+package thaumcraft.entity.monster.taint;
+
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.sounds.SoundSource;
+import thaumcraft.registry.ModEntities;
+import thaumcraft.registry.ModSounds;
+
+public class TaintSwarmer extends TaintSpore {
+    private int spawnCounter = 500;
+    private boolean burst;
+
+    public TaintSwarmer(EntityType<? extends TaintSwarmer> type, Level level) {
+        super(type, level);
+        this.setSporeSize(10);
+    }
+
+    public static AttributeSupplier.Builder createAttributes() {
+        return net.minecraft.world.entity.monster.Monster.createMonsterAttributes()
+            .add(Attributes.MAX_HEALTH, 75.0)
+            .add(Attributes.MOVEMENT_SPEED, 0.0)
+            .add(Attributes.ATTACK_DAMAGE, 1.0);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.level().isClientSide()) {
+            return;
+        }
+        if (this.spawnCounter > 0) {
+            this.spawnCounter--;
+        }
+        if (this.spawnCounter <= 0 && !this.level().getEntitiesOfClass(Player.class, new AABB(this.blockPosition()).inflate(16.0)).isEmpty()) {
+            this.spawnCounter = 500;
+            this.spawnSwarm(1);
+        }
+    }
+
+    @Override
+    protected boolean shouldBurstOnDetachment() {
+        return false;
+    }
+
+    @Override
+    protected void burstIntoSpiders() {
+    }
+
+    @Override
+    public void playerTouch(Player player) {
+    }
+
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource source) {
+        if (!this.level().isClientSide() && !this.burst) {
+            this.burst = true;
+            this.spawnSwarm(1);
+        }
+        super.die(source);
+    }
+
+    private void spawnSwarm(int count) {
+        net.minecraft.server.level.ServerLevel level = (net.minecraft.server.level.ServerLevel) this.level();
+        level.playSound(null, this.blockPosition(), ModSounds.GORE.get(), SoundSource.HOSTILE, 1.0F, 0.9F + level.getRandom().nextFloat() * 0.1F);
+        for (int index = 0; index < count; index++) {
+            TaintSwarm swarm = ModEntities.TAINT_SWARM.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            if (swarm != null) {
+                swarm.absSnapTo(this.getX(), this.getY() + 0.5, this.getZ(), level.getRandom().nextFloat() * 360.0F, 0.0F);
+                level.addFreshEntity(swarm);
+            }
+        }
+    }
+}

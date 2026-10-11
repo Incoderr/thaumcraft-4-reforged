@@ -14,6 +14,7 @@ import thaumcraft.essentia.EssentiaKeys;
 import thaumcraft.entity.monster.ThaumicSlime;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.taint.TaintSpread;
 
 public final class AlchemyHooks {
     private AlchemyHooks() {
@@ -38,7 +39,7 @@ public final class AlchemyHooks {
     }
 
     public static boolean taintFromFlux(ServerLevel level, BlockPos pos) {
-        return false;
+        return TaintSpread.taintFromFlux(level, pos);
     }
 
     public static boolean isThaumicSlime(Entity entity) {

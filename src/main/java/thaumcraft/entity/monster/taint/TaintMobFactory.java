@@ -1,0 +1,52 @@
+package thaumcraft.entity.monster.taint;
+
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import org.jspecify.annotations.Nullable;
+import thaumcraft.registry.ModEntities;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.npc.villager.Villager;
+
+public final class TaintMobFactory {
+    private TaintMobFactory() {
+    }
+
+    public static @Nullable Entity createReplacement(LivingEntity original) {
+        EntityType<? extends Entity> replacementType;
+        if (original instanceof Chicken) {
+            replacementType = ModEntities.TAINTED_CHICKEN.get();
+        } else if (original instanceof Cow) {
+            replacementType = ModEntities.TAINTED_COW.get();
+        } else if (original instanceof Creeper) {
+            replacementType = ModEntities.TAINTED_CREEPER.get();
+        } else if (original instanceof Pig) {
+            replacementType = ModEntities.TAINTED_PIG.get();
+        } else if (original instanceof Sheep) {
+            replacementType = ModEntities.TAINTED_SHEEP.get();
+        } else if (original instanceof Villager) {
+            replacementType = ModEntities.TAINTED_VILLAGER.get();
+        } else {
+            return null;
+        }
+        Entity replacement = replacementType.create(original.level(), EntitySpawnReason.CONVERSION);
+        if (replacement == null) {
+            return null;
+        }
+        replacement.absSnapTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
+        replacement.setDeltaMovement(original.getDeltaMovement());
+        replacement.setCustomName(original.getCustomName());
+        replacement.setCustomNameVisible(original.isCustomNameVisible());
+        if (replacement instanceof Mob mob) {
+            mob.setPersistenceRequired();
+        }
+        return replacement;
+    }
+
+}

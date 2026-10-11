@@ -8,12 +8,14 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.entity.monster.GiantBrainyZombie;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.taint.TaintSpread;
 
 public final class NodeHooks {
     private NodeHooks() {
     }
 
     public static void spreadTaintFibres(ServerLevel level, BlockPos pos) {
+        TaintSpread.spreadFibres(level, pos);
     }
 
     public static boolean spawnAspectOrb(ServerLevel level, BlockPos pos, Aspect aspect, int amount) {
