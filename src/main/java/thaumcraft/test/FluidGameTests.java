@@ -16,6 +16,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
+<<<<<<< HEAD
+=======
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.pig.Pig;
+>>>>>>> 2e9c6a9 (feat: integrate eldritch and cultist encounters)
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -143,6 +149,122 @@ public final class FluidGameTests {
         helper.succeed();
     }
 
+<<<<<<< HEAD
+=======
+    private static void purifyingFluidWardConsumesSource(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlockAndUpdate(pos, ModBlocks.PURIFYING_FLUID.get().defaultBlockState());
+        ServerPlayer player = mockServerPlayer(helper);
+        player.snapTo(Vec3.atCenterOf(pos), 0.0F, 0.0F);
+        Warp.set(player, 9, WarpType.PERMANENT);
+        level.getBlockState(pos).entityInside(level, pos, player, net.minecraft.world.entity.InsideBlockEffectApplier.NOOP, true);
+        helper.assertTrue(player.hasEffect(ModEffects.WARP_WARD), "purifying source did not apply ward");
+        helper.assertTrue(level.getBlockState(pos).isAir(), "purifying source was not consumed by ward application");
+        helper.succeed();
+    }
+
+    private static void bathSaltsExpireInWater(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+        ItemEntity salts = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModItems.BATH_SALTS.get()));
+        level.addFreshEntity(salts);
+        salts.makeFakeItem();
+        salts.tick();
+        helper.assertTrue(level.getBlockState(pos).is(ModBlocks.PURIFYING_FLUID.get()), "expired bath salts did not transform source water");
+        helper.succeed();
+    }
+
+    private static void purifyingBucketRoundTrip(GameTestHelper helper) {
+        bucketRoundTrip(helper, ModItems.PURIFYING_FLUID_BUCKET.get(), ModBlocks.PURIFYING_FLUID.get());
+    }
+
+    private static void liquidDeathBucketRoundTrip(GameTestHelper helper) {
+        bucketRoundTrip(helper, ModItems.LIQUID_DEATH_BUCKET.get(), ModBlocks.LIQUID_DEATH.get());
+    }
+
+    private static void bucketRoundTrip(GameTestHelper helper, BucketItem fluidBucket, net.minecraft.world.level.block.Block fluidBlock) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+        ServerPlayer player = mockServerPlayer(helper);
+        player.snapTo(pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5, 0.0F, 90.0F);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(fluidBucket));
+        InteractionResult placed = fluidBucket.use(level, player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(placed.consumesAction(), "fluid bucket did not place its fluid");
+        helper.assertTrue(level.getBlockState(pos).is(fluidBlock), "fluid bucket placed an unexpected block");
+        helper.assertTrue(level.getFluidState(pos).isSource(), "placed fluid bucket did not create a source");
+        player.snapTo(pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5, 0.0F, 90.0F);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
+        InteractionResult pickedUp = Items.BUCKET.use(level, player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(pickedUp.consumesAction(), "empty bucket did not pick up the source");
+        helper.assertTrue(level.getBlockState(pos).isAir(), "bucket pickup did not remove the source block");
+        helper.assertTrue(
+            pickedUp instanceof InteractionResult.Success success
+                && success.heldItemTransformedTo() != null
+                && success.heldItemTransformedTo().is(fluidBucket),
+            "bucket pickup returned the wrong fluid bucket"
+        );
+        helper.succeed();
+    }
+
+    private static void liquidDeathYieldsEssence(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos relativePos = new BlockPos(2, 2, 2);
+        BlockPos pos = helper.absolutePos(relativePos);
+        Pig pig = new Pig(EntityTypes.PIG, level);
+        pig.getRandom().setSeed(0L);
+        pig.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        level.addFreshEntity(pig);
+        pig.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE), 100.0F);
+        helper.assertItemEntityPresent(ModItems.CRYSTALLIZED_ESSENCE.get(), relativePos, 6.0);
+        helper.assertItemEntityPresent(Items.PORKCHOP, relativePos, 6.0);
+        helper.assertTrue(pig.isDeadOrDying(), "dissolving liquid death damage did not kill the mob");
+        helper.succeed();
+    }
+
+    private static void sanitizingSoapFullUseOnce(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        Warp.set(player, 0, WarpType.STICKY);
+        Warp.set(player, 4, WarpType.TEMPORARY);
+        ItemStack soap = new ItemStack(ModItems.SANITIZING_SOAP.get(), 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, soap);
+        ModItems.SANITIZING_SOAP.get().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        for (int elapsed = 1; elapsed < 196; elapsed++) {
+            ModItems.SANITIZING_SOAP.get().onUseTick(helper.getLevel(), player, soap, 200 - elapsed);
+        }
+        helper.assertValueEqual(soap.getCount(), 2, "full soap use consumed before its completion threshold");
+        ModItems.SANITIZING_SOAP.get().onUseTick(helper.getLevel(), player, soap, 4);
+        helper.assertValueEqual(soap.getCount(), 1, "completed soap use did not consume exactly one item");
+        helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 0, "completed soap use did not clear temporary warp");
+        helper.assertFalse(player.isUsingItem(), "soap use did not stop at its completion threshold");
+        helper.succeed();
+    }
+
+    private static void sanitizingSoapFullLifecycleOnce(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        Warp.set(player, 0, WarpType.STICKY);
+        Warp.set(player, 4, WarpType.TEMPORARY);
+        ItemStack soap = new ItemStack(ModItems.SANITIZING_SOAP.get(), 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, soap);
+        ModItems.SANITIZING_SOAP.get().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.onEachTick(player::doTick);
+        helper.runAfterDelay(196, () -> {
+            helper.assertValueEqual(soap.getCount(), 2, "soap lifecycle consumed the item before tick 196");
+            helper.assertTrue(player.isUsingItem(), "soap lifecycle stopped before tick 196");
+            helper.runAfterDelay(1, () -> {
+                helper.assertValueEqual(soap.getCount(), 1, "soap lifecycle did not consume exactly one item at tick 197");
+                helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 0, "soap lifecycle did not clear temporary warp");
+                helper.assertFalse(player.isUsingItem(), "soap lifecycle did not stop at tick 197");
+                player.releaseUsingItem();
+                helper.assertValueEqual(soap.getCount(), 1, "soap release or finish consumed the item twice");
+                helper.succeed();
+            });
+        });
+    }
+
+>>>>>>> 2e9c6a9 (feat: integrate eldritch and cultist encounters)
     private static int quanta(BlockState state) {
         if (!(state.getBlock() instanceof LiquidDeathBlock)) {
             return 0;

@@ -2,17 +2,21 @@ package thaumcraft.entity.monster;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import thaumcraft.registry.ModItems;
 
 public abstract class Cultist extends Monster {
-    protected Cultist(net.minecraft.world.entity.EntityType<? extends Cultist> type, Level level) {
+    protected <T extends Cultist> Cultist(net.minecraft.world.entity.EntityType<? extends T> type, Level level) {
         super(type, level);
         this.setCanPickUpLoot(false);
     }
@@ -28,13 +32,22 @@ public abstract class Cultist extends Monster {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
+        int looting = source.getEntity() instanceof LivingEntity killer
+            ? EnchantmentHelper.getEnchantmentLevel(
+                level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING),
+                killer
+            )
+            : 0;
         int roll = this.random.nextInt(10);
         if (roll == 0) {
             this.spawnAtLocation(level, new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()));
         } else if (roll == 1) {
             this.spawnAtLocation(level, new ItemStack(ModItems.VOID_SEED.get()));
-        } else if (roll <= 3 + this.random.nextInt(3)) {
+        } else if (roll <= 3 + looting) {
             this.spawnAtLocation(level, new ItemStack(ModItems.GOLD_COIN.get()));
+        }
+        if (recentlyHit && this.random.nextInt(200) == 0) {
+            this.spawnAtLocation(level, new ItemStack(ModItems.CRIMSON_RITES.get()));
         }
     }
 
