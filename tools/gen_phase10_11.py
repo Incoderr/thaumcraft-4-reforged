@@ -26,9 +26,28 @@ def write_damage_types(ctx):
             current["values"] = sorted(values, key=lambda entry: entry if isinstance(entry, str) else entry["id"])
             ctx.write(tag_path, current)
 
+    entity_tags = {
+        "arthropod": ["eldritch_crab", "mind_spider", "taint_spider"],
+        "undead": ["brainy_zombie", "giant_brainy_zombie", "inhabited_zombie", "eldritch_guardian"],
+    }
+    for name, entities in entity_tags.items():
+        path = ctx.DATA / "minecraft" / "tags" / "entity_type" / f"{name}.json"
+        current = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"replace": False, "values": []}
+        values = current["values"]
+        for entity in entities:
+            identifier = f"{NS}:{entity}"
+            if identifier not in values:
+                values.append(identifier)
+        current["values"] = sorted(values, key=lambda entry: entry if isinstance(entry, str) else entry["id"])
+        ctx.write(path, current)
+
     ctx.write(
-        ctx.DATA / "minecraft" / "tags" / "entity_type" / "arthropod.json",
-        {"replace": False, "values": [f"{NS}:eldritch_crab"]},
+        ctx.DATA / NS / ctx.profile.loot_folder / "entities" / "inhabited_zombie.json",
+        ctx.profile.loot_table({
+            "type": "minecraft:entity",
+            "pools": [],
+            "random_sequence": f"{NS}:entities/inhabited_zombie",
+        }),
     )
 
 
@@ -77,6 +96,8 @@ def generate(ctx):
         ("bottled_taint", "bottle_taint"),
     ]:
         fluid_item(ctx, name, texture)
+
+    fluid_item(ctx, "crimson_rites", "crimson_rites")
 
     for name in ["purifying_fluid", "liquid_death"]:
         ctx.block_model(name, {"parent": "minecraft:block/block", "textures": {"particle": "minecraft:block/water_still"}})

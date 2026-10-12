@@ -106,6 +106,7 @@ public final class ModItems {
     public static final DeferredItem<Item> VOID_METAL_INGOT = ITEMS.registerSimpleItem("void_metal_ingot");
     public static final DeferredItem<Item> VOID_SEED = ITEMS.registerSimpleItem("void_seed");
     public static final DeferredItem<Item> GOLD_COIN = ITEMS.registerSimpleItem("gold_coin");
+    public static final DeferredItem<Item> CRIMSON_RITES = ITEMS.registerSimpleItem("crimson_rites", properties -> properties.rarity(Rarity.RARE));
 
     public static final DeferredItem<Item> AIR_SHARD = ITEMS.registerSimpleItem("air_shard");
     public static final DeferredItem<Item> FIRE_SHARD = ITEMS.registerSimpleItem("fire_shard");

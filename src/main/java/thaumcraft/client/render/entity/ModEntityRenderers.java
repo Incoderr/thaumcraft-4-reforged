@@ -7,6 +7,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import thaumcraft.Thaumcraft;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.client.render.entity.eldritch.EldritchGuardianModel;
+import thaumcraft.client.render.entity.eldritch.EldritchGuardianRenderer;
+import thaumcraft.client.render.entity.eldritch.EldritchOrbRenderer;
+import thaumcraft.client.render.entity.eldritch.MindSpiderRenderer;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
 public final class ModEntityRenderers {
@@ -23,10 +27,14 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.FROST_SHARD.get(), FrostShardRenderer::new);
         event.registerEntityRenderer(ModEntities.PECH_BLAST.get(), NoopRenderer::new);
         event.registerEntityRenderer(ModEntities.PRIMAL_ARROW.get(), PrimalArrowRenderer::new);
+        event.registerEntityRenderer(ModEntities.MIND_SPIDER.get(), MindSpiderRenderer::new);
+        event.registerEntityRenderer(ModEntities.ELDRITCH_GUARDIAN.get(), EldritchGuardianRenderer::new);
+        event.registerEntityRenderer(ModEntities.ELDRITCH_ORB.get(), EldritchOrbRenderer::new);
     }
 
     @SubscribeEvent
     static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(FireBatModel.LAYER, FireBatModel::createBodyLayer);
+        event.registerLayerDefinition(EldritchGuardianModel.LAYER, EldritchGuardianModel::createBodyLayer);
     }
 }

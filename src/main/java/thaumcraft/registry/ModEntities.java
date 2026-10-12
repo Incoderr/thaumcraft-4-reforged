@@ -13,14 +13,20 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.entity.monster.FireBat;
 import thaumcraft.entity.monster.BrainyZombie;
+import thaumcraft.entity.monster.CultistCleric;
+import thaumcraft.entity.monster.CultistKnight;
 import thaumcraft.entity.monster.GiantBrainyZombie;
 import thaumcraft.entity.monster.InhabitedZombie;
 import thaumcraft.entity.monster.Pech;
 import thaumcraft.entity.monster.ThaumicSlime;
 import thaumcraft.entity.monster.Wisp;
 import thaumcraft.entity.monster.eldritch.EldritchCrab;
+import thaumcraft.entity.monster.eldritch.EldritchGuardian;
+import thaumcraft.entity.monster.eldritch.MindSpider;
 import thaumcraft.entity.projectile.Ember;
 import thaumcraft.entity.projectile.ExplosiveOrb;
+import thaumcraft.entity.projectile.EldritchOrb;
+import thaumcraft.entity.projectile.GolemOrb;
 import thaumcraft.entity.projectile.FrostShard;
 import thaumcraft.entity.projectile.PechBlast;
 import thaumcraft.entity.projectile.PrimalArrow;
@@ -57,6 +63,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<ShockOrb>> SHOCK_ORB = projectile("shock_orb", ShockOrb::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<Ember>> EMBER = projectile("ember", Ember::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<ExplosiveOrb>> EXPLOSIVE_ORB = projectile("explosive_orb", ExplosiveOrb::new, 0.25F);
+    public static final DeferredHolder<EntityType<?>, EntityType<EldritchOrb>> ELDRITCH_ORB = projectile("eldritch_orb", EldritchOrb::new, 0.5F);
+    public static final DeferredHolder<EntityType<?>, EntityType<GolemOrb>> GOLEM_ORB = projectile("golem_orb", GolemOrb::new, 0.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<BottleTaint>> BOTTLE_TAINT = projectile("bottle_taint", BottleTaint::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<FallingTaint>> FALLING_TAINT = projectile("falling_taint", FallingTaint::new, 0.98F);
     public static final DeferredHolder<EntityType<?>, EntityType<TaintSpider>> TAINT_SPIDER = mob("taint_spider", TaintSpider::new, 0.4F, 0.3F);
@@ -72,12 +80,16 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<TaintedSheep>> TAINTED_SHEEP = mob("tainted_sheep", TaintedSheep::new, 0.9F, 1.3F);
     public static final DeferredHolder<EntityType<?>, EntityType<TaintedVillager>> TAINTED_VILLAGER = mob("tainted_villager", TaintedVillager::new, 0.6F, 1.95F);
     public static final DeferredHolder<EntityType<?>, EntityType<BrainyZombie>> BRAINY_ZOMBIE = mob("brainy_zombie", BrainyZombie::new, 0.6F, 1.95F);
-    public static final DeferredHolder<EntityType<?>, EntityType<GiantBrainyZombie>> GIANT_BRAINY_ZOMBIE = mob("giant_brainy_zombie", GiantBrainyZombie::new, 0.72F, 2.34F);
+    public static final DeferredHolder<EntityType<?>, EntityType<GiantBrainyZombie>> GIANT_BRAINY_ZOMBIE = mob("giant_brainy_zombie", GiantBrainyZombie::new, 0.6F, 1.8F);
     public static final DeferredHolder<EntityType<?>, EntityType<Wisp>> WISP = mob("wisp", Wisp::new, 0.9F, 0.9F);
     public static final DeferredHolder<EntityType<?>, EntityType<Pech>> PECH = mob("pech", Pech::new, 0.6F, 1.8F);
     public static final DeferredHolder<EntityType<?>, EntityType<ThaumicSlime>> THAUMIC_SLIME = mob("thaumic_slime", ThaumicSlime::new, 0.5F, 0.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<InhabitedZombie>> INHABITED_ZOMBIE = mob("inhabited_zombie", InhabitedZombie::new, 0.6F, 1.95F);
+    public static final DeferredHolder<EntityType<?>, EntityType<CultistKnight>> CULTIST_KNIGHT = mob("cultist_knight", CultistKnight::new, 0.6F, 1.8F);
+    public static final DeferredHolder<EntityType<?>, EntityType<CultistCleric>> CULTIST_CLERIC = mob("cultist_cleric", CultistCleric::new, 0.6F, 1.8F);
     public static final DeferredHolder<EntityType<?>, EntityType<EldritchCrab>> ELDRITCH_CRAB = mob("eldritch_crab", EldritchCrab::new, 0.8F, 0.6F);
+    public static final DeferredHolder<EntityType<?>, EntityType<MindSpider>> MIND_SPIDER = mob("mind_spider", MindSpider::new, 0.3F, 0.3F);
+    public static final DeferredHolder<EntityType<?>, EntityType<EldritchGuardian>> ELDRITCH_GUARDIAN = mob("eldritch_guardian", EldritchGuardian::new, 0.8F, 2.25F);
 
     private ModEntities() {
     }
@@ -94,6 +106,17 @@ public final class ModEntities {
         ENTITIES.register(bus);
         bus.addListener(ModEntities::createAttributes);
         bus.addListener(ModEntities::registerSpawnPlacements);
+        thaumcraft.research.WarpEncounterHooks.install(new thaumcraft.research.WarpEncounterHooks.Spawner() {
+            @Override
+            public boolean spawnGuardianAt(net.minecraft.server.level.ServerLevel level, net.minecraft.server.level.ServerPlayer player, net.minecraft.core.BlockPos pos) {
+                return EldritchGuardian.spawnForWarp(level, player, pos);
+            }
+
+            @Override
+            public boolean spawnMindSpiderAt(net.minecraft.server.level.ServerLevel level, net.minecraft.server.level.ServerPlayer player, net.minecraft.core.BlockPos pos, boolean harmless) {
+                return MindSpider.spawnForWarp(level, player, pos, harmless);
+            }
+        });
     }
 
     private static void createAttributes(EntityAttributeCreationEvent event) {
@@ -116,7 +139,11 @@ public final class ModEntities {
         event.put(PECH.get(), Pech.createAttributes().build());
         event.put(THAUMIC_SLIME.get(), ThaumicSlime.createAttributes().build());
         event.put(INHABITED_ZOMBIE.get(), InhabitedZombie.createAttributes().build());
+        event.put(CULTIST_KNIGHT.get(), CultistKnight.createAttributes().build());
+        event.put(CULTIST_CLERIC.get(), CultistCleric.createAttributes().build());
         event.put(ELDRITCH_CRAB.get(), EldritchCrab.createAttributes().build());
+        event.put(MIND_SPIDER.get(), MindSpider.createAttributes().build());
+        event.put(ELDRITCH_GUARDIAN.get(), EldritchGuardian.createAttributes().build());
     }
 
     private static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {

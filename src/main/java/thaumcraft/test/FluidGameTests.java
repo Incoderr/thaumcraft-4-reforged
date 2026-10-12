@@ -18,7 +18,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -233,15 +233,14 @@ public final class FluidGameTests {
         var level = helper.getLevel();
         BlockPos relativePos = new BlockPos(2, 2, 2);
         BlockPos pos = helper.absolutePos(relativePos);
-        ServerPlayer player = mockServerPlayer(helper);
-        Zombie zombie = new Zombie(EntityTypes.ZOMBIE, level);
-        zombie.getRandom().setSeed(0L);
-        zombie.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
-        level.addFreshEntity(zombie);
-        zombie.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE, player), 100.0F);
+        Pig pig = new Pig(EntityTypes.PIG, level);
+        pig.getRandom().setSeed(0L);
+        pig.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        level.addFreshEntity(pig);
+        pig.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE), 100.0F);
         helper.assertItemEntityPresent(ModItems.CRYSTALLIZED_ESSENCE.get(), relativePos, 6.0);
-        helper.assertItemEntityPresent(Items.ROTTEN_FLESH, relativePos, 6.0);
-        helper.assertTrue(zombie.isDeadOrDying(), "dissolving liquid death damage did not kill the mob");
+        helper.assertItemEntityPresent(Items.PORKCHOP, relativePos, 6.0);
+        helper.assertTrue(pig.isDeadOrDying(), "dissolving liquid death damage did not kill the mob");
         helper.succeed();
     }
 

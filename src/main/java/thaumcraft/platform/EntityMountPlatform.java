@@ -11,10 +11,13 @@ public final class EntityMountPlatform {
     }
 
     public static boolean startRiding(Entity passenger, Entity vehicle, boolean force, boolean sendEventAndTriggers) {
-        if (vehicle.getType().canSerialize()) {
+        if (passenger == vehicle) {
+            return false;
+        }
+        if (vehicle.getType().canSerialize() || !(vehicle instanceof Player) || !force || passenger.level().isClientSide()) {
             return passenger.startRiding(vehicle, force, sendEventAndTriggers);
         }
-        if (!(vehicle instanceof Player) || !vehicle.couldAcceptPassenger()) {
+        if (!vehicle.couldAcceptPassenger()) {
             return false;
         }
         for (Entity current = vehicle; current.getVehicle() != null; current = current.getVehicle()) {
