@@ -38,6 +38,7 @@ import thaumcraft.test.DeviceGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.FluidGameTests;
+import thaumcraft.test.TaintGameTests;
 import thaumcraft.test.GearGameTests;
 import thaumcraft.test.HexGridGameTests;
 import thaumcraft.test.InfusionGameTests;
@@ -87,6 +88,7 @@ public class Thaumcraft {
         HexGridGameTests.register(modEventBus);
         EssentiaGameTests.register(modEventBus);
         FluidGameTests.register(modEventBus);
+        TaintGameTests.register(modEventBus);
         AlchemyGameTests.register(modEventBus);
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
