@@ -37,16 +37,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.event.EventHooks;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.monster.InhabitedZombie;
 import thaumcraft.entity.monster.Cultist;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
+import thaumcraft.platform.EntityMountPlatform;
 
 public class EldritchCrab extends Monster {
     private static final EntityDataAccessor<Byte> DATA_FLAGS = SynchedEntityData.defineId(EldritchCrab.class, EntityDataSerializers.BYTE);
@@ -148,7 +147,7 @@ public class EldritchCrab extends Monster {
         LivingEntity target = this.getLastHurtByMob();
         if (this.getVehicle() == null && target != null && !target.isVehicle() && !this.onGround() && !this.hasHelm()
             && target.isAlive() && this.getY() - target.getY() >= target.getBbHeight() / 2.0 && this.distanceToSqr(target) < 4.0) {
-            this.mountOnTarget(target);
+            EntityMountPlatform.startRiding(this, target, true, true);
         }
         if (this.level() instanceof ServerLevel level && this.getVehicle() instanceof LivingEntity vehicle) {
             if (this.mountedAttackCooldown > 0) {
@@ -162,31 +161,6 @@ public class EldritchCrab extends Monster {
                 }
             }
         }
-    }
-
-    private boolean mountOnTarget(LivingEntity target) {
-        if (target.getType().canSerialize()) {
-            return this.startRiding(target, true, true);
-        }
-        if (!(target instanceof Player) || !target.couldAcceptPassenger()) {
-            return false;
-        }
-        for (Entity current = target; current.getVehicle() != null; current = current.getVehicle()) {
-            if (current.getVehicle() == this) {
-                return false;
-            }
-        }
-        if (!EventHooks.canMountEntity(this, target, true)) {
-            return false;
-        }
-        if (this.isPassenger()) {
-            this.stopRiding();
-        }
-        this.setPose(net.minecraft.world.entity.Pose.STANDING);
-        this.vehicle = target;
-        target.addPassenger(this);
-        this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, target.position());
-        return true;
     }
 
     @Override
