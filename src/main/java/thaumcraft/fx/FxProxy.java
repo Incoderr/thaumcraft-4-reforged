@@ -1,6 +1,7 @@
 package thaumcraft.fx;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -65,6 +66,15 @@ public interface FxProxy {
     }
 
     default void fireOrbTrail(Level level, double x, double y, double z, float scale) {
+    }
+
+    default void alumentumTrail(Level level, Entity projectile) {
+    }
+
+    default void purifyingFluid(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
+    }
+
+    default void liquidDeath(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
     }
 
     default void primalOrbTrail(Level level, Entity orb) {
