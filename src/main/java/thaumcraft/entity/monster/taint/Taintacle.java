@@ -23,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,7 @@ import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
+import thaumcraft.platform.BiomeEdit;
 import thaumcraft.taint.TaintBiomes;
 import thaumcraft.taint.TaintSpread;
 
@@ -83,7 +85,7 @@ public class Taintacle extends Monster implements TaintedMob {
     }
 
     public static boolean canSpawnNaturally(EntityType<Taintacle> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
-        if (!level.getBiome(pos).is(TaintBiomes.TAINTED_LAND)) {
+        if (!TaintBiomes.isTainted(level, pos)) {
             return false;
         }
         if (!level.getBlockState(pos).is(ModBlocks.FIBROUS_TAINT.get()) && !level.getBlockState(pos).is(ModBlocks.TAINTED_SOIL.get())) {
@@ -122,6 +124,11 @@ public class Taintacle extends Monster implements TaintedMob {
     public void tick() {
         super.tick();
         if (this.level().isClientSide()) {
+            if (this.tickCount < this.getBbHeight() * 10.0F && this.onGround()) {
+                this.level().addParticle(ParticleTypes.PORTAL, this.getX() + (this.random.nextDouble() - 0.5) * this.getBbWidth(),
+                    this.getY() + this.random.nextDouble() * this.getBbHeight(), this.getZ() + (this.random.nextDouble() - 0.5) * this.getBbWidth(),
+                    0.0, 0.02, 0.0);
+            }
             boolean agitated = this.tickCount > this.getBbHeight() * 10.0F
                 && (this.hurtTime > 0 || this.attackTime > 0 || this.target != null && this.distanceTo(this.target) < this.getBbHeight());
             if (agitated && this.flailIntensity < 3.0F) {
@@ -131,7 +138,7 @@ public class Taintacle extends Monster implements TaintedMob {
             }
             return;
         }
-        if (this.tickCount % 20 == 0 && !this.level().getBiome(this.blockPosition()).is(TaintBiomes.TAINTED_LAND)) {
+        if (this.tickCount % 20 == 0 && !TaintBiomes.isTainted(this.level(), this.blockPosition())) {
             this.hurt(this.damageSources().starve(), 1.0F);
         }
         if (this.attackTime > 0) {
@@ -184,7 +191,7 @@ public class Taintacle extends Monster implements TaintedMob {
         BlockPos pos = victim.blockPosition();
         boolean onTaint = TaintBiomes.isTainted(level, pos)
             && (TaintSpread.isTaintBlock(level.getBlockState(pos)) || TaintSpread.isTaintBlock(level.getBlockState(pos.below())));
-        boolean outerLands = level.getBiome(pos).is(TaintBiomes.OUTER_LANDS);
+        boolean outerLands = BiomeEdit.getColumnBiome(level, pos).is(TaintBiomes.OUTER_LANDS);
         if (!onTaint && !outerLands) {
             return;
         }
@@ -220,6 +227,14 @@ public class Taintacle extends Monster implements TaintedMob {
 
     private boolean isAgitated() {
         return this.target != null && this.distanceToSqr(this.target) < this.getBbHeight() * 7.0 * this.getBbHeight() * 7.0;
+    }
+
+    public boolean isAgitatedForRender() {
+        return this.isAgitated();
+    }
+
+    public boolean isAttackingForRender() {
+        return this.hurtTime > 0 || this.attackTime > 0;
     }
 
     private void faceTarget(Entity target) {

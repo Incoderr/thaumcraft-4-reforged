@@ -18,6 +18,7 @@ import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.registry.ModItems;
@@ -56,6 +57,18 @@ public abstract class TaintedAnimalMonster extends Monster implements TaintedMob
         }
         if (this.targetsAnimals()) {
             this.addTargetGoal(this.animalTargetPriority(), Animal.class);
+        }
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.level().isClientSide() && this.tickCount < 5) {
+            for (int index = 0; index < 10; index++) {
+                this.level().addParticle(ParticleTypes.SPLASH, this.getX() + (this.random.nextDouble() - 0.5) * this.getBbWidth(),
+                    this.getY() + this.random.nextDouble() * this.getBbHeight(), this.getZ() + (this.random.nextDouble() - 0.5) * this.getBbWidth(),
+                    0.0, 0.0, 0.0);
+            }
         }
     }
 

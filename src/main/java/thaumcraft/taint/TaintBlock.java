@@ -10,6 +10,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -20,6 +21,7 @@ import thaumcraft.entity.monster.taint.FallingTaint;
 import thaumcraft.entity.monster.taint.TaintSwarmer;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.registry.ModSounds;
 
 public class TaintBlock extends Block {
     public enum Kind {
@@ -33,6 +35,11 @@ public class TaintBlock extends Block {
     public TaintBlock(Kind kind, Properties properties) {
         super(properties);
         this.kind = kind;
+    }
+
+    @Override
+    protected SoundType getSoundType(BlockState state) {
+        return new SoundType(0.5F, 0.8F, ModSounds.GORE.get(), ModSounds.GORE.get(), ModSounds.GORE.get(), ModSounds.GORE.get(), ModSounds.GORE.get());
     }
 
     @Override
