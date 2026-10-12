@@ -396,6 +396,16 @@ public final class WarpGameTests {
         }
         helper.assertTrue(darkTarget.getHealth() > darkHealth, "sun scorned should heal in darkness");
 
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(
+            helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set day"
+        );
+        LivingEntity sunlitTarget = createMob(helper, EntityTypes.BAT, 5.5, 20.0, 3.5);
+        helper.assertTrue(helper.getLevel().canSeeSky(sunlitTarget.blockPosition()), "sun scorned damage test target must have open sky");
+        for (int index = 0; index < 200 && !sunlitTarget.isOnFire(); index++) {
+            ModEffects.SUN_SCORNED.value().applyEffectTick(helper.getLevel(), sunlitTarget, 0);
+        }
+        helper.assertTrue(sunlitTarget.isOnFire(), "sun scorned should ignite an exposed entity under daylight");
+
         LivingEntity deathGazeTarget = createMob(helper, EntityTypes.SHEEP, player.getX(), player.getY(), player.getZ() + 2.0);
         player.setYRot(0.0F);
         player.addEffect(new MobEffectInstance(ModEffects.DEATH_GAZE, 100, 0));
