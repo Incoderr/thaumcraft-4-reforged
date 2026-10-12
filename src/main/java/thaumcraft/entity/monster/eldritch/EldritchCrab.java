@@ -146,7 +146,7 @@ public class EldritchCrab extends Monster {
         LivingEntity target = this.getLastHurtByMob();
         if (this.getVehicle() == null && target != null && !target.isVehicle() && !this.onGround() && !this.hasHelm()
             && target.isAlive() && this.getY() - target.getY() >= target.getBbHeight() / 2.0 && this.distanceToSqr(target) < 4.0) {
-            this.startRiding(target);
+            this.startRiding(target, true, true);
         }
         if (this.level() instanceof ServerLevel level && this.getVehicle() instanceof LivingEntity vehicle) {
             if (this.mountedAttackCooldown > 0) {
