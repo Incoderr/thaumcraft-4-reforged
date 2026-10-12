@@ -1,8 +1,13 @@
 package thaumcraft.entity.monster.taint;
 
+import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,36 +15,39 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.SwellGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.feline.Ocelot;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 import thaumcraft.effect.EffectHooks;
 import thaumcraft.entity.TaintedMob;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import thaumcraft.taint.TaintBiomes;
 
-public class TaintedCreeper extends Creeper implements TaintedMob {
+public class TaintedCreeper extends Monster implements TaintedMob {
+    private static final EntityDataAccessor<Integer> DATA_SWELL_DIRECTION = SynchedEntityData.defineId(TaintedCreeper.class, EntityDataSerializers.INT);
     private int taintFuse;
+    private int oldTaintFuse;
 
     public TaintedCreeper(EntityType<? extends TaintedCreeper> type, Level level) {
         super(type, level);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return net.minecraft.world.entity.monster.Monster.createMonsterAttributes()
+        return Monster.createMonsterAttributes()
             .add(Attributes.MAX_HEALTH, 30.0)
             .add(Attributes.MOVEMENT_SPEED, 0.25)
             .add(Attributes.FOLLOW_RANGE, 16.0)
@@ -47,9 +55,15 @@ public class TaintedCreeper extends Creeper implements TaintedMob {
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.Builder entityData) {
+        super.defineSynchedData(entityData);
+        entityData.define(DATA_SWELL_DIRECTION, -1);
+    }
+
+    @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new SwellGoal(this));
+        this.goalSelector.addGoal(2, new TaintSwellGoal(this));
         this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, Ocelot.class, 6.0F, 1.0, 1.2));
         this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
@@ -61,21 +75,49 @@ public class TaintedCreeper extends Creeper implements TaintedMob {
 
     @Override
     public void tick() {
-        if (!this.level().isClientSide() && this.isAlive()) {
-            if (this.getSwellDir() > 0) {
-                this.taintFuse++;
-            } else if (this.taintFuse > 0) {
-                this.taintFuse--;
+        if (this.isAlive()) {
+            this.oldTaintFuse = this.taintFuse;
+            int direction = this.getSwellDirection();
+            if (direction > 0 && this.taintFuse == 0) {
+                this.playSound(SoundEvents.CREEPER_PRIMED, 1.0F, 0.5F);
+            }
+            this.taintFuse += direction;
+            if (this.taintFuse < 0) {
+                this.taintFuse = 0;
             }
             if (this.taintFuse >= 30) {
-                ServerLevel level = (ServerLevel) this.level();
-                level.explode(this, this.getX(), this.getY() + this.getBbHeight() / 2.0, this.getZ(), 1.5F, false, Level.ExplosionInteraction.NONE);
-                this.infectExplosionArea(level);
-                this.discard();
-                return;
+                this.taintFuse = 30;
+                if (!this.level().isClientSide()) {
+                    ServerLevel level = (ServerLevel) this.level();
+                    level.explode(this, this.getX(), this.getY() + this.getBbHeight() / 2.0, this.getZ(), 1.5F, false, Level.ExplosionInteraction.NONE);
+                    this.infectExplosionArea(level);
+                    this.discard();
+                }
             }
         }
         super.tick();
+    }
+
+    public float getSwelling(float partialTick) {
+        return (this.oldTaintFuse + (this.taintFuse - this.oldTaintFuse) * partialTick) / 28.0F;
+    }
+
+    public int getSwellDirection() {
+        return this.entityData.get(DATA_SWELL_DIRECTION);
+    }
+
+    public void setSwellDirection(int direction) {
+        this.entityData.set(DATA_SWELL_DIRECTION, direction);
+    }
+
+    @Override
+    public boolean causeFallDamage(double fallDistance, float damageModifier, DamageSource damageSource) {
+        boolean damaged = super.causeFallDamage(fallDistance, damageModifier, damageSource);
+        this.taintFuse += (int) (fallDistance * 1.5);
+        if (this.taintFuse > 25) {
+            this.taintFuse = 25;
+        }
+        return damaged;
     }
 
     @Override
@@ -87,12 +129,15 @@ public class TaintedCreeper extends Creeper implements TaintedMob {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("TaintFuse", this.taintFuse);
+        output.putInt("TaintSwellDirection", this.getSwellDirection());
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         this.taintFuse = input.getIntOr("TaintFuse", 0);
+        this.oldTaintFuse = this.taintFuse;
+        this.entityData.set(DATA_SWELL_DIRECTION, input.getIntOr("TaintSwellDirection", -1));
     }
 
     @Override
@@ -122,6 +167,52 @@ public class TaintedCreeper extends Creeper implements TaintedMob {
             BlockPos below = target.below();
             if (level.getBlockState(below).isFaceSturdy(level, below, Direction.UP) && level.getBlockState(target).canBeReplaced()) {
                 level.setBlockAndUpdate(target, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
+            }
+        }
+    }
+
+    private static final class TaintSwellGoal extends Goal {
+        private final TaintedCreeper creeper;
+        @Nullable
+        private LivingEntity target;
+
+        private TaintSwellGoal(TaintedCreeper creeper) {
+            this.creeper = creeper;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            LivingEntity target = this.creeper.getTarget();
+            return this.creeper.getSwellDirection() > 0 || target != null && !target.isDeadOrDying() && this.creeper.distanceToSqr(target) < 9.0;
+        }
+
+        @Override
+        public void start() {
+            this.creeper.getNavigation().stop();
+            this.target = this.creeper.getTarget();
+        }
+
+        @Override
+        public void stop() {
+            this.target = null;
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            if (this.target != null && !this.target.isDeadOrDying()) {
+                if (this.creeper.distanceToSqr(this.target) > 49.0 || !this.creeper.getSensing().hasLineOfSight(this.target)) {
+                    this.creeper.setSwellDirection(-1);
+                } else {
+                    this.creeper.setSwellDirection(1);
+                }
+            } else {
+                this.creeper.setSwellDirection(-1);
             }
         }
     }

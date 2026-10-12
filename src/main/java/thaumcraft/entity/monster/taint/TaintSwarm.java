@@ -7,6 +7,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.TaintedMob;
+import thaumcraft.damage.ModDamageTypes;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.taint.TaintBiomes;
@@ -63,6 +65,26 @@ public class TaintSwarm extends Monster implements TaintedMob {
 
     @Override
     protected void registerGoals() {
+    }
+
+    @Override
+    protected @Nullable SoundEvent getAmbientSound() {
+        return null;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ModSounds.SWARM_ATTACK.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ModSounds.SWARM_ATTACK.get();
+    }
+
+    @Override
+    protected float getSoundVolume() {
+        return 0.1F;
     }
 
     @Override
@@ -115,7 +137,8 @@ public class TaintSwarm extends Monster implements TaintedMob {
         if (this.attackTime <= 0 && this.distanceTo(this.target) < 3.0 && verticalOverlap(this, this.target)) {
             this.attackTime = 10 + this.random.nextInt(5);
             Vec3 movement = this.target.getDeltaMovement();
-            if (this.doHurtTarget((ServerLevel) this.level(), this.target)) {
+            if (this.target.hurtServer((ServerLevel) this.level(), this.level().damageSources().source(ModDamageTypes.SWARM, this),
+                (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE))) {
                 this.target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
             }
             this.target.setDeltaMovement(movement);
@@ -130,11 +153,12 @@ public class TaintSwarm extends Monster implements TaintedMob {
         }
         if (this.target == null && !this.isSummoned()) {
             this.target = this.level().getEntitiesOfClass(Player.class, new AABB(this.blockPosition()).inflate(12.0),
-                player -> player.isAlive() && !player.getAbilities().invulnerable && !player.isSpectator())
+                player -> player.isAlive() && !player.getAbilities().invulnerable && !player.isCreative() && !player.isSpectator()
+                    && this.distanceToSqr(player) < 144.0)
                 .stream().min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
         }
-        if (this.target == null && this.isSummoned() && ++this.noTargetTicks >= 20) {
-            this.noTargetTicks = 0;
+        if (this.target == null && this.isSummoned()) {
+            this.noTargetTicks++;
             this.hurt(this.damageSources().generic(), 5.0F);
         } else if (this.target != null) {
             this.noTargetTicks = 0;
@@ -174,7 +198,9 @@ public class TaintSwarm extends Monster implements TaintedMob {
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
-        this.spawnAtLocation(level, level.getRandom().nextBoolean() ? ModItems.TAINTED_GOO.get() : ModItems.TAINT_TENDRIL.get());
+        if (level.getRandom().nextBoolean()) {
+            this.spawnAtLocation(level, ModItems.TAINTED_GOO.get());
+        }
     }
 
     @Override

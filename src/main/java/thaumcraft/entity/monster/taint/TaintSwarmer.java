@@ -5,7 +5,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.sounds.SoundSource;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
@@ -35,7 +34,8 @@ public class TaintSwarmer extends TaintSpore {
         if (this.spawnCounter > 0) {
             this.spawnCounter--;
         }
-        if (this.spawnCounter <= 0 && !this.level().getEntitiesOfClass(Player.class, new AABB(this.blockPosition()).inflate(16.0)).isEmpty()) {
+        if (this.spawnCounter <= 0 && this.level().getNearestPlayer(this.getX(), this.getY(), this.getZ(), 16.0,
+            entity -> entity instanceof Player player && player.isAlive() && !player.isCreative() && !player.isSpectator()) != null) {
             this.spawnCounter = 500;
             this.spawnSwarm(1);
         }
