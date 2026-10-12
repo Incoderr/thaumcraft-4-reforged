@@ -22,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
@@ -30,6 +29,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.TaintedMob;
 import thaumcraft.damage.ModDamageTypes;
+import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.taint.TaintBiomes;
@@ -119,20 +119,15 @@ public class TaintSwarm extends Monster implements TaintedMob {
 
     @Override
     public void tick() {
-        if (this.level().isClientSide()) {
-            if (this.random.nextBoolean()) {
-                this.level().addParticle(ParticleTypes.PORTAL, this.getX() + (this.random.nextDouble() - 0.5) * 1.5,
-                    this.getY() + this.random.nextDouble() * 1.5, this.getZ() + (this.random.nextDouble() - 0.5) * 1.5,
-                    (this.random.nextDouble() - 0.5) * 0.08, (this.random.nextDouble() - 0.5) * 0.08,
-                    (this.random.nextDouble() - 0.5) * 0.08);
-            }
-        }
         if (!this.level().isClientSide()) {
             this.tickAttack();
             this.tickTarget();
             this.tickFlight();
         }
         super.tick();
+        if (this.level().isClientSide()) {
+            Fx.get().taintSwarm(this.level(), this, 25, 0.22F, 15.0F, 0.08F);
+        }
         this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.6, 1.0));
     }
 

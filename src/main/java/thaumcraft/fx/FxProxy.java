@@ -127,4 +127,7 @@ public interface FxProxy {
 
     default void sinisterNode(Level level, BlockPos pos) {
     }
+
+    default void taintSwarm(Level level, Entity target, int maxParticles, float speed, float turnSpeed, float gravity) {
+    }
 }

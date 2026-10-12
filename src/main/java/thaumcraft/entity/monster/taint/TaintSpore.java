@@ -1,7 +1,6 @@
 package thaumcraft.entity.monster.taint;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,13 +17,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.TaintedMob;
+import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
@@ -144,9 +143,8 @@ public class TaintSpore extends Monster implements TaintedMob {
             if (this.displaySize < this.getSporeSize()) {
                 this.displaySize += 0.02F;
             }
-            if (this.tickCount % 3 == 0) {
-                this.level().addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.getBbHeight() * 0.5, this.getZ(),
-                    (this.random.nextDouble() - 0.5) * 0.02, this.random.nextDouble() * 0.02, (this.random.nextDouble() - 0.5) * 0.02);
+            if (!(this instanceof TaintSwarmer)) {
+                Fx.get().taintSwarm(this.level(), this, this.getSporeSize() / 3, 0.1F, 10.0F, 0.0F);
             }
             return;
         }
