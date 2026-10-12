@@ -130,6 +130,10 @@ public final class TcRenderTypes {
         ));
     }
 
+    public static RenderType outline(Identifier texture) {
+        return RenderTypes.outline(texture);
+    }
+
     public static RenderType byBlend(Identifier texture, int blendMode) {
         return blendMode == 771 ? translucent(texture) : additive(texture);
     }
