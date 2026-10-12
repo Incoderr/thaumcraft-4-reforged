@@ -43,6 +43,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.effect.EffectHooks;
+import thaumcraft.effect.WarpMobEffect;
 import thaumcraft.effect.WarpEffectEvents;
 import thaumcraft.entity.monster.Pech;
 import thaumcraft.entity.monster.InhabitedZombie;
@@ -380,9 +381,7 @@ public final class WarpGameTests {
         BlockPos fluxRelativePos = new BlockPos(3, 2, 3);
         BlockPos fluxAbsolutePos = helper.absolutePos(fluxRelativePos);
         LivingEntity fluxTarget = createMob(helper, EntityTypes.BAT, fluxAbsolutePos.getX() + 0.5, fluxAbsolutePos.getY(), fluxAbsolutePos.getZ() + 0.5);
-        for (int index = 0; index < 100 && !helper.getBlockState(fluxRelativePos).is(thaumcraft.registry.ModBlocks.FLUX_GOO); index++) {
-            ModEffects.THAUMARHIA.value().applyEffectTick(helper.getLevel(), fluxTarget, 0);
-        }
+        invokeRandomEffect("applyThaumarhia", helper, fluxTarget, new FixedRandomSource(0));
         helper.assertTrue(helper.getBlockState(fluxRelativePos).is(thaumcraft.registry.ModBlocks.FLUX_GOO), "thaumarhia should create flux goo after a successful server roll");
 
         BlockPos darkRelativePos = new BlockPos(5, -40, 3);
@@ -396,10 +395,9 @@ public final class WarpGameTests {
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
             helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set night"
         );
+        helper.assertTrue(darkTarget.getLightLevelDependentMagicValue() < 0.25F, "sun scorned healing test target must be dark enough for its healing branch");
         float darkHealth = darkTarget.getHealth();
-        for (int index = 0; index < 100 && darkTarget.getHealth() <= darkHealth; index++) {
-            ModEffects.SUN_SCORNED.value().applyEffectTick(helper.getLevel(), darkTarget, 0);
-        }
+        invokeRandomEffect("applySunScorned", helper, darkTarget, new FixedRandomSource(999));
         helper.assertTrue(darkTarget.getHealth() > darkHealth, "sun scorned should heal in darkness");
 
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
@@ -407,11 +405,10 @@ public final class WarpGameTests {
         );
         BlockPos sunlitRelativePos = new BlockPos(5, 20, 3);
         BlockPos sunlitAbsolutePos = helper.absolutePos(sunlitRelativePos);
-        LivingEntity sunlitTarget = createMob(helper, EntityTypes.BAT, sunlitAbsolutePos.getX() + 0.5, sunlitAbsolutePos.getY(), sunlitAbsolutePos.getZ() + 0.5);
+        LivingEntity sunlitTarget = createMob(helper, EntityTypes.SHEEP, sunlitAbsolutePos.getX() + 0.5, sunlitAbsolutePos.getY(), sunlitAbsolutePos.getZ() + 0.5);
         helper.assertTrue(helper.getLevel().canSeeSky(sunlitTarget.blockPosition()), "sun scorned damage test target must have open sky");
-        for (int index = 0; index < 200 && !sunlitTarget.isOnFire(); index++) {
-            ModEffects.SUN_SCORNED.value().applyEffectTick(helper.getLevel(), sunlitTarget, 0);
-        }
+        helper.assertTrue(sunlitTarget.getLightLevelDependentMagicValue() > 0.5F, "sun scorned damage test target must be bright enough for its daylight branch");
+        invokeRandomEffect("applySunScorned", helper, sunlitTarget, new FixedRandomSource(0));
         helper.assertTrue(sunlitTarget.isOnFire(), "sun scorned should ignite an exposed entity under daylight");
 
         BlockPos gazeRelativePos = new BlockPos(3, 2, 3);
@@ -459,6 +456,16 @@ public final class WarpGameTests {
         entity.setPos(x, y, z);
         helper.getLevel().addFreshEntity(entity);
         return entity;
+    }
+
+    private static void invokeRandomEffect(String methodName, GameTestHelper helper, LivingEntity entity, RandomSource random) {
+        try {
+            var method = WarpMobEffect.class.getDeclaredMethod(methodName, net.minecraft.server.level.ServerLevel.class, LivingEntity.class, RandomSource.class);
+            method.setAccessible(true);
+            method.invoke(null, helper.getLevel(), entity, random);
+        } catch (ReflectiveOperationException exception) {
+            helper.fail("warp effect roll could not be invoked: " + exception.getMessage());
+        }
     }
 
     private static void pechSaveLoadVariants(GameTestHelper helper) {
