@@ -35,6 +35,9 @@ public class TaintMobRenderer<T extends Mob> extends MobRenderer<T, TaintMobRend
         if (kind == TaintEntityModel.Kind.SHEEP) {
             this.addLayer(new TaintSheepFurLayer(this, new TaintSheepFurModel(context.bakeLayer(TaintSheepFurModel.LAYER))));
         }
+        if (kind == TaintEntityModel.Kind.SWARMER) {
+            this.addLayer(new TaintSwarmerSporeLayer(this, new TaintSwarmerSporeModel(context.bakeLayer(TaintSwarmerSporeModel.LAYER))));
+        }
     }
 
     public static <T extends Mob> EntityRendererProvider<T> provider(TaintEntityModel.Kind kind, float shadowRadius) {
@@ -49,9 +52,11 @@ public class TaintMobRenderer<T extends Mob> extends MobRenderer<T, TaintMobRend
     @Override
     public void extractRenderState(T entity, TaintMobRenderState state, float partialTicks) {
         super.extractRenderState(entity, state, partialTicks);
+        state.partialTick = partialTicks;
         state.hurt = entity.hurtTime > 0;
         if (entity instanceof TaintedSheep sheep) {
             state.sheared = sheep.isSheared();
+            state.grazeTicks = sheep.getGrazeTicks();
         }
         if (entity instanceof TaintedChicken chicken) {
             state.flap = Mth.lerp(partialTicks, chicken.oldFlap, chicken.flap);
@@ -92,16 +97,25 @@ public class TaintMobRenderer<T extends Mob> extends MobRenderer<T, TaintMobRend
                 : 0.0F;
             poseStack.translate(0.0F, (state.boundingBoxHeight == 3.0F ? 0.6F : 1.2F) + rise, 0.0F);
             poseStack.scale(scale, scale, scale);
-        } else if (this.kind == TaintEntityModel.Kind.SPORE || this.kind == TaintEntityModel.Kind.SWARMER) {
+        } else if (this.kind == TaintEntityModel.Kind.SPORE) {
             float size = state.displaySize;
             float pulse = 0.025F * Mth.sin(state.ageInTicks * 0.075F);
-            float factor = this.kind == TaintEntityModel.Kind.SWARMER ? -0.07F : -0.12F;
-            poseStack.scale(factor * size - pulse, factor * size + pulse, factor * size - pulse);
+            poseStack.scale(-0.12F * size - pulse, -0.12F * size + pulse, -0.12F * size - pulse);
         } else if (this.kind == TaintEntityModel.Kind.CREEPER) {
             poseStack.scale(state.scale, state.ageScale, state.scale);
         } else if (this.kind == TaintEntityModel.Kind.SPIDER) {
             poseStack.scale(0.4F, 0.5F, 0.4F);
+        } else if (this.kind == TaintEntityModel.Kind.VILLAGER) {
+            poseStack.scale(0.9375F, 0.9375F, 0.9375F);
         }
+    }
+
+    @Override
+    protected float getFlipDegrees() {
+        if (this.kind == TaintEntityModel.Kind.SPORE || this.kind == TaintEntityModel.Kind.SWARMER) {
+            return 0.0F;
+        }
+        return this.kind == TaintEntityModel.Kind.SPIDER ? 180.0F : super.getFlipDegrees();
     }
 
     @Override

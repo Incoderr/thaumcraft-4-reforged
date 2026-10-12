@@ -8,6 +8,8 @@ public class TaintMobRenderState extends LivingEntityRenderState {
     public float sporeSize;
     public float displaySize;
     public float swelling;
+    public float partialTick;
+    public int grazeTicks;
     public float flailIntensity = 1.0F;
     public boolean agitated;
     public boolean tentacleAttacking;

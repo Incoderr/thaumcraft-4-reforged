@@ -25,6 +25,7 @@ import java.util.EnumSet;
 
 public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
     private static final EntityDataAccessor<Byte> DATA_FLAGS = SynchedEntityData.defineId(TaintedSheep.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> DATA_GRAZE_TICKS = SynchedEntityData.defineId(TaintedSheep.class, EntityDataSerializers.INT);
     private static final byte SHEARED_FLAG = 16;
     public TaintedSheep(EntityType<? extends TaintedSheep> type, Level level) {
         super(type, level);
@@ -103,6 +104,7 @@ public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
     protected void defineSynchedData(SynchedEntityData.Builder entityData) {
         super.defineSynchedData(entityData);
         entityData.define(DATA_FLAGS, (byte) 0);
+        entityData.define(DATA_GRAZE_TICKS, 0);
     }
 
     @Override
@@ -118,6 +120,10 @@ public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
     public void setSheared(boolean sheared) {
         byte flags = this.entityData.get(DATA_FLAGS);
         this.entityData.set(DATA_FLAGS, (byte) (sheared ? flags | SHEARED_FLAG : flags & ~SHEARED_FLAG));
+    }
+
+    public int getGrazeTicks() {
+        return this.entityData.get(DATA_GRAZE_TICKS);
     }
 
     @Override
@@ -170,7 +176,13 @@ public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
         @Override
         public void start() {
             this.timer = 40;
+            TaintedSheep.this.entityData.set(DATA_GRAZE_TICKS, this.timer);
             TaintedSheep.this.getNavigation().stop();
+        }
+
+        @Override
+        public void stop() {
+            TaintedSheep.this.entityData.set(DATA_GRAZE_TICKS, 0);
         }
 
         @Override
@@ -181,6 +193,7 @@ public class TaintedSheep extends TaintedAnimalMonster implements IShearable {
         @Override
         public void tick() {
             this.timer--;
+            TaintedSheep.this.entityData.set(DATA_GRAZE_TICKS, Math.max(this.timer, 0));
             if (this.timer != 4 || !(TaintedSheep.this.level() instanceof ServerLevel level)) {
                 return;
             }

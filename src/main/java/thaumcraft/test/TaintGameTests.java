@@ -78,6 +78,7 @@ public final class TaintGameTests {
         "taint_spore_burst_allows_zero_spiders",
         "taint_tiny_tentacle_expires_after_200_ticks",
         "taint_swarmer_spawns_for_vulnerable_players_without_starving",
+        "taint_swarmer_first_death_spawns_one_swarm",
         "taint_creeper_fuse_infects_without_block_damage",
         "taint_entity_saved_data_round_trips",
         "tainted_villager_enters_and_restricts_inside_house"
@@ -98,9 +99,10 @@ public final class TaintGameTests {
         FUNCTIONS.register(TESTS[11], () -> TaintGameTests::sporeBurstAllowsZeroSpiders);
         FUNCTIONS.register(TESTS[12], () -> TaintGameTests::tinyTentacleExpiresAfter200Ticks);
         FUNCTIONS.register(TESTS[13], () -> TaintGameTests::swarmerSpawnsForVulnerablePlayersWithoutStarving);
-        FUNCTIONS.register(TESTS[14], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
-        FUNCTIONS.register(TESTS[15], () -> TaintGameTests::entitySavedDataRoundTrips);
-        FUNCTIONS.register(TESTS[16], () -> TaintGameTests::taintedVillagerEntersAndRestrictsInsideHouse);
+        FUNCTIONS.register(TESTS[14], () -> TaintGameTests::swarmerFirstDeathSpawnsOneSwarm);
+        FUNCTIONS.register(TESTS[15], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
+        FUNCTIONS.register(TESTS[16], () -> TaintGameTests::entitySavedDataRoundTrips);
+        FUNCTIONS.register(TESTS[17], () -> TaintGameTests::taintedVillagerEntersAndRestrictsInsideHouse);
     }
 
     private TaintGameTests() {
@@ -381,6 +383,20 @@ public final class TaintGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    private static void swarmerFirstDeathSpawnsOneSwarm(GameTestHelper helper) {
+        TaintSwarmer swarmer = ModEntities.TAINT_SPORE_SWARMER.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(swarmer != null, "failed to create spore swarmer");
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        swarmer.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(swarmer);
+
+        helper.assertTrue(swarmer.hurt(helper.getLevel().damageSources().generic(), 1000.0F), "lethal damage was rejected");
+        helper.assertTrue(swarmer.isDeadOrDying(), "lethal damage did not begin the swarmer death sequence");
+        int swarms = helper.getLevel().getEntitiesOfClass(TaintSwarm.class, swarmer.getBoundingBox().inflate(4.0)).size();
+        helper.assertValueEqual(swarms, 1, "first death must spawn exactly one swarm entity");
+        helper.succeed();
     }
 
     private static void creeperFuseInfectsWithoutBlockDamage(GameTestHelper helper) {

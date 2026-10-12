@@ -51,6 +51,19 @@ public class TaintSheepFurModel extends EntityModel<TaintMobRenderState> {
         float walk = state.walkAnimationPos * 0.6662F;
         this.head.xRot = state.xRot * Mth.DEG_TO_RAD;
         this.head.yRot = state.yRot * Mth.DEG_TO_RAD;
+        int timer = state.grazeTicks;
+        float partialTick = state.partialTick;
+        float progress = timer <= 0 ? 0.0F
+            : timer >= 4 && timer <= 36 ? 1.0F
+            : timer < 4 ? (timer - partialTick) / 4.0F
+            : -(timer - 40.0F - partialTick) / 4.0F;
+        this.head.y = 6.0F + progress * 9.0F;
+        if (timer > 0) {
+            this.head.xRot = timer > 4 && timer <= 36
+                ? (float) (Math.PI / 5.0) + 0.2199115F * Mth.sin((timer - 4.0F - partialTick) / 32.0F * 28.7F)
+                : (float) (Math.PI / 5.0);
+        }
+        this.body.xRot = (float) (Math.PI / 2.0);
         this.frontLeftLeg.xRot = Mth.cos(walk) * 1.4F * state.walkAnimationSpeed;
         this.rearRightLeg.xRot = this.frontLeftLeg.xRot;
         this.frontRightLeg.xRot = Mth.cos(walk + (float) Math.PI) * 1.4F * state.walkAnimationSpeed;

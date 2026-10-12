@@ -12,6 +12,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.TcRenderTypes;
 
 public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
     public enum Kind {
@@ -59,7 +60,7 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
     private final List<ModelPart> tentacleSegments = new ArrayList<>();
 
     public TaintEntityModel(ModelPart root, Kind kind) {
-        super(root);
+        super(root, kind == Kind.SPORE || kind == Kind.SWARMER ? TcRenderTypes::entityTranslucent : TcRenderTypes::entityCutoutNoCull);
         this.kind = kind;
         this.body = root.getChild("body");
         this.head = root.getChild("head");
@@ -84,36 +85,96 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
                 part = part.getChild("tentacle_" + index);
                 this.tentacleSegments.add(part);
             }
-            this.tentacleSegments.getLast().getChild("tentacle_tip").xScale = 0.88F;
-            this.tentacleSegments.getLast().getChild("tentacle_tip").yScale = 0.88F;
-            this.tentacleSegments.getLast().getChild("tentacle_tip").zScale = 0.88F;
-            this.tentacleSegments.getLast().getChild("orb").xScale = 0.88F;
-            this.tentacleSegments.getLast().getChild("orb").yScale = 0.88F;
-            this.tentacleSegments.getLast().getChild("orb").zScale = 0.88F;
         }
     }
 
     public static LayerDefinition createLayer(Kind kind) {
         MeshDefinition mesh = new MeshDefinition();
         PartDefinition root = mesh.getRoot();
-        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.ZERO);
-        PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.ZERO);
-        PartDefinition leftLeg = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), PartPose.ZERO);
-        PartDefinition rightLeg = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), PartPose.ZERO);
-        PartDefinition rearLeftLeg = root.addOrReplaceChild("rear_left_leg", CubeListBuilder.create(), PartPose.ZERO);
-        PartDefinition rearRightLeg = root.addOrReplaceChild("rear_right_leg", CubeListBuilder.create(), PartPose.ZERO);
-        root.addOrReplaceChild("left_arm", CubeListBuilder.create(), PartPose.ZERO);
-        root.addOrReplaceChild("right_arm", CubeListBuilder.create(), PartPose.ZERO);
-        root.addOrReplaceChild("left_wing", CubeListBuilder.create(), PartPose.ZERO);
-        root.addOrReplaceChild("right_wing", CubeListBuilder.create(), PartPose.ZERO);
+        PartPose bodyPose = PartPose.ZERO;
+        PartPose headPose = PartPose.ZERO;
+        PartPose leftLegPose = PartPose.ZERO;
+        PartPose rightLegPose = PartPose.ZERO;
+        PartPose rearLeftLegPose = PartPose.ZERO;
+        PartPose rearRightLegPose = PartPose.ZERO;
+        PartPose leftArmPose = PartPose.ZERO;
+        PartPose rightArmPose = PartPose.ZERO;
+        PartPose leftWingPose = PartPose.ZERO;
+        PartPose rightWingPose = PartPose.ZERO;
+        switch (kind) {
+            case SPIDER -> {
+                bodyPose = PartPose.offset(0.0F, 15.0F, 0.0F);
+                headPose = PartPose.offset(0.0F, 15.0F, -3.0F);
+                leftLegPose = PartPose.offset(-4.0F, 15.0F, 0.0F);
+                rightLegPose = PartPose.offset(4.0F, 15.0F, 0.0F);
+            }
+            case SPORE -> bodyPose = PartPose.offset(0.0F, 24.0F, 0.0F);
+            case CHICKEN -> {
+                bodyPose = PartPose.offset(0.0F, 16.0F, 0.0F);
+                headPose = PartPose.offset(0.0F, 15.0F, -4.0F);
+                leftLegPose = PartPose.offset(-2.0F, 19.0F, 1.0F);
+                rightLegPose = PartPose.offset(2.0F, 19.0F, 1.0F);
+                leftWingPose = PartPose.offset(4.0F, 13.0F, 0.0F);
+                rightWingPose = PartPose.offset(-4.0F, 13.0F, 0.0F);
+            }
+            case COW -> {
+                bodyPose = PartPose.offset(0.0F, 5.0F, 2.0F);
+                headPose = PartPose.offset(0.0F, 4.0F, -8.0F);
+                leftLegPose = PartPose.offset(-3.0F, 12.0F, 7.0F);
+                rightLegPose = PartPose.offset(3.0F, 12.0F, 7.0F);
+                rearLeftLegPose = PartPose.offset(-3.0F, 12.0F, -5.0F);
+                rearRightLegPose = PartPose.offset(3.0F, 12.0F, -5.0F);
+            }
+            case PIG -> {
+                bodyPose = PartPose.offset(0.0F, 11.0F, 2.0F);
+                headPose = PartPose.offset(0.0F, 12.0F, -6.0F);
+                leftLegPose = PartPose.offset(-3.0F, 18.0F, 7.0F);
+                rightLegPose = PartPose.offset(3.0F, 18.0F, 7.0F);
+                rearLeftLegPose = PartPose.offset(-3.0F, 18.0F, -5.0F);
+                rearRightLegPose = PartPose.offset(3.0F, 18.0F, -5.0F);
+            }
+            case SHEEP -> {
+                bodyPose = PartPose.offset(0.0F, 5.0F, 2.0F);
+                headPose = PartPose.offset(0.0F, 6.0F, -8.0F);
+                leftLegPose = PartPose.offset(-3.0F, 12.0F, 7.0F);
+                rightLegPose = PartPose.offset(3.0F, 12.0F, 7.0F);
+                rearLeftLegPose = PartPose.offset(-3.0F, 12.0F, -5.0F);
+                rearRightLegPose = PartPose.offset(3.0F, 12.0F, -5.0F);
+            }
+            case CREEPER -> {
+                bodyPose = PartPose.offset(0.0F, 4.0F, 0.0F);
+                headPose = PartPose.offset(0.0F, 4.0F, 0.0F);
+                leftLegPose = PartPose.offset(-2.0F, 16.0F, 4.0F);
+                rightLegPose = PartPose.offset(2.0F, 16.0F, 4.0F);
+                rearLeftLegPose = PartPose.offset(-2.0F, 16.0F, -4.0F);
+                rearRightLegPose = PartPose.offset(2.0F, 16.0F, -4.0F);
+            }
+            case VILLAGER -> {
+                leftLegPose = PartPose.offset(2.0F, 12.0F, 0.0F);
+                rightLegPose = PartPose.offset(-2.0F, 12.0F, 0.0F);
+                leftArmPose = PartPose.offset(0.0F, 3.0F, -1.0F);
+                rightArmPose = PartPose.offset(0.0F, 3.0F, -1.0F);
+            }
+            default -> {
+            }
+        }
+        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create(), bodyPose);
+        PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create(), headPose);
+        PartDefinition leftLeg = root.addOrReplaceChild("left_leg", CubeListBuilder.create(), leftLegPose);
+        PartDefinition rightLeg = root.addOrReplaceChild("right_leg", CubeListBuilder.create(), rightLegPose);
+        PartDefinition rearLeftLeg = root.addOrReplaceChild("rear_left_leg", CubeListBuilder.create(), rearLeftLegPose);
+        PartDefinition rearRightLeg = root.addOrReplaceChild("rear_right_leg", CubeListBuilder.create(), rearRightLegPose);
+        root.addOrReplaceChild("left_arm", CubeListBuilder.create(), leftArmPose);
+        root.addOrReplaceChild("right_arm", CubeListBuilder.create(), rightArmPose);
+        root.addOrReplaceChild("left_wing", CubeListBuilder.create(), leftWingPose);
+        root.addOrReplaceChild("right_wing", CubeListBuilder.create(), rightWingPose);
         switch (kind) {
             case TENTACLE, TENTACLE_TINY -> addTentacle(root, kind == Kind.TENTACLE ? 10 : 6);
             case SPORE -> {
-                body.addOrReplaceChild("inner", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, 2.0F, -6.0F, 12.0F, 12.0F, 12.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
-                body.addOrReplaceChild("spore", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, 0.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
+                body.addOrReplaceChild("inner", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, 2.0F, -6.0F, 12.0F, 12.0F, 12.0F), PartPose.ZERO);
+                body.addOrReplaceChild("spore", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, 0.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.ZERO);
             }
             case SWARMER -> {
-                body.addOrReplaceChild("spore", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, 0.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.ZERO);
                 body.addOrReplaceChild("core", CubeListBuilder.create().texOffs(0, 32).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.offset(0.0F, 16.0F, 0.0F));
             }
             case SPIDER -> addSpider(body, head, leftLeg, rightLeg);
@@ -151,65 +212,64 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
     }
 
     private static void addSpider(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg) {
-        body.addOrReplaceChild("abdomen", CubeListBuilder.create().texOffs(0, 12).addBox(-5.0F, -4.0F, -6.0F, 10.0F, 8.0F, 12.0F), PartPose.offset(0.0F, 15.0F, 9.0F));
-        body.addOrReplaceChild("thorax", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.offset(0.0F, 15.0F, 0.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(32, 4).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F), PartPose.offset(0.0F, 15.0F, -3.0F));
+        body.addOrReplaceChild("abdomen", CubeListBuilder.create().texOffs(0, 12).addBox(-5.0F, -4.0F, -6.0F, 10.0F, 8.0F, 12.0F), PartPose.offset(0.0F, 0.0F, 9.0F));
+        body.addOrReplaceChild("thorax", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(32, 4).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
         for (int index = 0; index < 4; index++) {
-            float z = 15.0F;
             float legZ = 2.0F - index;
-            leftLeg.addOrReplaceChild("leg_" + index, CubeListBuilder.create().texOffs(18, 0).addBox(-15.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F), PartPose.offset(-4.0F, z, legZ));
-            rightLeg.addOrReplaceChild("leg_" + index, CubeListBuilder.create().texOffs(18, 0).mirror().addBox(-1.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F), PartPose.offset(4.0F, z, legZ));
+            leftLeg.addOrReplaceChild("leg_" + index, CubeListBuilder.create().texOffs(18, 0).addBox(-15.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F), PartPose.offset(0.0F, 0.0F, legZ));
+            rightLeg.addOrReplaceChild("leg_" + index, CubeListBuilder.create().texOffs(18, 0).mirror().addBox(-1.0F, -1.0F, -1.0F, 16.0F, 2.0F, 2.0F), PartPose.offset(0.0F, 0.0F, legZ));
         }
     }
 
     private static void addChicken(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition root) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(0, 9).addBox(-3.0F, -4.0F, -3.0F, 6.0F, 8.0F, 6.0F), PartPose.offset(0.0F, 16.0F, 0.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -6.0F, -2.0F, 4.0F, 6.0F, 3.0F).texOffs(14, 0).addBox(-2.0F, -4.0F, -4.0F, 4.0F, 2.0F, 2.0F).texOffs(14, 4).addBox(-1.0F, -2.0F, -3.0F, 2.0F, 2.0F, 2.0F), PartPose.offset(0.0F, 15.0F, -4.0F));
-        leftLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(26, 0).addBox(-1.0F, 0.0F, -3.0F, 3.0F, 5.0F, 3.0F), PartPose.offset(-2.0F, 19.0F, 1.0F));
-        rightLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(26, 0).mirror().addBox(-1.0F, 0.0F, -3.0F, 3.0F, 5.0F, 3.0F), PartPose.offset(2.0F, 19.0F, 1.0F));
-        root.getChild("left_wing").addOrReplaceChild("wing", CubeListBuilder.create().texOffs(24, 13).addBox(-1.0F, 0.0F, -3.0F, 1.0F, 4.0F, 6.0F), PartPose.offset(4.0F, 13.0F, 0.0F));
-        root.getChild("right_wing").addOrReplaceChild("wing", CubeListBuilder.create().texOffs(24, 13).mirror().addBox(0.0F, 0.0F, -3.0F, 1.0F, 4.0F, 6.0F), PartPose.offset(-4.0F, 13.0F, 0.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(0, 9).addBox(-3.0F, -4.0F, -3.0F, 6.0F, 8.0F, 6.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -6.0F, -2.0F, 4.0F, 6.0F, 3.0F).texOffs(14, 0).addBox(-2.0F, -4.0F, -4.0F, 4.0F, 2.0F, 2.0F).texOffs(14, 4).addBox(-1.0F, -2.0F, -3.0F, 2.0F, 2.0F, 2.0F), PartPose.ZERO);
+        leftLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(26, 0).addBox(-1.0F, 0.0F, -3.0F, 3.0F, 5.0F, 3.0F), PartPose.ZERO);
+        rightLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(26, 0).mirror().addBox(-1.0F, 0.0F, -3.0F, 3.0F, 5.0F, 3.0F), PartPose.ZERO);
+        root.getChild("left_wing").addOrReplaceChild("wing", CubeListBuilder.create().texOffs(24, 13).addBox(-1.0F, 0.0F, -3.0F, 1.0F, 4.0F, 6.0F), PartPose.ZERO);
+        root.getChild("right_wing").addOrReplaceChild("wing", CubeListBuilder.create().texOffs(24, 13).mirror().addBox(0.0F, 0.0F, -3.0F, 1.0F, 4.0F, 6.0F), PartPose.ZERO);
     }
 
     private static void addCow(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition rearLeftLeg, PartDefinition rearRightLeg) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(18, 4).addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F).texOffs(52, 0).addBox(-2.0F, 2.0F, -8.0F, 4.0F, 6.0F, 1.0F), PartPose.offset(0.0F, 5.0F, 2.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -6.0F, 8.0F, 8.0F, 6.0F).texOffs(22, 0).addBox(-5.0F, -5.0F, -4.0F, 1.0F, 3.0F, 1.0F).texOffs(22, 0).mirror().addBox(4.0F, -5.0F, -4.0F, 1.0F, 3.0F, 1.0F), PartPose.offset(0.0F, 4.0F, -8.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(18, 4).addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F).texOffs(52, 0).addBox(-2.0F, 2.0F, -8.0F, 4.0F, 6.0F, 1.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -6.0F, 8.0F, 8.0F, 6.0F).texOffs(22, 0).addBox(-5.0F, -5.0F, -4.0F, 1.0F, 3.0F, 1.0F).texOffs(22, 0).mirror().addBox(4.0F, -5.0F, -4.0F, 1.0F, 3.0F, 1.0F), PartPose.ZERO);
         addQuadrupedLegs(leftLeg, rightLeg, rearLeftLeg, rearRightLeg, 12.0F, 0.0F, 12.0F, 7.0F, -5.0F);
     }
 
     private static void addPig(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition rearLeftLeg, PartDefinition rearRightLeg) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F), PartPose.offset(0.0F, 11.0F, 2.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F).texOffs(16, 16).addBox(-2.0F, 0.0F, -9.0F, 4.0F, 3.0F, 1.0F), PartPose.offset(0.0F, 12.0F, -6.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(28, 8).addBox(-5.0F, -10.0F, -7.0F, 10.0F, 16.0F, 8.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -8.0F, 8.0F, 8.0F, 8.0F).texOffs(16, 16).addBox(-2.0F, 0.0F, -9.0F, 4.0F, 3.0F, 1.0F), PartPose.ZERO);
         addQuadrupedLegs(leftLeg, rightLeg, rearLeftLeg, rearRightLeg, 6.0F, 0.0F, 18.0F, 7.0F, -5.0F);
     }
 
     private static void addSheep(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition rearLeftLeg, PartDefinition rearRightLeg) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(28, 8).addBox(-4.0F, -10.0F, -7.0F, 8.0F, 16.0F, 6.0F), PartPose.offset(0.0F, 5.0F, 2.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F), PartPose.offset(0.0F, 6.0F, -8.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(28, 8).addBox(-4.0F, -10.0F, -7.0F, 8.0F, 16.0F, 6.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F), PartPose.ZERO);
         addQuadrupedLegs(leftLeg, rightLeg, rearLeftLeg, rearRightLeg, 12.0F, 0.0F, 12.0F, 7.0F, -5.0F);
     }
 
     private static void addQuadrupedLegs(PartDefinition leftFront, PartDefinition rightFront, PartDefinition leftRear, PartDefinition rightRear, float length, float inflation, float y, float zFront, float zRear) {
         CubeListBuilder first = CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation));
-        leftFront.addOrReplaceChild("leg", first, PartPose.offset(-3.0F, y, zFront));
-        rightFront.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.offset(3.0F, y, zFront));
-        leftRear.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.offset(-3.0F, y, zRear));
-        rightRear.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.offset(3.0F, y, zRear));
+        leftFront.addOrReplaceChild("leg", first, PartPose.ZERO);
+        rightFront.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.ZERO);
+        leftRear.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.ZERO);
+        rightRear.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, length, 4.0F, new net.minecraft.client.model.geom.builders.CubeDeformation(inflation)), PartPose.ZERO);
     }
 
     private static void addCreeper(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition rearLeftLeg, PartDefinition rearRightLeg) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F), PartPose.offset(0.0F, 4.0F, 0.0F));
-        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.offset(0.0F, 4.0F, 0.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F), PartPose.ZERO);
+        head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
         addQuadrupedLegs(leftLeg, rightLeg, rearLeftLeg, rearRightLeg, 6.0F, 0.0F, 16.0F, 4.0F, -4.0F);
     }
 
     private static void addVillager(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition root) {
-        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(16, 20).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 12.0F, 6.0F), PartPose.offset(0.0F, 0.0F, 0.0F));
+        body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(16, 20).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 12.0F, 6.0F), PartPose.ZERO);
         head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F).texOffs(24, 0).addBox(-1.0F, -3.0F, -6.0F, 2.0F, 4.0F, 2.0F), PartPose.ZERO);
-        leftLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(2.0F, 12.0F, 0.0F));
-        rightLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(-2.0F, 12.0F, 0.0F));
-        root.getChild("left_arm").addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(44, 22).addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.offset(0.0F, 3.0F, -1.0F));
-        root.getChild("right_arm").addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(44, 22).mirror().addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.offset(0.0F, 3.0F, -1.0F));
+        leftLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.ZERO);
+        rightLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.ZERO);
+        root.getChild("left_arm").addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(44, 22).addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.ZERO);
+        root.getChild("right_arm").addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(44, 22).mirror().addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.ZERO);
         root.addOrReplaceChild("folded_arms", CubeListBuilder.create().texOffs(40, 38).addBox(-4.0F, 2.0F, -2.0F, 8.0F, 4.0F, 4.0F), PartPose.ZERO);
     }
 
@@ -219,10 +279,26 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
         float walk = state.walkAnimationPos * 0.6662F;
         this.head.xRot = state.xRot * Mth.DEG_TO_RAD;
         this.head.yRot = state.yRot * Mth.DEG_TO_RAD;
-        this.leftLeg.xRot = Mth.cos(walk) * 1.4F * state.walkAnimationSpeed;
-        this.rightLeg.xRot = Mth.cos(walk + (float) Math.PI) * 1.4F * state.walkAnimationSpeed;
-        this.rearLeftLeg.xRot = this.rightLeg.xRot;
-        this.rearRightLeg.xRot = this.leftLeg.xRot;
+        if (this.kind == Kind.SHEEP) {
+            int timer = state.grazeTicks;
+            float partialTick = state.partialTick;
+            float progress = timer <= 0 ? 0.0F
+                : timer >= 4 && timer <= 36 ? 1.0F
+                : timer < 4 ? (timer - partialTick) / 4.0F
+                : -(timer - 40.0F - partialTick) / 4.0F;
+            this.head.y = 6.0F + progress * 9.0F;
+            if (timer > 0) {
+                this.head.xRot = timer > 4 && timer <= 36
+                    ? (float) (Math.PI / 5.0) + 0.2199115F * Mth.sin((timer - 4.0F - partialTick) / 32.0F * 28.7F)
+                    : (float) (Math.PI / 5.0);
+            }
+        }
+        if (this.kind == Kind.CHICKEN || this.kind == Kind.COW || this.kind == Kind.PIG || this.kind == Kind.SHEEP || this.kind == Kind.CREEPER || this.kind == Kind.VILLAGER) {
+            this.leftLeg.xRot = Mth.cos(walk) * 1.4F * state.walkAnimationSpeed;
+            this.rightLeg.xRot = Mth.cos(walk + (float) Math.PI) * 1.4F * state.walkAnimationSpeed;
+            this.rearLeftLeg.xRot = this.rightLeg.xRot;
+            this.rearRightLeg.xRot = this.leftLeg.xRot;
+        }
         if (this.kind == Kind.COW || this.kind == Kind.PIG || this.kind == Kind.SHEEP) {
             this.body.xRot = (float) (Math.PI / 2.0);
         }
@@ -264,7 +340,7 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
                 segment.xRot = 0.15F * flail * Mth.sin(state.ageInTicks * 0.1F * speed - index / 2.0F);
                 segment.zRot = 0.1F / flail * Mth.sin(state.ageInTicks * 0.15F - index / 2.0F);
             }
-        } else if (this.kind == Kind.SPORE || this.kind == Kind.SWARMER) {
+        } else if (this.kind == Kind.SPORE) {
             float intensity = state.hurt ? 0.04F : 0.02F;
             this.body.xRot = intensity * Mth.sin(state.ageInTicks * 0.05F);
             this.body.zRot = intensity * Mth.sin(state.ageInTicks * 0.1F);
