@@ -1,9 +1,27 @@
 package thaumcraft.test;
 
 import java.util.function.Consumer;
+import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
@@ -20,14 +38,21 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.entity.monster.ChampionModifier;
+import thaumcraft.entity.AspectOrb;
+import thaumcraft.node.NodeHooks;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.registry.ModEntities;
+import thaumcraft.wand.Wands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ChampionGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String TEST = "champion_modifiers_apply_once";
+    private static final String[] TESTS = {"champion_modifiers_apply_once", "champion_combat_and_rewards", "aspect_orb_persistence_pickup_and_node"};
 
     static {
-        FUNCTIONS.register(TEST, () -> ChampionGameTests::modifiersApplyOnce);
+        FUNCTIONS.register(TESTS[0], () -> ChampionGameTests::modifiersApplyOnce);
+        FUNCTIONS.register(TESTS[1], () -> ChampionGameTests::championCombatAndRewards);
+        FUNCTIONS.register(TESTS[2], () -> ChampionGameTests::aspectOrbPersistencePickupAndNode);
     }
 
     private ChampionGameTests() {
@@ -40,11 +65,10 @@ public final class ChampionGameTests {
     @SubscribeEvent
     static void registerTests(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(Thaumcraft.id("champion_modifiers"), new TestEnvironmentDefinition.AllOf());
-        ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(TEST));
-        event.registerTest(Thaumcraft.id(TEST), new FunctionGameTestInstance(
-            function,
-            new TestData<>(environment, Thaumcraft.id("test/platform"), 100, 0, true)
-        ));
+        for (String name : TESTS) {
+            ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
+            event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), 200, 0, true)));
+        }
     }
 
     private static void modifiersApplyOnce(GameTestHelper helper) {
@@ -69,6 +93,84 @@ public final class ChampionGameTests {
             }
             helper.getLevel().addFreshEntity(mob);
         }
+        Mob saved = (Mob) zombieType.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        ChampionModifier.assign(saved, 10, true);
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+        saved.saveWithoutId(output);
+        Mob loaded = (Mob) zombieType.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), output.buildResult()));
+        helper.assertValueEqual(ChampionModifier.get(loaded), 10, "champion modifier survives entity save and load");
         helper.succeed();
+    }
+
+    private static void championCombatAndRewards(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var zombieType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("zombie"));
+        Mob attacker = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
+        Mob victim = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
+        Vec3 attackerPos = Vec3.atCenterOf(helper.absolutePos(new BlockPos(3, 2, 3)));
+        Vec3 victimPos = Vec3.atCenterOf(helper.absolutePos(new BlockPos(5, 2, 3)));
+        attacker.setPos(attackerPos.x, attackerPos.y, attackerPos.z);
+        victim.setPos(victimPos.x, victimPos.y, victimPos.z);
+        ChampionModifier.assign(attacker, 4, false);
+        ChampionModifier.applyAttackEffect(4, attacker, victim, 4.0F, 0.39F, 0);
+        helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.WITHER), "grim applies wither below the 40 percent threshold");
+        victim.removeEffect(net.minecraft.world.effect.MobEffects.WITHER);
+        ChampionModifier.applyAttackEffect(4, attacker, victim, 4.0F, 0.40F, 0);
+        helper.assertFalse(victim.hasEffect(net.minecraft.world.effect.MobEffects.WITHER), "grim does not apply wither at the threshold");
+        ChampionModifier.applyAttackEffect(9, attacker, victim, 4.0F, 0.1F, 0);
+        helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.HUNGER), "sickly applies hunger");
+        ChampionModifier.applyAttackEffect(10, attacker, victim, 4.0F, 0.1F, 0);
+        helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.POISON), "venomous applies poison");
+        attacker.setHealth(1.0F);
+        ChampionModifier.applyAttackEffect(11, attacker, victim, 4.0F, 0.99F, 0);
+        helper.assertValueEqual(attacker.getHealth(), 3.0F, "vampiric heals by half of damage with a two point minimum");
+
+        java.util.List<ItemEntity> drops = new java.util.ArrayList<>();
+        ChampionModifier.awardChampionRewards(level, attacker, drops, 0, 1, 0);
+        helper.assertValueEqual(drops.size(), 1, "champion awards one loot bag");
+        helper.assertTrue(drops.getFirst().getItem().is(thaumcraft.registry.ModItems.COMMON_LOOT_BAG.get()), "fixed low roll awards common bag");
+        int xp = level.getEntitiesOfClass(ExperienceOrb.class, attacker.getBoundingBox().inflate(4.0)).stream().mapToInt(ExperienceOrb::getValue).sum();
+        helper.assertValueEqual(xp, 6, "champion awards fixed XP amount for deterministic roll");
+        helper.succeed();
+    }
+
+    private static void aspectOrbPersistencePickupAndNode(GameTestHelper helper) {
+        var level = helper.getLevel();
+        AspectOrb orb = AspectOrb.create(level, helper.absolutePos(new BlockPos(3, 2, 3)).getX() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getY() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getZ() + 0.5, Aspect.FIRE, 7);
+        helper.assertTrue(orb != null, "aspect orb factory creates an entity");
+        orb.tick();
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        orb.saveWithoutId(output);
+        AspectOrb loaded = ModEntities.ASPECT_ORB.get().create(level, EntitySpawnReason.TRIGGERED);
+        loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), output.buildResult()));
+        helper.assertTrue(loaded.getAspect() == Aspect.FIRE, "aspect orb saves and restores its aspect");
+        helper.assertValueEqual(loaded.getAspectValue(), 7, "aspect orb saves and restores its amount");
+        helper.assertValueEqual(loaded.getAge(), 1, "aspect orb saves and restores lifetime");
+
+        ServerPlayer player = mockServerPlayer(helper);
+        ItemStack wand = Wands.create(thaumcraft.wand.WandRegistry.cap("iron"), thaumcraft.wand.WandRegistry.rod("greatwood"), false);
+        player.getInventory().setItem(0, wand);
+        loaded.setPos(player.getX(), player.getY(), player.getZ());
+        loaded.playerTouch(player);
+        helper.assertTrue(loaded.isRemoved(), "touching a primal orb with wand space consumes it");
+        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), 7, "picked-up orb fills held inventory wand");
+
+        BlockPos nodePos = helper.absolutePos(new BlockPos(2, 2, 5));
+        helper.assertTrue(NodeHooks.spawnAspectOrb(level, nodePos, Aspect.AIR, 3), "node hook successfully spawns aspect orb");
+        helper.assertTrue(!level.getEntitiesOfClass(AspectOrb.class, new net.minecraft.world.phys.AABB(nodePos).inflate(2.0)).isEmpty(), "node orb is present near node");
+        helper.succeed();
+    }
+
+    private static ServerPlayer mockServerPlayer(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, player, cookie) {
+            @Override public void send(Packet<?> packet) {}
+        };
+        player.connection.markClientLoaded();
+        return player;
     }
 }

@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.phys.AABB;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.entity.AspectOrb;
 import thaumcraft.entity.monster.GiantBrainyZombie;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
@@ -19,7 +20,7 @@ public final class NodeHooks {
     }
 
     public static boolean spawnAspectOrb(ServerLevel level, BlockPos pos, Aspect aspect, int amount) {
-        return false;
+        return AspectOrb.spawn(level, pos, aspect, amount);
     }
 
     public static boolean spawnGiantBrainyZombie(ServerLevel level, BlockPos node, BlockPos pos) {
