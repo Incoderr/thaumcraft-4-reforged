@@ -18,8 +18,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
@@ -32,6 +34,7 @@ public class TaintSpore extends Monster implements TaintedMob {
     private static final EntityDataAccessor<Integer> DATA_SIZE = SynchedEntityData.defineId(TaintSpore.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_ATTACHED = SynchedEntityData.defineId(TaintSpore.class, EntityDataSerializers.BOOLEAN);
     protected int growthTicks;
+    public float displaySize;
     @Nullable
     protected BlockPos stalkPos;
     private boolean burst;
@@ -139,6 +142,13 @@ public class TaintSpore extends Monster implements TaintedMob {
     public void tick() {
         super.tick();
         if (this.level().isClientSide()) {
+            if (this.displaySize < this.getSporeSize()) {
+                this.displaySize += 0.02F;
+            }
+            if (this.tickCount % 3 == 0) {
+                this.level().addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.getBbHeight() * 0.5, this.getZ(),
+                    (this.random.nextDouble() - 0.5) * 0.02, this.random.nextDouble() * 0.02, (this.random.nextDouble() - 0.5) * 0.02);
+            }
             return;
         }
         if (!(this instanceof TaintSwarmer) && this.tickCount % 20 == 0 && !this.level().getBiome(this.blockPosition()).is(thaumcraft.taint.TaintBiomes.TAINTED_LAND)) {
@@ -187,7 +197,7 @@ public class TaintSpore extends Monster implements TaintedMob {
         this.burst = true;
         ServerLevel level = (ServerLevel) this.level();
         int size = this.getSporeSize();
-        int count = size / 3 + level.getRandom().nextInt(size / 2 + 1);
+        int count = getBurstSpiderCount(size, level.getRandom());
         level.playSound(null, this.blockPosition(), ModSounds.GORE.get(), SoundSource.HOSTILE, 1.0F, 0.9F + level.getRandom().nextFloat() * 0.1F);
         for (int index = 0; index < count; index++) {
             TaintSpider spider = ModEntities.TAINT_SPIDER.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
@@ -202,6 +212,10 @@ public class TaintSpore extends Monster implements TaintedMob {
             level.setBlockAndUpdate(this.stalkPos, ModBlocks.SPORE_STALK.get().defaultBlockState());
         }
         this.discard();
+    }
+
+    public static int getBurstSpiderCount(int size, RandomSource random) {
+        return size / 3 + random.nextInt(size / 2 + 1);
     }
 
     @Override

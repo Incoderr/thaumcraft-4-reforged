@@ -8,12 +8,18 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
@@ -27,6 +33,11 @@ import thaumcraft.effect.TaintPoisonEvents;
 import thaumcraft.entity.TaintedMob;
 import thaumcraft.entity.monster.taint.TaintMobFactory;
 import thaumcraft.entity.monster.taint.Taintacle;
+import thaumcraft.entity.monster.taint.TaintacleTiny;
+import thaumcraft.entity.monster.taint.TaintSpore;
+import thaumcraft.entity.monster.taint.TaintSwarmer;
+import thaumcraft.entity.monster.taint.TaintSwarm;
+import thaumcraft.entity.monster.taint.TaintedCreeper;
 import thaumcraft.entity.monster.taint.TaintedCow;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEffects;
@@ -44,7 +55,15 @@ public final class TaintGameTests {
         "taint_tentacle_stays_stationary",
         "taint_poison_replacement_preserves_position",
         "taint_poison_conversion_removes_original",
-        "taint_poison_ignores_tainted_mobs"
+        "taint_poison_ignores_tainted_mobs",
+        "taint_spore_grows_after_1201_ticks",
+        "taint_spore_starves_outside_taint_biome",
+        "taint_spore_detachment_releases_spiders",
+        "taint_spore_burst_allows_zero_spiders",
+        "taint_tiny_tentacle_expires_after_200_ticks",
+        "taint_swarmer_spawns_for_vulnerable_players_without_starving",
+        "taint_creeper_fuse_infects_without_block_damage",
+        "taint_entity_saved_data_round_trips"
     };
 
     static {
@@ -55,6 +74,14 @@ public final class TaintGameTests {
         FUNCTIONS.register(TESTS[4], () -> TaintGameTests::poisonReplacementPreservesPosition);
         FUNCTIONS.register(TESTS[5], () -> TaintGameTests::poisonConversionRemovesOriginal);
         FUNCTIONS.register(TESTS[6], () -> TaintGameTests::poisonIgnoresTaintedMobs);
+        FUNCTIONS.register(TESTS[7], () -> TaintGameTests::sporeGrowsAfter1201Ticks);
+        FUNCTIONS.register(TESTS[8], () -> TaintGameTests::sporeStarvesOutsideTaintBiome);
+        FUNCTIONS.register(TESTS[9], () -> TaintGameTests::sporeDetachmentReleasesSpiders);
+        FUNCTIONS.register(TESTS[10], () -> TaintGameTests::sporeBurstAllowsZeroSpiders);
+        FUNCTIONS.register(TESTS[11], () -> TaintGameTests::tinyTentacleExpiresAfter200Ticks);
+        FUNCTIONS.register(TESTS[12], () -> TaintGameTests::swarmerSpawnsForVulnerablePlayersWithoutStarving);
+        FUNCTIONS.register(TESTS[13], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
+        FUNCTIONS.register(TESTS[14], () -> TaintGameTests::entitySavedDataRoundTrips);
     }
 
     private TaintGameTests() {
@@ -69,9 +96,12 @@ public final class TaintGameTests {
         var environment = event.registerEnvironment(Thaumcraft.id("taint_default"), new TestEnvironmentDefinition.AllOf());
         for (String name : TESTS) {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
+            int timeout = name.equals("taint_spore_grows_after_1201_ticks") ? 1250
+                : name.equals("taint_swarmer_spawns_for_vulnerable_players_without_starving") ? 550
+                : name.equals("taint_tiny_tentacle_expires_after_200_ticks") ? 220 : 100;
             event.registerTest(
                 Thaumcraft.id(name),
-                new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), 100, 0, true))
+                new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), timeout, 0, true))
             );
         }
     }
@@ -174,6 +204,145 @@ public final class TaintGameTests {
             1,
             "tainted mob should not create another replacement"
         );
+        helper.succeed();
+    }
+
+    private static void sporeGrowsAfter1201Ticks(GameTestHelper helper) {
+        BlockPos stalkPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        helper.getLevel().setBlockAndUpdate(stalkPos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
+        TaintBiomes.set(helper.getLevel(), stalkPos, TaintBiomes.TAINTED_LAND);
+        TaintSpore spore = TaintSpore.create(helper.getLevel(), stalkPos);
+        helper.assertTrue(spore != null, "failed to create attached spore");
+        helper.getLevel().addFreshEntity(spore);
+        helper.runAfterDelay(1201, () -> {
+            helper.assertValueEqual(spore.getSporeSize(), 3, "spore did not grow after 1201 ticks");
+            helper.assertTrue(spore.isAlive(), "attached spore died while its stalk and taint biome remained");
+            helper.succeed();
+        });
+    }
+
+    private static void sporeStarvesOutsideTaintBiome(GameTestHelper helper) {
+        TaintSpore spore = ModEntities.TAINT_SPORE.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(spore != null, "failed to create spore");
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        TaintBiomes.set(helper.getLevel(), pos, Biomes.PLAINS);
+        spore.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(spore);
+        helper.runAfterDelay(22, () -> {
+            helper.assertTrue(spore.isRemoved(), "spore did not starve outside a tainted biome");
+            helper.succeed();
+        });
+    }
+
+    private static void sporeDetachmentReleasesSpiders(GameTestHelper helper) {
+        BlockPos stalkPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        helper.getLevel().setBlockAndUpdate(stalkPos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
+        TaintSpore spore = TaintSpore.create(helper.getLevel(), stalkPos);
+        helper.assertTrue(spore != null, "failed to create attached spore");
+        helper.getLevel().addFreshEntity(spore);
+        helper.getLevel().setBlockAndUpdate(stalkPos, Blocks.AIR.defaultBlockState());
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(spore.isRemoved(), "detached spore did not burst");
+            int spiders = helper.getLevel().getEntitiesOfClass(
+                thaumcraft.entity.monster.taint.TaintSpider.class, spore.getBoundingBox().inflate(4.0)
+            ).size();
+            helper.assertTrue(spiders >= 0 && spiders <= 1, "size-2 detached spore released an invalid spider count: " + spiders);
+            helper.succeed();
+        });
+    }
+
+    private static void sporeBurstAllowsZeroSpiders(GameTestHelper helper) {
+        long seed = 0;
+        int count;
+        do {
+            count = TaintSpore.getBurstSpiderCount(2, RandomSource.create(seed++));
+        } while (count != 0 && seed < 1000);
+        helper.assertValueEqual(count, 0, "size-2 spore burst formula must permit a zero-spider result");
+        helper.succeed();
+    }
+
+    private static void tinyTentacleExpiresAfter200Ticks(GameTestHelper helper) {
+        TaintacleTiny tentacle = ModEntities.TAINTACLE_TINY.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(tentacle != null, "failed to create tiny tentacle");
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        tentacle.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(tentacle);
+        helper.runAfterDelay(199, () -> {
+            helper.assertTrue(tentacle.isAlive(), "tiny tentacle expired before its 200-tick lifetime");
+            helper.runAfterDelay(2, () -> {
+                helper.assertTrue(tentacle.isRemoved(), "tiny tentacle survived beyond its 200-tick lifetime");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void swarmerSpawnsForVulnerablePlayersWithoutStarving(GameTestHelper helper) {
+        TaintSwarmer swarmer = ModEntities.TAINT_SPORE_SWARMER.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(swarmer != null, "failed to create spore swarmer");
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        swarmer.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        float initialHealth = swarmer.getHealth();
+        helper.getLevel().addFreshEntity(swarmer);
+        net.minecraft.server.level.ServerPlayer player = (net.minecraft.server.level.ServerPlayer) helper.makeMockServerPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.connection.markClientLoaded();
+        player.absSnapTo(pos.getX() + 1.0, pos.getY(), pos.getZ() + 1.0, 0.0F, 0.0F);
+        helper.runAfterDelay(499, () -> {
+            int earlySwarms = helper.getLevel().getEntitiesOfClass(TaintSwarm.class, swarmer.getBoundingBox().inflate(3.0)).size();
+            helper.assertValueEqual(earlySwarms, 0, "swarmer released a swarm before its 500-tick interval");
+            helper.runAfterDelay(3, () -> {
+                int swarms = helper.getLevel().getEntitiesOfClass(TaintSwarm.class, swarmer.getBoundingBox().inflate(3.0)).size();
+                helper.assertValueEqual(swarms, 1, "swarmer did not release one swarm at its 500-tick interval");
+                helper.assertTrue(swarmer.isAlive(), "swarmer unexpectedly died");
+                helper.assertValueEqual(swarmer.getHealth(), initialHealth, "swarmer inherited spore starvation damage");
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void creeperFuseInfectsWithoutBlockDamage(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        BlockPos protectedBlock = pos.east(2);
+        helper.getLevel().setBlockAndUpdate(protectedBlock, Blocks.STONE.defaultBlockState());
+        Cow victim = EntityTypes.COW.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(victim != null, "failed to create infection target");
+        victim.absSnapTo(pos.getX() + 1.0, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(victim);
+        TaintedCreeper creeper = ModEntities.TAINTED_CREEPER.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(creeper != null, "failed to create taint creeper");
+        creeper.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(creeper);
+        creeper.setSwellDirection(1);
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(creeper.isRemoved(), "custom creeper fuse did not explode after 30 ticks");
+            helper.assertTrue(helper.getBlockState(protectedBlock).is(Blocks.STONE), "taint creeper explosion damaged blocks");
+            helper.assertTrue(victim.hasEffect(ModEffects.TAINT_POISON), "taint creeper explosion did not infect a nearby living target");
+            helper.succeed();
+        });
+    }
+
+    private static void entitySavedDataRoundTrips(GameTestHelper helper) {
+        var registryAccess = helper.getLevel().registryAccess();
+        TaintSpore spore = ModEntities.TAINT_SPORE.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(spore != null, "failed to create spore for save test");
+        spore.setSporeSize(7);
+        TagValueOutput sporeOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registryAccess);
+        spore.saveWithoutId(sporeOutput);
+        TaintSpore loadedSpore = ModEntities.TAINT_SPORE.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(loadedSpore != null, "failed to create spore for load test");
+        loadedSpore.load(TagValueInput.create(ProblemReporter.DISCARDING, registryAccess, sporeOutput.buildResult()));
+        helper.assertValueEqual(loadedSpore.getSporeSize(), 7, "spore size did not survive entity save/load");
+
+        TaintSwarm swarm = ModEntities.TAINT_SWARM.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(swarm != null, "failed to create swarm for save test");
+        swarm.setSummoned(true);
+        swarm.setDamageBonus(4);
+        TagValueOutput swarmOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registryAccess);
+        swarm.saveWithoutId(swarmOutput);
+        TaintSwarm loadedSwarm = ModEntities.TAINT_SWARM.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(loadedSwarm != null, "failed to create swarm for load test");
+        loadedSwarm.load(TagValueInput.create(ProblemReporter.DISCARDING, registryAccess, swarmOutput.buildResult()));
+        helper.assertTrue(loadedSwarm.isSummoned(), "swarm summoned flag did not survive entity save/load");
+        helper.assertValueEqual(loadedSwarm.getAttributeValue(Attributes.ATTACK_DAMAGE), 6.0, "swarm damage bonus did not survive entity save/load");
         helper.succeed();
     }
 }

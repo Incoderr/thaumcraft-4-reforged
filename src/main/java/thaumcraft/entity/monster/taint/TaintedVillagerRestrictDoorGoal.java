@@ -1,14 +1,12 @@
 package thaumcraft.entity.monster.taint;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.goal.Goal;
 import org.jspecify.annotations.Nullable;
 
 final class TaintedVillagerRestrictDoorGoal extends Goal {
     private final TaintedVillager villager;
-    @Nullable
-    private BlockPos door;
+    private TaintedVillagerIndoorGoal.@Nullable VillageDoorInfo doorInfo;
 
     TaintedVillagerRestrictDoorGoal(TaintedVillager villager) {
         this.villager = villager;
@@ -19,16 +17,16 @@ final class TaintedVillagerRestrictDoorGoal extends Goal {
         if (!(this.villager.level() instanceof ServerLevel level) || TaintedVillagerIndoorGoal.isDay(level)) {
             return false;
         }
-        this.door = TaintedVillagerIndoorGoal.nearestVillageDoor(level, this.villager.blockPosition(), 16);
-        return this.door != null && this.villager.distanceToSqr(this.door.getX(), this.door.getY(), this.door.getZ()) < 2.25;
+        this.doorInfo = TaintedVillagerIndoorGoal.nearestVillageDoor(level, this.villager.blockPosition(), 16);
+        return this.doorInfo != null && this.villager.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(this.doorInfo.doorPos())) < 2.25;
     }
 
     @Override
     public boolean canContinueToUse() {
-        return this.door != null
+        return this.doorInfo != null
             && this.villager.level() instanceof ServerLevel level
             && !TaintedVillagerIndoorGoal.isDay(level)
-            && this.villager.distanceToSqr(this.door.getX(), this.villager.getY(), this.door.getZ()) < 2.25;
+            && this.doorInfo.isInside(this.villager.blockPosition());
     }
 
     @Override
@@ -39,6 +37,6 @@ final class TaintedVillagerRestrictDoorGoal extends Goal {
     @Override
     public void stop() {
         this.villager.getNavigation().setCanOpenDoors(true);
-        this.door = null;
+        this.doorInfo = null;
     }
 }
