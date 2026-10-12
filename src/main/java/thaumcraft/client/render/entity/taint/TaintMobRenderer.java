@@ -5,7 +5,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.layers.EyesLayer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -15,6 +14,7 @@ import thaumcraft.entity.monster.taint.TaintedChicken;
 import thaumcraft.entity.monster.taint.TaintedCreeper;
 import thaumcraft.entity.monster.taint.TaintedSheep;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.TcRenderTypes;
 
 public class TaintMobRenderer<T extends Mob> extends MobRenderer<T, TaintMobRenderState, TaintEntityModel> {
     private final TaintEntityModel.Kind kind;
@@ -28,7 +28,7 @@ public class TaintMobRenderer<T extends Mob> extends MobRenderer<T, TaintMobRend
             this.addLayer(new EyesLayer<>(this) {
                 @Override
                 public net.minecraft.client.renderer.rendertype.RenderType renderType() {
-                    return RenderTypes.eyes(Thaumcraft.id("textures/model/taint_spider_eyes.png"));
+                    return TcRenderTypes.eyes(Thaumcraft.id("textures/model/taint_spider_eyes.png"));
                 }
             });
         }

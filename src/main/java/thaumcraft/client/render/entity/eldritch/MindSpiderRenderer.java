@@ -17,8 +17,8 @@ import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.entity.monster.eldritch.MindSpider;
 
 public class MindSpiderRenderer extends MobRenderer<MindSpider, LivingEntityRenderState, SpiderModel> {
-    private static final Identifier TEXTURE = Thaumcraft.id("textures/models/taint_spider.png");
-    private static final RenderType EYES = RenderTypes.eyes(Thaumcraft.id("textures/models/taint_spider_eyes.png"));
+    private static final Identifier TEXTURE = Thaumcraft.id("textures/model/taint_spider.png");
+    private static final RenderType EYES = TcRenderTypes.eyes(Thaumcraft.id("textures/model/taint_spider_eyes.png"));
 
     public MindSpiderRenderer(EntityRendererProvider.Context context) {
         super(context, new SpiderModel(context.bakeLayer(ModelLayers.SPIDER)), 0.0F);

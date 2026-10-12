@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.sprite.Material;
@@ -23,6 +22,7 @@ import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.taint.TaintBlock;
 import thaumcraft.taint.TaintFibresBlock;
+import thaumcraft.client.platform.TcRenderTypes;
 
 public class TaintFibresModel implements DynamicBlockStateModel {
     private static final int OVERLAY_LIGHT = 200;
@@ -150,7 +150,7 @@ public class TaintFibresModel implements DynamicBlockStateModel {
         BakedQuad.MaterialInfo overlayMaterial = new BakedQuad.MaterialInfo(
             material.sprite(),
             ChunkSectionLayer.TRANSLUCENT,
-            RenderTypes.translucentMovingBlock(),
+            TcRenderTypes.translucentMovingBlock(),
             material.itemGlintRenderType(),
             material.itemGlintSpecialRenderType(),
             material.tintIndex(),
