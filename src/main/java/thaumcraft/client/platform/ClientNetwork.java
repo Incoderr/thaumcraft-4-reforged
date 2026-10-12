@@ -3,6 +3,7 @@ package thaumcraft.client.platform;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -20,7 +21,13 @@ public final class ClientNetwork {
     }
 
     public static <T extends CustomPacketPayload> void handle(CustomPacketPayload.Type<T> type, ModNetwork.Handler<T> handler) {
-        HANDLERS.add(event -> event.register(type, (payload, context) -> handler.handle(payload, context.player())));
+        HANDLERS.add(event -> event.register(type, (payload, context) -> {
+            var player = Minecraft.getInstance().player;
+            // A queued play packet can arrive after the client has left the world.
+            if (player != null) {
+                handler.handle(payload, player);
+            }
+        }));
     }
 
     @SubscribeEvent
