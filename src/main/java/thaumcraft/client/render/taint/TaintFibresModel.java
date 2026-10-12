@@ -53,7 +53,7 @@ public class TaintFibresModel implements DynamicBlockStateModel {
         this.stalk = stalk;
         this.matureStalk = matureStalk;
         this.particle = faces.get(0).particleMaterial();
-        int materialFlags = 0;
+        int materialFlags = BakedQuad.FLAG_TRANSLUCENT;
         for (BlockStateModel model : faces) {
             materialFlags |= model.materialFlags();
         }
