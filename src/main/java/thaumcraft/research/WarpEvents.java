@@ -12,11 +12,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.RandomSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.effect.WarpEffectEvents;
 import thaumcraft.item.armor.FortressArmorItem;
 import thaumcraft.network.WarpEventPayload;
 import thaumcraft.platform.ModNetwork;
@@ -41,7 +43,11 @@ public final class WarpEvents {
     }
 
     public static void checkWarpEvent(ServerPlayer player) {
-        if (ResearchConfig.WUSS_MODE || player.hasEffect(ModEffects.WARP_WARD)) {
+        checkWarpEvent(player, player.level().getRandom());
+    }
+
+    static void checkWarpEvent(ServerPlayer player, RandomSource random) {
+        if (shouldSkipWarpEvents(player, ResearchConfig.WUSS_MODE)) {
             return;
         }
         ServerLevel level = player.level();
@@ -50,14 +56,14 @@ public final class WarpEvents {
         int warp = Math.max(0, Warp.total(player) + Warp.getWarpFromGear(player));
         int warpCounter = knowledge.getWarpCounter();
 
-        if (warpCounter > 0 && warp > 0 && level.getRandom().nextInt(100) <= Math.sqrt(warpCounter)) {
+        if (warpCounter > 0 && warp > 0 && random.nextInt(100) <= Math.sqrt(warpCounter)) {
             int eventWarp = Math.min(100, (warp + warp + warpCounter) / 3);
             warpCounter = (int) (warpCounter - Math.max(5.0, Math.sqrt(warpCounter) * 2.0));
             knowledge.setWarpCounter(warpCounter);
             Knowledge.sync(player);
-            int effect = level.getRandom().nextInt(eventWarp);
+            int effect = random.nextInt(eventWarp);
             if (FortressArmorItem.getMask(player) == 0) {
-                effect -= 2 + level.getRandom().nextInt(4);
+                effect -= 2 + random.nextInt(4);
             }
             ModNetwork.sendToPlayer(player, new WarpEventPayload(0));
             applyWarpEvent(player, eventWarp, effect);
@@ -67,6 +73,10 @@ public final class WarpEvents {
         if (Warp.get(player, WarpType.TEMPORARY) > 0) {
             Warp.set(player, Warp.get(player, WarpType.TEMPORARY) - 1, WarpType.TEMPORARY);
         }
+    }
+
+    static boolean shouldSkipWarpEvents(ServerPlayer player, boolean wussMode) {
+        return wussMode || player.hasEffect(ModEffects.WARP_WARD);
     }
 
     static int scaledWarp(int warp, int counter) {
@@ -129,7 +139,7 @@ public final class WarpEvents {
                 Warp.add(player, -1, WarpType.STICKY);
             }
             whisper(player, 14);
-        } else if (effect >= 76 && effect <= 80) {
+        } else if (effect <= 80) {
             applyEffect(player, ModEffects.UNNATURAL_HUNGER, 6000, amplifier);
             whisper(player, 2);
         } else if (effect <= 84) {
@@ -184,7 +194,18 @@ public final class WarpEvents {
     }
 
     private static void applyEffect(LivingEntity entity, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect, int duration, int amplifier) {
-        entity.addEffect(new MobEffectInstance(effect, duration, amplifier, true, true, true));
+        boolean ambient = !effect.is(ModEffects.INFECTIOUS_VIS_EXHAUST);
+        MobEffectInstance instance = new MobEffectInstance(effect, duration, amplifier, ambient, true, true);
+        if (effect.is(ModEffects.VIS_EXHAUST)
+            || effect.is(ModEffects.THAUMARHIA)
+            || effect.is(ModEffects.SUN_SCORNED)
+            || effect.is(ModEffects.INFECTIOUS_VIS_EXHAUST)
+            || effect.is(ModEffects.DEATH_GAZE)
+            || effect.is(ModEffects.UNNATURAL_HUNGER)) {
+            WarpEffectEvents.addUncurableEffect(entity, instance);
+        } else {
+            entity.addEffect(instance);
+        }
     }
 
     private static void checkDeathGaze(ServerPlayer player) {
@@ -200,9 +221,7 @@ public final class WarpEvents {
                 continue;
             }
             Vec3 target = new Vec3(living.getX(), living.getBoundingBox().minY + living.getBbHeight() / 2.0, living.getZ());
-            Vec3 direction = target.subtract(player.getEyePosition());
-            double distance = direction.length();
-            if (distance > range || distance == 0.0 || look.dot(direction.scale(1.0 / distance)) <= Math.cos(0.75 / 2.0)) {
+            if (!isWithinDeathGazeCone(look, player.getEyePosition(), target, range)) {
                 continue;
             }
             living.setLastHurtByPlayer(player, 100);
@@ -211,5 +230,13 @@ public final class WarpEvents {
             }
             living.addEffect(new MobEffectInstance(MobEffects.WITHER, 80, 0));
         }
+    }
+
+    static boolean isWithinDeathGazeCone(Vec3 look, Vec3 origin, Vec3 target, double range) {
+        Vec3 direction = target.subtract(origin);
+        double distance = direction.length();
+        return distance > 0.0
+            && look.dot(direction) < range
+            && look.dot(direction.scale(1.0 / distance)) > Math.cos(0.75 / 2.0);
     }
 }

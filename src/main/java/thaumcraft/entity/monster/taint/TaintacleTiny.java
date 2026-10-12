@@ -10,6 +10,7 @@ public class TaintacleTiny extends Taintacle {
 
     public TaintacleTiny(EntityType<? extends TaintacleTiny> type, Level level) {
         super(type, level);
+        this.xpReward = 0;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -25,5 +26,9 @@ public class TaintacleTiny extends Taintacle {
         if (this.lifetime-- <= 0) {
             this.hurt(this.damageSources().magic(), 10.0F);
         }
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(net.minecraft.server.level.ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
     }
 }

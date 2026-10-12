@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -47,6 +48,10 @@ public final class BiomeEdit {
         chunk.markUnsaved();
         DIRTY.computeIfAbsent(level, key -> new LinkedHashMap<>()).put(chunk.getPos(), chunk);
         return true;
+    }
+
+    public static Holder<Biome> getColumnBiome(LevelReader level, BlockPos pos) {
+        return level.getNoiseBiome(QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ()));
     }
 
     public static boolean restoreColumn(

@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -17,6 +18,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -30,6 +33,7 @@ public class TaintSpore extends Monster implements TaintedMob {
     private static final EntityDataAccessor<Integer> DATA_SIZE = SynchedEntityData.defineId(TaintSpore.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_ATTACHED = SynchedEntityData.defineId(TaintSpore.class, EntityDataSerializers.BOOLEAN);
     protected int growthTicks;
+    public float displaySize;
     @Nullable
     protected BlockPos stalkPos;
     private boolean burst;
@@ -68,6 +72,26 @@ public class TaintSpore extends Monster implements TaintedMob {
 
     @Override
     protected void registerGoals() {
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return thaumcraft.registry.ModSounds.SWARM.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return thaumcraft.registry.ModSounds.GORE.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return thaumcraft.registry.ModSounds.GORE.get();
+    }
+
+    @Override
+    protected float getSoundVolume() {
+        return 0.1F;
     }
 
     public void setSporeSize(int size) {
@@ -109,13 +133,32 @@ public class TaintSpore extends Monster implements TaintedMob {
     }
 
     @Override
+    public void move(MoverType type, Vec3 movement) {
+        super.move(type, new Vec3(0.0, Math.min(movement.y, 0.0), 0.0));
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (this.level().isClientSide()) {
+            if (this.displaySize < this.getSporeSize()) {
+                this.displaySize += 0.02F;
+            }
+            if (this.tickCount % 3 == 0) {
+                this.level().addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.getBbHeight() * 0.5, this.getZ(),
+                    (this.random.nextDouble() - 0.5) * 0.02, this.random.nextDouble() * 0.02, (this.random.nextDouble() - 0.5) * 0.02);
+            }
             return;
         }
-        if (this.tickCount % 20 == 0 && !this.level().getBiome(this.blockPosition()).is(thaumcraft.taint.TaintBiomes.TAINTED_LAND)) {
+        if (!(this instanceof TaintSwarmer) && this.tickCount % 20 == 0 && !thaumcraft.taint.TaintBiomes.isTainted(this.level(), this.blockPosition())) {
             this.hurt(this.damageSources().starve(), 1.0F);
+        }
+        if (this instanceof TaintSwarmer) {
+            return;
+        }
+        if (this.getSporeSize() < 10 && this.growthTicks++ == 1200) {
+            this.setSporeSize(this.getSporeSize() + 1);
+            this.growthTicks = 0;
         }
         if (this.entityData.get(DATA_ATTACHED)) {
             if (this.stalkPos == null || !this.level().getBlockState(this.stalkPos).is(ModBlocks.MATURE_SPORE_STALK.get())) {
@@ -124,10 +167,6 @@ public class TaintSpore extends Monster implements TaintedMob {
             }
             this.absSnapTo(this.stalkPos.getX() + 0.5, this.stalkPos.getY() + 1.0, this.stalkPos.getZ() + 0.5, this.getYRot(), this.getXRot());
             this.setDeltaMovement(Vec3.ZERO);
-            if (this.getSporeSize() < 10 && this.growthTicks++ == 1200) {
-                this.setSporeSize(this.getSporeSize() + 1);
-                this.growthTicks = 0;
-            }
             return;
         }
         if (this.shouldBurstOnDetachment() && (this.stalkPos == null || !this.level().getBlockState(this.stalkPos).is(ModBlocks.MATURE_SPORE_STALK.get()))) {

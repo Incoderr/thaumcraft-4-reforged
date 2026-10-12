@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.LevelReader;
 import thaumcraft.Thaumcraft;
 import thaumcraft.platform.BiomeEdit;
 
@@ -27,8 +28,8 @@ public final class TaintBiomes {
         return ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(Thaumcraft.MODID, name));
     }
 
-    public static boolean isTainted(ServerLevel level, BlockPos pos) {
-        return level.getBiome(pos).is(TAINTED_LAND);
+    public static boolean isTainted(LevelReader level, BlockPos pos) {
+        return BiomeEdit.getColumnBiome(level, pos).is(TAINTED_LAND);
     }
 
     public static boolean set(ServerLevel level, BlockPos pos, ResourceKey<Biome> key) {
