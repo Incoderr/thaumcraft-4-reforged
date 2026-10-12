@@ -82,6 +82,7 @@ public class Thaumcraft {
         ModCreativeTabs.register(modEventBus);
         ModSounds.register(modEventBus);
         ModFeatures.register(modEventBus);
+        thaumcraft.world.gen.HalloweenFirebatSpawnModifier.register(modEventBus);
         ModVillagers.register(modEventBus);
         ModMenus.register(modEventBus);
         ModRecipes.register(modEventBus);

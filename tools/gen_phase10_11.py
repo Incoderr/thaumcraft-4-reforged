@@ -52,8 +52,28 @@ def write_damage_types(ctx):
 
 def write_spawn_modifiers(ctx):
     profile = ctx.profile
+    brainy_biomes = [
+        "minecraft:forest",
+        "minecraft:flower_forest",
+        "minecraft:birch_forest",
+        "minecraft:old_growth_birch_forest",
+        "minecraft:dark_forest",
+        "minecraft:plains",
+        "minecraft:sunflower_plains",
+        "minecraft:taiga",
+        "minecraft:snowy_taiga",
+        "minecraft:old_growth_pine_taiga",
+        "minecraft:old_growth_spruce_taiga",
+        "minecraft:jungle",
+        "minecraft:sparse_jungle",
+        "minecraft:bamboo_jungle",
+    ]
+    ctx.write(
+        ctx.DATA / NS / "tags" / "worldgen" / "biome" / "brainy_zombie_biomes.json",
+        {"replace": False, "values": brainy_biomes},
+    )
     modifiers = {
-        "brainy_zombie": ("#minecraft:is_overworld", 10),
+        "brainy_zombie": (f"#{NS}:brainy_zombie_biomes", 10),
         "pech": ("#c:is_magical", 10),
         "firebat": ("#minecraft:is_nether", 10, 1, 2),
         "wisp": ("#minecraft:is_nether", 5),
@@ -65,6 +85,10 @@ def write_spawn_modifiers(ctx):
             ctx.DATA / profile.biome_modifier_namespace / "biome_modifier" / f"{name}_spawns.json",
             profile.spawn_modifier(biomes, f"{NS}:{name}", weight, *(counts or [1, 1])),
         )
+    ctx.write(
+        ctx.DATA / profile.biome_modifier_namespace / "biome_modifier" / "halloween_firebat_spawns.json",
+        {"type": f"{NS}:halloween_firebat_spawns", "biomes": f"#{NS}:brainy_zombie_biomes"},
+    )
 
 
 def block(ctx, name, texture):

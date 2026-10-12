@@ -5,13 +5,16 @@
       "rolls": 1,
       "entries": [
         {
-          "type": "minecraft:item",
-          "name": "thaumcraft:crusted_taint"
+          "type": "minecraft:alternatives",
+          "children": [
+            {
+              "type": "minecraft:item",
+              "condition": "minecraft:tool/can_silk_touch",
+              "name": "thaumcraft:crusted_taint"
+            }
+          ]
         }
-      ],
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      }
+      ]
     }
   ],
   "random_sequence": "thaumcraft:blocks/crusted_taint"

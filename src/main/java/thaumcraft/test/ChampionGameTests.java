@@ -20,6 +20,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.entity.monster.ChampionModifier;
+import thaumcraft.world.gen.HalloweenFirebatSpawnModifier;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ChampionGameTests {
@@ -51,6 +52,9 @@ public final class ChampionGameTests {
         helper.assertValueEqual(ChampionModifier.count(), 13, "champion modifier count");
         helper.assertValueEqual(ChampionModifier.names().getFirst(), "bold", "champion modifier id 0");
         helper.assertValueEqual(ChampionModifier.names().get(12), "infested", "champion modifier id 12");
+        helper.assertTrue(HalloweenFirebatSpawnModifier.isHalloween(10, 31), "Halloween seasonal spawn date");
+        helper.assertFalse(HalloweenFirebatSpawnModifier.isHalloween(10, 30), "seasonal spawn must not include October 30");
+        helper.assertFalse(HalloweenFirebatSpawnModifier.isHalloween(11, 1), "seasonal spawn must not include November 1");
 
         var zombieType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("zombie"));
         for (int id = 0; id < ChampionModifier.count(); id++) {
