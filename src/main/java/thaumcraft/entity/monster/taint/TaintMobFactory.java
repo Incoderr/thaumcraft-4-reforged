@@ -4,7 +4,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.registry.ModEntities;
 import net.minecraft.world.entity.animal.chicken.Chicken;
@@ -39,13 +38,10 @@ public final class TaintMobFactory {
         if (replacement == null) {
             return null;
         }
-        replacement.absSnapTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), original.getXRot());
+        replacement.absSnapTo(original.getX(), original.getY(), original.getZ(), original.getYRot(), 0.0F);
         replacement.setDeltaMovement(original.getDeltaMovement());
         replacement.setCustomName(original.getCustomName());
         replacement.setCustomNameVisible(original.isCustomNameVisible());
-        if (replacement instanceof Mob mob) {
-            mob.setPersistenceRequired();
-        }
         return replacement;
     }
 

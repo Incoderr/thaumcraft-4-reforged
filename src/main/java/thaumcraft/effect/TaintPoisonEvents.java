@@ -27,11 +27,14 @@ public final class TaintPoisonEvents {
         Entity replacement = TaintMobFactory.createReplacement(original);
         if (replacement != null) {
             if (level.addFreshEntity(replacement)) {
+                original.discard();
                 return;
             }
             return;
         }
         int size = (int) (1.0F + Math.min(original.getMaxHealth() / 10.0F, 6.0F));
-        AlchemyHooks.spawnThaumicSlime(level, new Vec3(original.getX(), original.getY(), original.getZ()), size);
+        if (AlchemyHooks.spawnThaumicSlime(level, new Vec3(original.getX(), original.getY(), original.getZ()), size)) {
+            original.discard();
+        }
     }
 }

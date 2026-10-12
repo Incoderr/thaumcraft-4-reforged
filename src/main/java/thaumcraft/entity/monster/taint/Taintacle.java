@@ -4,7 +4,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -14,9 +16,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -34,12 +37,14 @@ import thaumcraft.taint.TaintBiomes;
 import thaumcraft.taint.TaintSpread;
 
 public class Taintacle extends Monster implements TaintedMob {
+    public float flailIntensity = 1.0F;
     @Nullable
     private LivingEntity target;
     private int attackTime;
 
     public Taintacle(EntityType<? extends Taintacle> type, Level level) {
         super(type, level);
+        this.xpReward = 10;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -50,6 +55,31 @@ public class Taintacle extends Monster implements TaintedMob {
     protected void registerGoals() {
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ModSounds.ROOTS.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ModSounds.TENTACLE.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ModSounds.TENTACLE.get();
+    }
+
+    @Override
+    protected float getSoundVolume() {
+        return this.getBbHeight() / 8.0F;
+    }
+
+    @Override
+    public float getVoicePitch() {
+        return 1.3F - this.getBbHeight() / 10.0F;
     }
 
     public static boolean canSpawnNaturally(EntityType<Taintacle> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
@@ -92,6 +122,13 @@ public class Taintacle extends Monster implements TaintedMob {
     public void tick() {
         super.tick();
         if (this.level().isClientSide()) {
+            boolean agitated = this.tickCount > this.getBbHeight() * 10.0F
+                && (this.hurtTime > 0 || this.attackTime > 0 || this.target != null && this.distanceTo(this.target) < this.getBbHeight());
+            if (agitated && this.flailIntensity < 3.0F) {
+                this.flailIntensity = Math.min(3.0F, this.flailIntensity + 0.2F);
+            } else if (!agitated && this.flailIntensity > 1.0F) {
+                this.flailIntensity = Math.max(1.0F, this.flailIntensity - 0.2F);
+            }
             return;
         }
         if (this.tickCount % 20 == 0 && !this.level().getBiome(this.blockPosition()).is(TaintBiomes.TAINTED_LAND)) {
@@ -100,18 +137,32 @@ public class Taintacle extends Monster implements TaintedMob {
         if (this.attackTime > 0) {
             this.attackTime--;
         }
-        if (this.target == null || !this.target.isAlive() || this.target instanceof TaintedMob || !this.isAgitated()) {
+        if (this.target == null) {
             this.target = this.findTarget();
+            return;
         }
-        if (this.target == null || this.attackTime > 0 || !this.hasLineOfSight(this.target)) {
+        if (!this.target.isAlive() || this.target instanceof TaintedMob || !this.isAgitated()) {
+            this.target = null;
+            return;
+        }
+        this.faceTarget(this.target);
+        if (this.attackTime > 0 || !this.hasLineOfSight(this.target)) {
             return;
         }
         double distance = this.distanceTo(this.target);
         if (distance <= this.getBbHeight() && verticalOverlap(this, this.target)) {
             this.attackTime = 20;
             ServerLevel level = (ServerLevel) this.level();
-            this.target.hurtServer(level, level.damageSources().source(ModDamageTypes.TENTACLE, this),
-                (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            float damage = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            MobEffectInstance strength = this.getEffect(MobEffects.STRENGTH);
+            if (strength != null) {
+                damage += 3 << strength.getAmplifier();
+            }
+            MobEffectInstance weakness = this.getEffect(MobEffects.WEAKNESS);
+            if (weakness != null) {
+                damage -= 2 << weakness.getAmplifier();
+            }
+            this.target.hurtServer(level, level.damageSources().source(ModDamageTypes.TENTACLE, this), damage);
             this.playSound(ModSounds.TENTACLE.get(), this.getSoundVolume(), this.getVoicePitch());
         } else if (distance > this.getBbHeight() && this.target.onGround()) {
             this.spawnTentacle(this.target);
@@ -141,12 +192,14 @@ public class Taintacle extends Monster implements TaintedMob {
         TaintacleTiny tiny = ModEntities.TAINTACLE_TINY.get().create(level, EntitySpawnReason.TRIGGERED);
         if (tiny != null) {
             tiny.absSnapTo(victim.getX() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), victim.getY(),
-                victim.getZ() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), level.getRandom().nextFloat() * 360.0F, 0.0F);
-            level.addFreshEntity(tiny);
+                victim.getZ() + level.getRandom().nextFloat() - level.getRandom().nextFloat(), 0.0F, 0.0F);
+            if (level.addFreshEntity(tiny)) {
+                this.playSound(ModSounds.TENTACLE.get(), this.getSoundVolume(), this.getVoicePitch());
+            }
         }
         if (outerLands && level.isEmptyBlock(pos) && hasAdjacentSolid(level, pos)) {
             TaintBiomes.set(level, pos, TaintBiomes.TAINTED_LAND);
-            level.setBlockAndUpdate(pos, ModBlocks.FIBROUS_TAINT.get().defaultBlockState());
+            level.setBlockAndUpdate(pos, (level.getRandom().nextInt(4) == 0 ? ModBlocks.TAINTED_GRASS.get() : ModBlocks.FIBROUS_TAINT.get()).defaultBlockState());
         }
     }
 
@@ -159,13 +212,19 @@ public class Taintacle extends Monster implements TaintedMob {
     @Nullable
     private LivingEntity findTarget() {
         double radius = this.getBbHeight() * 6.0;
-        AABB area = new AABB(this.blockPosition()).inflate(radius, this.getBbHeight() * 3.0, radius);
+        AABB area = new AABB(this.getX(), this.getY(), this.getZ(), this.getX(), this.getY(), this.getZ())
+            .inflate(radius, this.getBbHeight() * 3.0, radius);
         return this.level().getEntitiesOfClass(LivingEntity.class, area, living -> living != this && !(living instanceof TaintedMob))
             .stream().min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
     }
 
     private boolean isAgitated() {
         return this.target != null && this.distanceToSqr(this.target) < this.getBbHeight() * 7.0 * this.getBbHeight() * 7.0;
+    }
+
+    private void faceTarget(Entity target) {
+        float targetYaw = (float) (Math.atan2(target.getZ() - this.getZ(), target.getX() - this.getX()) * 180.0 / Math.PI) - 90.0F;
+        this.setYRot(this.getYRot() + Mth.clamp(Mth.wrapDegrees(targetYaw - this.getYRot()), -5.0F, 5.0F));
     }
 
     private static boolean verticalOverlap(Entity left, Entity right) {
