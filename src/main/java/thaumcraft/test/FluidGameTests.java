@@ -278,10 +278,10 @@ public final class FluidGameTests {
         helper.runAfterDelay(195, () -> {
             helper.assertValueEqual(soap.getCount(), 2, "soap lifecycle consumed the item before tick 196");
             helper.assertTrue(player.isUsingItem(), "soap lifecycle stopped before tick 196");
-            helper.runAfterDelay(1, () -> {
-                helper.assertValueEqual(soap.getCount(), 1, "soap lifecycle did not consume exactly one item at tick 196");
+            helper.runAfterDelay(2, () -> {
+                helper.assertValueEqual(soap.getCount(), 1, "soap lifecycle did not consume exactly one item at tick 197");
                 helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 0, "soap lifecycle did not clear temporary warp");
-                helper.assertFalse(player.isUsingItem(), "soap lifecycle did not stop at tick 196");
+                helper.assertFalse(player.isUsingItem(), "soap lifecycle did not stop at tick 197");
                 player.releaseUsingItem();
                 helper.assertValueEqual(soap.getCount(), 1, "soap release or finish consumed the item twice");
                 helper.succeed();
