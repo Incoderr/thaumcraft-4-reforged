@@ -6,6 +6,20 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
+import net.minecraft.world.entity.monster.spider.Spider;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.damagesource.DamageSource;
@@ -28,6 +42,7 @@ import thaumcraft.network.ShieldFxPayload;
 import thaumcraft.platform.ModNetwork;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
+import thaumcraft.registry.ModItems;
 import thaumcraft.entity.monster.eldritch.EldritchGuardian;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
@@ -99,7 +114,8 @@ public final class ChampionModifier {
         if (level.getDifficulty() == net.minecraft.world.Difficulty.HARD) {
             roll -= 2;
         }
-        if (level.dimension() == net.minecraft.world.level.Level.END) {
+        var biome = level.getBiome(mob.blockPosition());
+        if (biome.is(Tags.Biomes.IS_SPOOKY) || biome.is(Tags.Biomes.IS_NETHER) || biome.is(Tags.Biomes.IS_END)) {
             roll -= 2;
         }
         roll -= whitelist - 1;
@@ -113,15 +129,12 @@ public final class ChampionModifier {
 
     private static int whitelistLevel(Mob mob) {
         EntityType<?> type = mob.getType();
-        if (isVanilla(mob, "zombie") || isVanilla(mob, "spider") || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || isVanilla(mob, "skeleton")) {
+        if (mob instanceof Zombie || mob instanceof Spider || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || mob instanceof AbstractSkeleton || type == ModEntities.ELDRITCH_CRAB.get()) {
             return 0;
         }
-        if (isVanilla(mob, "witch") || type == ModEntities.WISP.get() || type == ModEntities.PECH.get()
-            || type == ModEntities.CULTIST_KNIGHT.get() || type == ModEntities.CULTIST_CLERIC.get()) {
+        if (mob instanceof Witch || type == ModEntities.WISP.get() || mob instanceof thaumcraft.entity.monster.Pech
+            || mob instanceof thaumcraft.entity.monster.CultistKnight || mob instanceof thaumcraft.entity.monster.CultistCleric) {
             return 1;
-        }
-        if (type == ModEntities.ELDRITCH_CRAB.get()) {
-            return 0;
         }
         if (type == ModEntities.TAINTACLE.get()) {
             return 2;
@@ -186,27 +199,37 @@ public final class ChampionModifier {
         if (id < 0 || TYPES[id] != 1 || !(event.getEntity() instanceof LivingEntity target) || !(mob.level() instanceof ServerLevel level)) {
             return;
         }
+        applyAttackEffect(id, mob, target, event.getAmount(), level.getRandom().nextFloat(), level.getRandom().nextInt(3));
+    }
+
+    /** Applies the attack-side effect using explicit random values, also used by deterministic GameTests. */
+    public static void applyAttackEffect(int id, Mob attacker, LivingEntity target, float damage, float chanceRoll, int roll) {
         switch (id) {
-            case 4 -> {
-                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200));
-            }
-            case 6 -> {
-                if (target instanceof ServerPlayer player && level.getRandom().nextFloat() < 0.33F) {
-                    Warp.add(player, 1 + level.getRandom().nextInt(3), WarpType.PERMANENT);
-                }
-            }
-            case 8 -> {
-                if (level.getRandom().nextFloat() < 0.4F) target.igniteForSeconds(4.0F);
-            }
-            case 9 -> {
-                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 500));
-            }
-            case 10 -> {
-                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
-            }
-            case 11 -> mob.heal(Math.max(2.0F, event.getAmount() / 2.0F));
+            case 4 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200)); }
+            case 6 -> { if (target instanceof ServerPlayer player && chanceRoll < 0.33F) Warp.add(player, 1 + roll, WarpType.PERMANENT); }
+            case 8 -> { if (chanceRoll < 0.4F) target.igniteForSeconds(4.0F); }
+            case 9 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 500)); }
+            case 10 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.POISON, 100)); }
+            case 11 -> attacker.heal(Math.max(2.0F, damage / 2.0F));
             default -> { }
         }
+    }
+
+    @SubscribeEvent
+    static void onChampionDrops(LivingDropsEvent event) {
+        if (!(event.getEntity() instanceof Mob mob) || !(mob.level() instanceof ServerLevel level) || get(mob) < 0
+            || !event.isRecentlyHit() || mob.getLastHurtByPlayer() == null || event.getSource().getEntity() instanceof FakePlayer) return;
+        int looting = event.getSource().getEntity() instanceof LivingEntity killer
+            ? EnchantmentHelper.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING), killer)
+            : 0;
+        awardChampionRewards(level, mob, event.getDrops(), looting, level.getRandom().nextInt(3), level.getRandom().nextInt(9));
+    }
+
+    public static void awardChampionRewards(ServerLevel level, Mob mob, java.util.Collection<ItemEntity> drops, int looting, int xpRoll, int bagRoll) {
+        ExperienceOrb.award(level, mob.position(), 5 + Math.floorMod(xpRoll, 3));
+        int tier = Math.min(2, (Math.floorMod(bagRoll, 9) + Math.max(0, looting)) / 5);
+        var bag = new ItemStack(tier == 0 ? ModItems.COMMON_LOOT_BAG.get() : tier == 1 ? ModItems.UNCOMMON_LOOT_BAG.get() : ModItems.RARE_LOOT_BAG.get());
+        drops.add(new ItemEntity(level, mob.getX(), mob.getY() + mob.getEyeHeight(), mob.getZ(), bag));
     }
 
     public static String name(int id) {
