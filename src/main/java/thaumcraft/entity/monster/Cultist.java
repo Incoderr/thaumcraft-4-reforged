@@ -2,7 +2,6 @@ package thaumcraft.entity.monster;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
@@ -40,26 +39,22 @@ public abstract class Cultist extends Monster {
     }
 
     @Override
-    public boolean isAlliedTo(Entity entity) {
-        return entity instanceof Cultist || super.isAlliedTo(entity);
-    }
-
-    @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        if (this.getHomePos() != null && this.getHomeRadius() > 0) {
+        if (this.hasHome() && this.getHomeRadius() > 0) {
             output.putInt("HomeRadius", this.getHomeRadius());
-            output.putInt("HomeX", this.getHomePos().getX());
-            output.putInt("HomeY", this.getHomePos().getY());
-            output.putInt("HomeZ", this.getHomePos().getZ());
+            output.putInt("HomeX", this.getHomePosition().getX());
+            output.putInt("HomeY", this.getHomePosition().getY());
+            output.putInt("HomeZ", this.getHomePosition().getZ());
         }
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        if (input.contains("HomeRadius")) {
-            this.setHomeTo(new net.minecraft.core.BlockPos(input.getIntOr("HomeX", 0), input.getIntOr("HomeY", 0), input.getIntOr("HomeZ", 0)), input.getIntOr("HomeRadius", 0));
-        }
+        input.getInt("HomeRadius").ifPresent(radius -> this.setHomeTo(
+            new net.minecraft.core.BlockPos(input.getIntOr("HomeX", 0), input.getIntOr("HomeY", 0), input.getIntOr("HomeZ", 0)),
+            radius
+        ));
     }
 }

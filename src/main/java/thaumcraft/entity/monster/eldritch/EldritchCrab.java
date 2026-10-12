@@ -16,7 +16,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -113,7 +112,7 @@ public class EldritchCrab extends Monster {
         if (crab == null) {
             return null;
         }
-        crab.moveTo(zombie.getX(), zombie.getY() + zombie.getEyeHeight(), zombie.getZ(), zombie.getYRot(), zombie.getXRot());
+        crab.snapTo(zombie.getX(), zombie.getY() + zombie.getEyeHeight(), zombie.getZ(), zombie.getYRot(), zombie.getXRot());
         crab.setHelm(true);
         return level.addFreshEntity(crab) ? crab : null;
     }
@@ -146,11 +145,6 @@ public class EldritchCrab extends Monster {
     @Override
     public boolean canBeAffected(MobEffectInstance effect) {
         return !effect.is(MobEffects.POISON) && super.canBeAffected(effect);
-    }
-
-    @Override
-    public MobType getMobType() {
-        return MobType.ARTHROPOD;
     }
 
     @Override
