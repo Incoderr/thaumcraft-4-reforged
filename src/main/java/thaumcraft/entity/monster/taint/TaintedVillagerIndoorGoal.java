@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.PoiTypeTags;
@@ -15,14 +16,14 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-final class TaintedVillagerIndoorGoal extends Goal {
+public final class TaintedVillagerIndoorGoal extends Goal {
     private final TaintedVillager villager;
     @Nullable
-    private BlockPos door;
+    private VillageDoorInfo doorInfo;
     @Nullable
     private BlockPos lastDoor;
 
-    TaintedVillagerIndoorGoal(TaintedVillager villager) {
+    public TaintedVillagerIndoorGoal(TaintedVillager villager) {
         this.villager = villager;
         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
@@ -39,8 +40,8 @@ final class TaintedVillagerIndoorGoal extends Goal {
         if (this.lastDoor != null && this.villager.distanceToSqr(this.lastDoor.getX(), pos.getY(), this.lastDoor.getZ()) < 4.0) {
             return false;
         }
-        this.door = nearestVillageDoor(level, pos, 14);
-        return this.door != null;
+        this.doorInfo = nearestVillageDoor(level, pos, 14);
+        return this.doorInfo != null;
     }
 
     @Override
@@ -50,42 +51,43 @@ final class TaintedVillagerIndoorGoal extends Goal {
 
     @Override
     public void start() {
-        if (this.door == null) {
+        if (this.doorInfo == null) {
             return;
         }
-        if (this.villager.distanceToSqr(this.door.getX() + 0.5, this.door.getY(), this.door.getZ() + 0.5) > 256.0) {
+        BlockPos inside = this.doorInfo.insidePos();
+        if (this.villager.distanceToSqr(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5) > 256.0) {
             Vec3 target = DefaultRandomPos.getPosTowards(
                 this.villager,
                 14,
                 3,
-                Vec3.atBottomCenterOf(this.door),
+                Vec3.atBottomCenterOf(inside),
                 (float) (Math.PI / 2.0)
             );
             if (target != null) {
                 this.villager.getNavigation().moveTo(target.x, target.y, target.z, 1.0);
             }
         } else {
-            this.villager.getNavigation().moveTo(this.door.getX() + 0.5, this.door.getY(), this.door.getZ() + 0.5, 1.0);
+            this.villager.getNavigation().moveTo(inside.getX() + 0.5, inside.getY(), inside.getZ() + 0.5, 1.0);
         }
     }
 
     @Override
     public void stop() {
-        this.lastDoor = this.door;
-        this.door = null;
+        this.lastDoor = this.doorInfo == null ? null : this.doorInfo.insidePos();
+        this.doorInfo = null;
     }
 
-    static boolean isNightRainOrNoPrecipitation(ServerLevel level, BlockPos pos) {
+    public static boolean isNightRainOrNoPrecipitation(ServerLevel level, BlockPos pos) {
         return (!isDay(level) || level.isRaining() || !level.getBiome(pos).value().hasPrecipitation())
             && level.dimensionType().hasSkyLight();
     }
 
-    static boolean isDay(ServerLevel level) {
+    public static boolean isDay(ServerLevel level) {
         return level.isBrightOutside();
     }
 
     @Nullable
-    static BlockPos nearestVillageDoor(ServerLevel level, BlockPos origin, int villageRadius) {
+    public static VillageDoorInfo nearestVillageDoor(ServerLevel level, BlockPos origin, int villageRadius) {
         List<BlockPos> villagePoints = level.getPoiManager()
             .findAll(type -> type.is(PoiTypeTags.VILLAGE), pos -> true, origin, villageRadius, PoiManager.Occupancy.ANY)
             .sorted(Comparator.comparingDouble(origin::distSqr))
@@ -95,7 +97,7 @@ final class TaintedVillagerIndoorGoal extends Goal {
             return null;
         }
         BlockPos villagePoint = villagePoints.getFirst();
-        BlockPos nearest = null;
+        VillageDoorInfo nearest = null;
         double nearestDistance = Double.MAX_VALUE;
         for (int x = -villageRadius; x <= villageRadius; x++) {
             for (int z = -villageRadius; z <= villageRadius; z++) {
@@ -108,12 +110,38 @@ final class TaintedVillagerIndoorGoal extends Goal {
                     }
                     double distance = origin.distSqr(candidate);
                     if (distance < nearestDistance) {
-                        nearest = candidate.immutable();
+                        Direction.Axis insideAxis = state.getValue(DoorBlock.FACING).getAxis();
+                        int positiveSky = 0;
+                        int negativeSky = 0;
+                        for (int step = 1; step <= 5; step++) {
+                            BlockPos positive = insideAxis == Direction.Axis.X ? candidate.offset(step, 0, 0) : candidate.offset(0, 0, step);
+                            BlockPos negative = insideAxis == Direction.Axis.X ? candidate.offset(-step, 0, 0) : candidate.offset(0, 0, -step);
+                            if (level.canSeeSky(positive)) {
+                                positiveSky++;
+                            }
+                            if (level.canSeeSky(negative)) {
+                                negativeSky++;
+                            }
+                        }
+                        if (positiveSky == negativeSky) {
+                            continue;
+                        }
+                        int insideDirection = positiveSky > negativeSky ? -2 : 2;
+                        int insideX = insideAxis == Direction.Axis.X ? insideDirection : 0;
+                        int insideZ = insideAxis == Direction.Axis.Z ? insideDirection : 0;
+                        nearest = new VillageDoorInfo(candidate.immutable(), candidate.offset(insideX, 0, insideZ), insideX, insideZ);
                         nearestDistance = distance;
                     }
                 }
             }
         }
         return nearest;
+    }
+
+    public record VillageDoorInfo(BlockPos doorPos, BlockPos insidePos, int insideDirectionX, int insideDirectionZ) {
+        public boolean isInside(BlockPos pos) {
+            return (pos.getX() - this.doorPos.getX()) * this.insideDirectionX
+                + (pos.getZ() - this.doorPos.getZ()) * this.insideDirectionZ >= 0;
+        }
     }
 }

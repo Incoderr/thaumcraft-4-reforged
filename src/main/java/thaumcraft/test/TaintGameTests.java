@@ -2,6 +2,7 @@ package thaumcraft.test;
 
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.phys.Vec3;
@@ -39,6 +42,9 @@ import thaumcraft.entity.monster.taint.TaintSwarmer;
 import thaumcraft.entity.monster.taint.TaintSwarm;
 import thaumcraft.entity.monster.taint.TaintedCreeper;
 import thaumcraft.entity.monster.taint.TaintedCow;
+import thaumcraft.entity.monster.taint.TaintedVillager;
+import thaumcraft.entity.monster.taint.TaintedVillagerIndoorGoal;
+import thaumcraft.entity.monster.taint.TaintedVillagerRestrictDoorGoal;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.registry.ModEntities;
@@ -63,7 +69,8 @@ public final class TaintGameTests {
         "taint_tiny_tentacle_expires_after_200_ticks",
         "taint_swarmer_spawns_for_vulnerable_players_without_starving",
         "taint_creeper_fuse_infects_without_block_damage",
-        "taint_entity_saved_data_round_trips"
+        "taint_entity_saved_data_round_trips",
+        "tainted_villager_enters_and_restricts_inside_house"
     };
 
     static {
@@ -82,6 +89,7 @@ public final class TaintGameTests {
         FUNCTIONS.register(TESTS[12], () -> TaintGameTests::swarmerSpawnsForVulnerablePlayersWithoutStarving);
         FUNCTIONS.register(TESTS[13], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
         FUNCTIONS.register(TESTS[14], () -> TaintGameTests::entitySavedDataRoundTrips);
+        FUNCTIONS.register(TESTS[15], () -> TaintGameTests::taintedVillagerEntersAndRestrictsInsideHouse);
     }
 
     private TaintGameTests() {
@@ -343,6 +351,63 @@ public final class TaintGameTests {
         loadedSwarm.load(TagValueInput.create(ProblemReporter.DISCARDING, registryAccess, swarmOutput.buildResult()));
         helper.assertTrue(loadedSwarm.isSummoned(), "swarm summoned flag did not survive entity save/load");
         helper.assertValueEqual(loadedSwarm.getAttributeValue(Attributes.ATTACK_DAMAGE), 6.0, "swarm damage bonus did not survive entity save/load");
+        helper.succeed();
+    }
+
+    private static void taintedVillagerEntersAndRestrictsInsideHouse(GameTestHelper helper) {
+        var level = helper.getLevel();
+        level.getServer().getCommands().performPrefixedCommand(
+            level.getServer().createCommandSourceStack().withLevel(level), "time set night"
+        );
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        for (int x = 2; x <= 6; x++) {
+            for (int z = 2; z <= 6; z++) {
+                level.setBlockAndUpdate(origin.offset(x, 1, z), Blocks.STONE.defaultBlockState());
+                level.setBlockAndUpdate(origin.offset(x, 4, z), Blocks.STONE.defaultBlockState());
+                for (int y = 2; y <= 3; y++) {
+                    boolean wall = x == 2 || x == 6 || z == 2 || z == 6;
+                    boolean doorway = x == 4 && z == 6;
+                    if (wall && !doorway) {
+                        level.setBlockAndUpdate(origin.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                    }
+                }
+            }
+        }
+        BlockPos door = origin.offset(4, 2, 6);
+        var lowerDoor = Blocks.OAK_DOOR.defaultBlockState()
+            .setValue(DoorBlock.FACING, Direction.NORTH)
+            .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
+        var upperDoor = lowerDoor.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
+        level.setBlockAndUpdate(door, lowerDoor);
+        level.setBlockAndUpdate(door.above(), upperDoor);
+        level.setBlockAndUpdate(origin.offset(3, 2, 3), Blocks.BELL.defaultBlockState());
+
+        TaintedVillager villager = ModEntities.TAINTED_VILLAGER.get().create(level, EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(villager != null, "failed to create tainted villager");
+        villager.absSnapTo(origin.getX() + 4.5, origin.getY() + 2.0, origin.getZ() + 7.5, 0.0F, 0.0F);
+        level.addFreshEntity(villager);
+        TaintedVillagerIndoorGoal.VillageDoorInfo doorInfo = TaintedVillagerIndoorGoal.nearestVillageDoor(level, villager.blockPosition(), 14);
+        helper.assertTrue(doorInfo != null, "indoor goal did not locate the village door");
+        helper.assertValueEqual(doorInfo.insidePos().getX(), door.getX(), "inside target changed door x position");
+        helper.assertValueEqual(doorInfo.insidePos().getZ(), door.getZ() - 2, "inside target did not use the sheltered side");
+
+        TaintedVillagerIndoorGoal indoorGoal = new TaintedVillagerIndoorGoal(villager);
+        boolean selected = false;
+        for (int attempt = 0; attempt < 200 && !selected; attempt++) {
+            selected = indoorGoal.canUse();
+        }
+        helper.assertTrue(selected, "night indoor goal did not select a nearby village door");
+        indoorGoal.start();
+        helper.assertValueEqual(villager.getNavigation().getTargetPos(), doorInfo.insidePos(), "indoor goal did not route to the inside position");
+
+        villager.absSnapTo(doorInfo.insidePos().getX() + 0.5, doorInfo.insidePos().getY(), doorInfo.insidePos().getZ() + 0.5, 0.0F, 0.0F);
+        TaintedVillagerRestrictDoorGoal restrictGoal = new TaintedVillagerRestrictDoorGoal(villager);
+        helper.assertTrue(restrictGoal.canUse(), "door restriction did not start from the inside position");
+        restrictGoal.start();
+        helper.assertTrue(restrictGoal.canContinueToUse(), "door restriction did not hold while villager remained inside");
+        villager.absSnapTo(door.getX() + 0.5, door.getY(), door.getZ() + 1.5, 0.0F, 0.0F);
+        helper.assertTrue(!restrictGoal.canContinueToUse(), "door restriction continued after villager crossed outside");
+        restrictGoal.stop();
         helper.succeed();
     }
 }

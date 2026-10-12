@@ -4,11 +4,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.goal.Goal;
 import org.jspecify.annotations.Nullable;
 
-final class TaintedVillagerRestrictDoorGoal extends Goal {
+public final class TaintedVillagerRestrictDoorGoal extends Goal {
     private final TaintedVillager villager;
     private TaintedVillagerIndoorGoal.@Nullable VillageDoorInfo doorInfo;
 
-    TaintedVillagerRestrictDoorGoal(TaintedVillager villager) {
+    public TaintedVillagerRestrictDoorGoal(TaintedVillager villager) {
         this.villager = villager;
     }
 
@@ -18,7 +18,9 @@ final class TaintedVillagerRestrictDoorGoal extends Goal {
             return false;
         }
         this.doorInfo = TaintedVillagerIndoorGoal.nearestVillageDoor(level, this.villager.blockPosition(), 16);
-        return this.doorInfo != null && this.villager.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(this.doorInfo.doorPos())) < 2.25;
+        return this.doorInfo != null && this.villager.distanceToSqr(
+            this.doorInfo.insidePos().getX(), this.doorInfo.insidePos().getY(), this.doorInfo.insidePos().getZ()
+        ) < 2.25;
     }
 
     @Override
