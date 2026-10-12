@@ -1,10 +1,12 @@
 package thaumcraft.test;
 
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
@@ -21,7 +23,13 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -32,10 +40,14 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.effect.EffectHooks;
+import thaumcraft.effect.WarpEffectEvents;
 import thaumcraft.entity.monster.Pech;
 import thaumcraft.menu.PechTradeMenu;
+import thaumcraft.menu.PechTradeInventory;
 import thaumcraft.registry.ModEffects;
+import thaumcraft.registry.ModEntities;
 import thaumcraft.research.Knowledge;
+import thaumcraft.research.ResearchManager;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpEvents;
 import thaumcraft.research.WarpType;
@@ -44,14 +56,19 @@ import thaumcraft.wand.WandManager;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class WarpGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"warp_temp_decay_and_ward", "warp_vis_exhaust_wand_cost", "taint_poison_damages_bat", "warp_gap_effects_noop", "pech_trade_offer_tables"};
+    private static final String[] TESTS = {"warp_temp_decay_and_ward", "warp_vis_exhaust_wand_cost", "taint_poison_damages_bat", "warp_hunger_event_boundaries", "pech_trade_offer_tables", "warp_hunger_cures", "pech_dungeon_rejection", "warp_death_gaze_cone", "pech_trade_no_loss", "warp_research_roll_thresholds"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> WarpGameTests::tempWarpDecayAndWard);
         FUNCTIONS.register(TESTS[1], () -> WarpGameTests::visExhaustWandCost);
         FUNCTIONS.register(TESTS[2], () -> WarpGameTests::taintPoisonDamagesBat);
-        FUNCTIONS.register(TESTS[3], () -> WarpGameTests::warpGapEffectsNoop);
+        FUNCTIONS.register(TESTS[3], () -> WarpGameTests::warpHungerEventBoundaries);
         FUNCTIONS.register(TESTS[4], () -> WarpGameTests::pechTradeOfferTables);
+        FUNCTIONS.register(TESTS[5], () -> WarpGameTests::warpHungerCures);
+        FUNCTIONS.register(TESTS[6], () -> WarpGameTests::pechDungeonRejection);
+        FUNCTIONS.register(TESTS[7], () -> WarpGameTests::warpDeathGazeCone);
+        FUNCTIONS.register(TESTS[8], () -> WarpGameTests::pechTradeNoLoss);
+        FUNCTIONS.register(TESTS[9], () -> WarpGameTests::warpResearchRollThresholds);
     }
 
     private WarpGameTests() {
@@ -135,24 +152,24 @@ public final class WarpGameTests {
         helper.succeed();
     }
 
-    private static void warpGapEffectsNoop(GameTestHelper helper) {
+    private static void warpHungerEventBoundaries(GameTestHelper helper) {
         ServerPlayer player = mockServerPlayer(helper);
         Knowledge.get(player);
         Warp.set(player, 3, WarpType.STICKY);
-        int airPool = Knowledge.get(player).getAspectPool(Aspect.AIR);
         try {
             var method = WarpEvents.class.getDeclaredMethod("applyWarpEvent", ServerPlayer.class, int.class, int.class);
             method.setAccessible(true);
-            for (int effect = 73; effect <= 75; effect++) {
+            for (int effect : new int[] {73, 74, 75, 77, 78, 79, 80}) {
                 method.invoke(null, player, 100, effect);
+                helper.assertTrue(player.hasEffect(ModEffects.UNNATURAL_HUNGER), "effect " + effect + " should apply unnatural hunger");
+                player.removeEffect(ModEffects.UNNATURAL_HUNGER);
             }
+            method.invoke(null, player, 100, 76);
         } catch (ReflectiveOperationException exception) {
             helper.fail("warp event entry could not be invoked: " + exception.getMessage());
             return;
         }
-        helper.assertValueEqual(Warp.get(player, WarpType.STICKY), 3, "effects 73 through 75 must not change sticky warp");
-        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.AIR), airPool, "effects 73 through 75 must not grant aspects");
-        helper.assertTrue(player.getActiveEffects().isEmpty(), "effects 73 through 75 must not apply a potion effect");
+        helper.assertValueEqual(Warp.get(player, WarpType.STICKY), 2, "effect 76 should remove one sticky warp");
         helper.succeed();
     }
 
@@ -174,6 +191,272 @@ public final class WarpGameTests {
         helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 4, registryAccess).size(), 1, "archer value-four offer count");
         helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 5, registryAccess).size(), 4, "archer value-five offer count");
         helper.assertTrue(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 1, registryAccess).stream().noneMatch(stack -> stack.is(thaumcraft.registry.ModItems.COPPER_NUGGET)), "normal value-one offers should use native clusters, not standalone metal nuggets");
+        var normalValueTwo = PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 2, registryAccess);
+        helper.assertValueEqual(potionDuration(normalValueTwo.get(2)), 3600, "strength potion duration");
+        helper.assertValueEqual(potionDuration(normalValueTwo.get(3)), 3600, "speed potion duration");
+        var normalValueThree = PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 3, registryAccess);
+        helper.assertValueEqual(potionDuration(normalValueThree.get(3)), 9600, "extended strength potion duration");
+        helper.assertValueEqual(potionDuration(normalValueThree.get(4)), 9600, "night vision potion duration");
+        var warriorValueTwo = PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 2, registryAccess);
+        helper.assertValueEqual(potionDuration(warriorValueTwo.get(1)), 900, "regeneration potion duration");
+        helper.assertValueEqual(potionDuration(warriorValueTwo.get(2)), 1, "instant health potion duration");
+        var warriorValueThree = PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 3, registryAccess);
+        helper.assertValueEqual(potionDuration(warriorValueThree.get(2)), 450, "regeneration II potion duration");
+        helper.assertValueEqual(potionAmplifier(warriorValueThree.get(2)), 1, "regeneration II amplifier");
+        helper.assertValueEqual(potionDuration(warriorValueThree.get(3)), 1, "instant health II potion duration");
+        helper.assertValueEqual(potionAmplifier(warriorValueThree.get(3)), 1, "instant health II amplifier");
+        var archerValueThree = PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 3, registryAccess);
+        helper.assertValueEqual(potionDuration(archerValueThree.get(2)), 9600, "invisibility potion duration");
+        helper.assertValueEqual(potionDuration(archerValueThree.get(3)), 450, "archer regeneration II duration");
         helper.succeed();
+    }
+
+    private static int potionDuration(ItemStack stack) {
+        return potionEffect(stack).getDuration();
+    }
+
+    private static int potionAmplifier(ItemStack stack) {
+        return potionEffect(stack).getAmplifier();
+    }
+
+    private static MobEffectInstance potionEffect(ItemStack stack) {
+        PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+        return contents.getAllEffects().iterator().next();
+    }
+
+    private static void pechDungeonRejection(GameTestHelper helper) {
+        try {
+            var contentsMethod = PechTradeMenu.class.getDeclaredMethod("dungeonOffers");
+            contentsMethod.setAccessible(true);
+            helper.assertValueEqual(((java.util.List<?>) contentsMethod.invoke(null)).size(), 38, "vanilla and Thaumcraft dungeon candidates");
+            var rewardMethod = PechTradeMenu.class.getDeclaredMethod("dungeonReward", RandomSource.class, net.minecraft.core.RegistryAccess.class);
+            rewardMethod.setAccessible(true);
+            FixedRandomSource rejectionThenApple = new FixedRandomSource(0, 7);
+            ItemStack apple = (ItemStack) rewardMethod.invoke(null, rejectionThenApple, helper.getLevel().registryAccess());
+            helper.assertTrue(apple.is(Items.GOLDEN_APPLE), "dungeon selection should retry an ineligible uniform candidate");
+            helper.assertValueEqual(rejectionThenApple.calls, 2, "dungeon selection should reject then accept");
+            helper.assertValueEqual(rejectionThenApple.lastBound, 38, "dungeon candidate selection should use uniform array bounds");
+            FixedRandomSource exhausted = new FixedRandomSource(0);
+            ItemStack fallback = (ItemStack) rewardMethod.invoke(null, exhausted, helper.getLevel().registryAccess());
+            helper.assertTrue(fallback.is(Items.SADDLE), "after 50 rejected picks the source returns the last non-null item");
+            helper.assertValueEqual(exhausted.calls, 50, "dungeon candidate rejection should stop after 50 attempts");
+        } catch (ReflectiveOperationException exception) {
+            helper.fail("dungeon selection entry could not be invoked: " + exception.getMessage());
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static void warpDeathGazeCone(GameTestHelper helper) {
+        try {
+            var method = WarpEvents.class.getDeclaredMethod("isWithinDeathGazeCone", net.minecraft.world.phys.Vec3.class, net.minecraft.world.phys.Vec3.class, net.minecraft.world.phys.Vec3.class, double.class);
+            method.setAccessible(true);
+            net.minecraft.world.phys.Vec3 look = new net.minecraft.world.phys.Vec3(0.0, 0.0, 1.0);
+            net.minecraft.world.phys.Vec3 origin = net.minecraft.world.phys.Vec3.ZERO;
+            boolean outsideEuclideanRadius = (boolean) method.invoke(null, look, origin, new net.minecraft.world.phys.Vec3(2.9, 0.0, 7.5), 8.0);
+            boolean outsideCone = (boolean) method.invoke(null, look, origin, new net.minecraft.world.phys.Vec3(3.0, 0.0, 7.5), 8.0);
+            helper.assertTrue(outsideEuclideanRadius, "death gaze range is measured by axial projection, not Euclidean distance");
+            helper.assertTrue(!outsideCone, "death gaze must reject targets outside the strict cone angle");
+        } catch (ReflectiveOperationException exception) {
+            helper.fail("death gaze geometry could not be checked: " + exception.getMessage());
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static void pechTradeNoLoss(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        Pech pech = ModEntities.PECH.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        if (pech == null) {
+            helper.fail("Pech entity could not be created");
+            return;
+        }
+        BlockPos pos = helper.absolutePos(BlockPos.ZERO);
+        pech.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+        player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+        helper.getLevel().addFreshEntity(pech);
+        pech.setTamed(true);
+        pech.getRandom().setSeed(314159L);
+        PechTradeInventory tradeInventory = new PechTradeInventory(pech);
+        tradeInventory.setItem(0, new ItemStack(Items.EMERALD, 3));
+        PechTradeMenu menu = new PechTradeMenu(0, player.getInventory(), pech.getId(), tradeInventory);
+        helper.assertTrue(menu.clickMenuButton(player, 0), "valid trade should complete");
+        helper.assertValueEqual(tradeInventory.getItem(0).getCount(), 2, "one input is consumed by the accepted trade");
+        int outputCount = 0;
+        for (int slot = 1; slot < 5; slot++) {
+            outputCount += tradeInventory.getItem(slot).getCount();
+        }
+        helper.assertTrue(outputCount > 0, "accepted trade should produce rewards");
+        helper.assertTrue(!menu.clickMenuButton(player, 0), "repeat button press must not consume input while output slots remain occupied");
+        helper.assertValueEqual(tradeInventory.getItem(0).getCount(), 2, "rejected repeat must not consume input");
+        ItemStack shifted = menu.quickMoveStack(player, 1);
+        int movedCount = shifted.getCount();
+        menu.removed(player);
+        int retainedCount = 0;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            retainedCount += player.getInventory().getItem(slot).getCount();
+        }
+        int droppedCount = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(8.0)).stream()
+            .mapToInt(entity -> entity.getItem().getCount())
+            .sum();
+        helper.assertValueEqual(retainedCount + droppedCount, outputCount, "shift-click plus menu close must conserve every generated reward exactly once");
+        helper.assertTrue(movedCount <= outputCount, "shift-click cannot duplicate output count");
+        helper.assertTrue(!pech.isTrading(), "closing the menu releases Pech trading state");
+        helper.succeed();
+    }
+
+    private static void warpResearchRollThresholds(GameTestHelper helper) {
+        try {
+            var method = WarpEvents.class.getDeclaredMethod("checkWarpEvent", ServerPlayer.class, RandomSource.class);
+            method.setAccessible(true);
+            for (int warp : new int[] {11, 26, 51}) {
+                ServerPlayer player = mockServerPlayer(helper);
+                Knowledge.get(player).setWarpCounter(100);
+                Warp.set(player, warp, WarpType.PERMANENT);
+                method.invoke(null, player, new FixedRandomSource(0, 39, 0));
+                if (warp == 11) {
+                    helper.assertTrue(ResearchManager.isComplete(player, "BATHSALTS") || ResearchManager.isComplete(player, "@BATHSALTS"), "successful roll above 10 permanent warp should unlock bath salts");
+                } else if (warp == 26) {
+                    helper.assertTrue(ResearchManager.isComplete(player, "ELDRITCHMINOR"), "successful roll above 25 permanent warp should unlock minor eldritch research");
+                } else {
+                    helper.assertTrue(ResearchManager.isComplete(player, "ELDRITCHMAJOR"), "successful roll above 50 permanent warp should unlock major eldritch research");
+                }
+            }
+            ServerPlayer failedRoll = mockServerPlayer(helper);
+            Knowledge.get(failedRoll).setWarpCounter(100);
+            Warp.set(failedRoll, 51, WarpType.PERMANENT);
+            method.invoke(null, failedRoll, new FixedRandomSource(99));
+            helper.assertTrue(!ResearchManager.isComplete(failedRoll, "ELDRITCHMAJOR"), "research must not unlock when the warp event roll fails");
+        } catch (ReflectiveOperationException exception) {
+            helper.fail("warp research event could not be invoked: " + exception.getMessage());
+            return;
+        }
+        helper.succeed();
+    }
+
+    private static final class FixedRandomSource implements RandomSource {
+        private final int[] values;
+        private int index;
+        private int calls;
+        private int lastBound;
+
+        private FixedRandomSource(int... values) {
+            this.values = values;
+        }
+
+        @Override
+        public RandomSource fork() {
+            return this;
+        }
+
+        @Override
+        public PositionalRandomFactory forkPositional() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setSeed(long seed) {
+            index = 0;
+        }
+
+        @Override
+        public int nextInt() {
+            return nextInt(Integer.MAX_VALUE);
+        }
+
+        @Override
+        public int nextInt(int bound) {
+            calls++;
+            lastBound = bound;
+            int value = values[Math.min(index++, values.length - 1)];
+            return Math.floorMod(value, bound);
+        }
+
+        @Override
+        public long nextLong() {
+            return nextInt();
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            return nextInt(2) != 0;
+        }
+
+        @Override
+        public float nextFloat() {
+            return nextInt(1000) / 1000.0F;
+        }
+
+        @Override
+        public double nextDouble() {
+            return nextInt(1000) / 1000.0;
+        }
+
+        @Override
+        public double nextGaussian() {
+            return 0.0;
+        }
+    }
+
+    private static void warpHungerCures(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        WarpEffectEvents.addUncurableEffect(player, new MobEffectInstance(ModEffects.UNNATURAL_HUNGER, 2000, 2));
+        player.addEffect(new MobEffectInstance(ModEffects.BLURRED_VISION, 100, 0));
+        for (var effect : List.of(ModEffects.VIS_EXHAUST, ModEffects.THAUMARHIA, ModEffects.SUN_SCORNED, ModEffects.INFECTIOUS_VIS_EXHAUST, ModEffects.DEATH_GAZE)) {
+            WarpEffectEvents.addUncurableEffect(player, new MobEffectInstance(effect, 100, 0));
+        }
+        drinkMilk(player);
+        MobEffectInstance hunger = player.getEffect(ModEffects.UNNATURAL_HUNGER);
+        helper.assertTrue(hunger != null, "milk must not cure unnatural hunger");
+        helper.assertTrue(!player.hasEffect(ModEffects.BLURRED_VISION), "milk should still cure blurred vision");
+        for (var effect : List.of(ModEffects.VIS_EXHAUST, ModEffects.THAUMARHIA, ModEffects.SUN_SCORNED, ModEffects.INFECTIOUS_VIS_EXHAUST, ModEffects.DEATH_GAZE)) {
+            helper.assertTrue(player.hasEffect(effect), "milk should not cure legacy non-curable effect " + effect);
+            player.removeEffect(effect);
+        }
+        ServerPlayer mergedDefault = mockServerPlayer(helper);
+        mergedDefault.addEffect(new MobEffectInstance(ModEffects.VIS_EXHAUST, 100, 0));
+        WarpEffectEvents.addUncurableEffect(mergedDefault, new MobEffectInstance(ModEffects.VIS_EXHAUST, 200, 1));
+        drinkMilk(mergedDefault);
+        helper.assertTrue(!mergedDefault.hasEffect(ModEffects.VIS_EXHAUST), "effect merge should retain the existing default curative policy");
+        ServerPlayer source = mockServerPlayer(helper);
+        source.setPos(player.getX() + 1.0, player.getY(), player.getZ());
+        source.addEffect(new MobEffectInstance(ModEffects.INFECTIOUS_VIS_EXHAUST, 100, 0));
+        ModEffects.INFECTIOUS_VIS_EXHAUST.value().applyEffectTick(helper.getLevel(), source, 0);
+        helper.assertTrue(player.hasEffect(ModEffects.VIS_EXHAUST), "infectious effect should spread an ordinary vis exhaustion instance");
+        drinkMilk(player);
+        helper.assertTrue(!player.hasEffect(ModEffects.VIS_EXHAUST), "milk should cure vis exhaustion acquired through secondary infection");
+        WarpEffectEvents.addUncurableEffect(player, new MobEffectInstance(ModEffects.VIS_EXHAUST, 100, 0));
+        player.removeEffect(ModEffects.VIS_EXHAUST);
+        player.addEffect(new MobEffectInstance(ModEffects.VIS_EXHAUST, 100, 0));
+        drinkMilk(player);
+        helper.assertTrue(!player.hasEffect(ModEffects.VIS_EXHAUST), "removing and restoring an effect instance should reset its source curative policy");
+        NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish(
+            player, new ItemStack(Items.ROTTEN_FLESH), 32, ItemStack.EMPTY
+        ));
+        hunger = player.getEffect(ModEffects.UNNATURAL_HUNGER);
+        helper.assertTrue(hunger != null, "rotten flesh should leave lower unnatural hunger active");
+        helper.assertValueEqual(hunger.getDuration(), 1400, "rotten flesh should remove 600 ticks");
+        helper.assertValueEqual(hunger.getAmplifier(), 1, "rotten flesh should reduce amplifier by one");
+        NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish(
+            player, new ItemStack(Items.COOKED_BEEF), 32, ItemStack.EMPTY
+        ));
+        helper.assertValueEqual(player.getEffect(ModEffects.UNNATURAL_HUNGER).getDuration(), 1400, "ordinary food should not reduce unnatural hunger");
+        NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish(
+            player, new ItemStack(thaumcraft.registry.ModItems.ZOMBIE_BRAIN.get()), 32, ItemStack.EMPTY
+        ));
+        hunger = player.getEffect(ModEffects.UNNATURAL_HUNGER);
+        helper.assertTrue(hunger != null, "brain should leave unnatural hunger active");
+        helper.assertValueEqual(hunger.getDuration(), 800, "zombie brain should remove another 600 ticks");
+        helper.assertValueEqual(hunger.getAmplifier(), 0, "zombie brain should reduce amplifier by one");
+        helper.succeed();
+    }
+
+    private static void drinkMilk(ServerPlayer player) {
+        ItemStack milk = new ItemStack(Items.MILK_BUCKET);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, milk);
+        player.startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
+        ItemStack result = milk.finishUsingItem(player.level(), player);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, result);
+        player.stopUsingItem();
     }
 }

@@ -19,14 +19,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
-import net.minecraft.world.level.ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.entity.monster.Pech;
 import thaumcraft.registry.ModBlocks;
@@ -189,41 +187,62 @@ public class PechTradeMenu extends AbstractContainerMenu {
 
     private static ItemStack dungeonReward(RandomSource random, RegistryAccess registryAccess) {
         List<WeightedOffer> offers = dungeonOffers();
-        int totalWeight = offers.stream().mapToInt(WeightedOffer::weight).sum();
-        int choice = random.nextInt(totalWeight);
-        for (WeightedOffer offer : offers) {
-            choice -= offer.weight();
-            if (choice < 0) {
-                if (offer.stack().is(Items.ENCHANTED_BOOK)) {
-                    return EnchantmentHelper.enchantItem(random, new ItemStack(Items.BOOK), 30, registryAccess, Optional.empty());
-                }
-                return offer.stack().copy();
+        WeightedOffer selected = null;
+        for (int attempt = 0; attempt < 50; attempt++) {
+            selected = offers.get(random.nextInt(offers.size()));
+            if (selected.weight() <= 5 && selected.maximumGenerate() <= 1) {
+                break;
             }
         }
-        throw new IllegalStateException("Dungeon offer weights are empty");
+        if (selected == null) {
+            return ItemStack.EMPTY;
+        }
+        if (selected.stack().is(Items.ENCHANTED_BOOK)) {
+            return EnchantmentHelper.enchantItem(random, new ItemStack(Items.BOOK), 30, registryAccess, Optional.empty());
+        }
+        return selected.stack().copy();
     }
 
     private static List<WeightedOffer> dungeonOffers() {
         List<WeightedOffer> offers = new ArrayList<>();
-        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_APPLE), 1));
-        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_HORSE_ARMOR), 2));
-        offers.add(new WeightedOffer(new ItemStack(Items.IRON_HORSE_ARMOR), 5));
-        offers.add(new WeightedOffer(new ItemStack(Items.DIAMOND_HORSE_ARMOR), 1));
-        offers.add(new WeightedOffer(new ItemStack(Items.ENCHANTED_BOOK), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.RARE_LOOT_BAG.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMONOMICON.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_SWORD.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_PICKAXE.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_AXE.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_HOE.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.PROTECTION_RING.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_AIR.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_EARTH.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_FIRE.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_WATER.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ORDER.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ENTROPY.get()), 1));
-        offers.add(new WeightedOffer(new ItemStack(ModItems.VIS_AMULET.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.SADDLE), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.IRON_INGOT), 10, 4));
+        offers.add(new WeightedOffer(new ItemStack(Items.BREAD), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.WHEAT), 10, 4));
+        offers.add(new WeightedOffer(new ItemStack(Items.GUNPOWDER), 10, 4));
+        offers.add(new WeightedOffer(new ItemStack(Items.STRING), 10, 4));
+        offers.add(new WeightedOffer(new ItemStack(Items.BUCKET), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_APPLE), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.REDSTONE), 10, 4));
+        offers.add(new WeightedOffer(new ItemStack(Items.MUSIC_DISC_13), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.MUSIC_DISC_CAT), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.NAME_TAG), 10, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_HORSE_ARMOR), 2, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.IRON_HORSE_ARMOR), 5, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.DIAMOND_HORSE_ARMOR), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.ENCHANTED_BOOK), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.COMMON_LOOT_BAG.get()), 5, 3));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_INGOT.get()), 5, 3));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.AMBER.get()), 5, 3));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.UNCOMMON_LOOT_BAG.get()), 4, 2));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.MUNDANE_AMULET.get()), 4, 2));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.MUNDANE_RING.get()), 4, 2));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.MUNDANE_BELT.get()), 4, 2));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()), 4, 2));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.RARE_LOOT_BAG.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMONOMICON.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_SWORD.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_PICKAXE.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_AXE.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_HOE.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.PROTECTION_RING.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_AIR.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_EARTH.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_FIRE.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_WATER.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ORDER.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ENTROPY.get()), 1, 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.VIS_AMULET.get()), 1, 1));
         return offers;
     }
 
@@ -325,8 +344,8 @@ public class PechTradeMenu extends AbstractContainerMenu {
         };
         int duration = switch (metadata) {
             case 8201 -> 3600;
-            case 8194 -> 5400;
-            case 8265, 8262, 8270 -> 7200;
+            case 8194 -> 3600;
+            case 8265, 8262, 8270 -> 9600;
             case 8193 -> 900;
             case 8261, 8229 -> 1;
             case 8225 -> 450;
@@ -334,13 +353,15 @@ public class PechTradeMenu extends AbstractContainerMenu {
         };
         int amplifier = metadata == 8225 || metadata == 8229 ? 1 : 0;
         ItemStack stack = new ItemStack(Items.POTION);
-        stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(new MobEffectInstance(effect, duration, amplifier))));
+        stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(new MobEffectInstance(effect, duration, amplifier)), Optional.empty()));
         return stack;
     }
 
     private static ItemStack enchantmentBook(RegistryAccess registryAccess, net.minecraft.resources.ResourceKey<Enchantment> key, int level) {
         Holder<Enchantment> enchantment = registryAccess.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
-        return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level));
+        ItemStack stack = new ItemStack(Items.ENCHANTED_BOOK);
+        stack.enchant(enchantment, level);
+        return stack;
     }
 
     @Override
@@ -393,7 +414,7 @@ public class PechTradeMenu extends AbstractContainerMenu {
     private record TradePlan(List<ItemStack> outputs, List<ItemStack> remainingLoot, boolean betray) {
     }
 
-    private record WeightedOffer(ItemStack stack, int weight) {
+    private record WeightedOffer(ItemStack stack, int weight, int maximumGenerate) {
     }
 
     private static final class OutputSlot extends Slot {
