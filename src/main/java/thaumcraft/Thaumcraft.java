@@ -27,6 +27,7 @@ import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModMenus;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModVillagers;
+import thaumcraft.entity.monster.ChampionKeys;
 import thaumcraft.research.ConfigResearch;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchNoteKeys;
@@ -67,6 +68,7 @@ public class Thaumcraft {
         ResearchNoteKeys.init();
         Knowledge.init();
         WardedKeys.init();
+        ChampionKeys.init();
         thaumcraft.device.MirrorKeys.init();
         Platform.register(modEventBus);
         ModEffects.register(modEventBus);
