@@ -57,6 +57,7 @@ import thaumcraft.registry.ModEffects;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.taint.TaintBiomes;
 import thaumcraft.taint.TaintSpread;
+import thaumcraft.blockentity.EtherealBloomBlockEntity;
 import thaumcraft.platform.BiomeEdit;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
@@ -66,6 +67,7 @@ public final class TaintGameTests {
         "taint_fibres_spread_to_replaceable_ground",
         "taint_flux_seeds_fibres_and_biome",
         "taint_bloom_restores_original_biome",
+        "taint_bloom_server_tick_purifies_nearby_columns",
         "taint_tentacle_stays_stationary",
         "taint_poison_replacement_preserves_position",
         "taint_poison_conversion_removes_original",
@@ -85,19 +87,20 @@ public final class TaintGameTests {
         FUNCTIONS.register(TESTS[0], () -> TaintGameTests::fibresSpreadToReplaceableGround);
         FUNCTIONS.register(TESTS[1], () -> TaintGameTests::fluxSeedsFibresAndBiome);
         FUNCTIONS.register(TESTS[2], () -> TaintGameTests::bloomRestoresOriginalBiome);
-        FUNCTIONS.register(TESTS[3], () -> TaintGameTests::tentacleStaysStationary);
-        FUNCTIONS.register(TESTS[4], () -> TaintGameTests::poisonReplacementPreservesPosition);
-        FUNCTIONS.register(TESTS[5], () -> TaintGameTests::poisonConversionRemovesOriginal);
-        FUNCTIONS.register(TESTS[6], () -> TaintGameTests::poisonIgnoresTaintedMobs);
-        FUNCTIONS.register(TESTS[7], () -> TaintGameTests::sporeGrowsAfter1201Ticks);
-        FUNCTIONS.register(TESTS[8], () -> TaintGameTests::sporeStarvesOutsideTaintBiome);
-        FUNCTIONS.register(TESTS[9], () -> TaintGameTests::sporeDetachmentReleasesSpiders);
-        FUNCTIONS.register(TESTS[10], () -> TaintGameTests::sporeBurstAllowsZeroSpiders);
-        FUNCTIONS.register(TESTS[11], () -> TaintGameTests::tinyTentacleExpiresAfter200Ticks);
-        FUNCTIONS.register(TESTS[12], () -> TaintGameTests::swarmerSpawnsForVulnerablePlayersWithoutStarving);
-        FUNCTIONS.register(TESTS[13], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
-        FUNCTIONS.register(TESTS[14], () -> TaintGameTests::entitySavedDataRoundTrips);
-        FUNCTIONS.register(TESTS[15], () -> TaintGameTests::taintedVillagerEntersAndRestrictsInsideHouse);
+        FUNCTIONS.register(TESTS[3], () -> TaintGameTests::bloomServerTickPurifiesNearbyColumns);
+        FUNCTIONS.register(TESTS[4], () -> TaintGameTests::tentacleStaysStationary);
+        FUNCTIONS.register(TESTS[5], () -> TaintGameTests::poisonReplacementPreservesPosition);
+        FUNCTIONS.register(TESTS[6], () -> TaintGameTests::poisonConversionRemovesOriginal);
+        FUNCTIONS.register(TESTS[7], () -> TaintGameTests::poisonIgnoresTaintedMobs);
+        FUNCTIONS.register(TESTS[8], () -> TaintGameTests::sporeGrowsAfter1201Ticks);
+        FUNCTIONS.register(TESTS[9], () -> TaintGameTests::sporeStarvesOutsideTaintBiome);
+        FUNCTIONS.register(TESTS[10], () -> TaintGameTests::sporeDetachmentReleasesSpiders);
+        FUNCTIONS.register(TESTS[11], () -> TaintGameTests::sporeBurstAllowsZeroSpiders);
+        FUNCTIONS.register(TESTS[12], () -> TaintGameTests::tinyTentacleExpiresAfter200Ticks);
+        FUNCTIONS.register(TESTS[13], () -> TaintGameTests::swarmerSpawnsForVulnerablePlayersWithoutStarving);
+        FUNCTIONS.register(TESTS[14], () -> TaintGameTests::creeperFuseInfectsWithoutBlockDamage);
+        FUNCTIONS.register(TESTS[15], () -> TaintGameTests::entitySavedDataRoundTrips);
+        FUNCTIONS.register(TESTS[16], () -> TaintGameTests::taintedVillagerEntersAndRestrictsInsideHouse);
     }
 
     private TaintGameTests() {
@@ -114,7 +117,8 @@ public final class TaintGameTests {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             int timeout = name.equals("taint_spore_grows_after_1201_ticks") ? 1250
                 : name.equals("taint_swarmer_spawns_for_vulnerable_players_without_starving") ? 550
-                : name.equals("taint_tiny_tentacle_expires_after_200_ticks") ? 220 : 100;
+                : name.equals("taint_tiny_tentacle_expires_after_200_ticks") ? 220
+                : name.equals("taint_bloom_server_tick_purifies_nearby_columns") ? 300 : 100;
             event.registerTest(
                 Thaumcraft.id(name),
                 new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), timeout, 0, true))
@@ -156,6 +160,34 @@ public final class TaintGameTests {
             : original;
         helper.assertValueEqual(BiomeEdit.getColumnBiome(helper.getLevel(), worldTarget), expected, "purification did not restore the original biome source");
         helper.succeed();
+    }
+
+    private static void bloomServerTickPurifiesNearbyColumns(GameTestHelper helper) {
+        BlockPos bloomPos = helper.absolutePos(new BlockPos(8, 3, 8));
+        BlockPos outsideRadius = bloomPos.offset(12, 0, 0);
+        for (int x = -12; x <= 12; x += 4) {
+            for (int z = -12; z <= 12; z += 4) {
+                BlockPos column = bloomPos.offset(x, 0, z);
+                TaintBiomes.set(helper.getLevel(), column, TaintBiomes.TAINTED_LAND);
+            }
+        }
+        TaintBiomes.set(helper.getLevel(), outsideRadius, TaintBiomes.TAINTED_LAND);
+        helper.setBlock(new BlockPos(8, 2, 8), Blocks.STONE);
+        helper.setBlock(new BlockPos(8, 3, 8), ModBlocks.ETHEREAL_BLOOM.get());
+        helper.assertTrue(helper.getBlockEntity(new BlockPos(8, 3, 8), EtherealBloomBlockEntity.class) != null, "bloom block did not create its block entity");
+        helper.runAfterDelay(250, () -> {
+            boolean purified = false;
+            for (int x = -12; x <= 12; x += 4) {
+                for (int z = -12; z <= 12; z += 4) {
+                    if (!TaintBiomes.isTainted(helper.getLevel(), bloomPos.offset(x, 0, z))) {
+                        purified = true;
+                    }
+                }
+            }
+            helper.assertTrue(purified, "bloom server ticks did not purify a nearby tainted biome column");
+            helper.assertTrue(TaintBiomes.isTainted(helper.getLevel(), outsideRadius), "bloom purified a biome column outside its radius");
+            helper.succeed();
+        });
     }
 
     private static void tentacleStaysStationary(GameTestHelper helper) {
@@ -233,11 +265,23 @@ public final class TaintGameTests {
         TaintSpore spore = TaintSpore.create(helper.getLevel(), stalkPos);
         helper.assertTrue(spore != null, "failed to create attached spore");
         helper.getLevel().addFreshEntity(spore);
-        helper.runAfterDelay(1203, () -> {
-            helper.assertValueEqual(spore.getSporeSize(), 3, "spore did not grow after 1201 ticks");
-            helper.assertTrue(spore.isAlive(), "attached spore died while its stalk and taint biome remained");
-            helper.succeed();
-        });
+        awaitSporeGrowth(helper, spore, stalkPos);
+    }
+
+    private static void awaitSporeGrowth(GameTestHelper helper, TaintSpore spore, BlockPos stalkPos) {
+        if (spore.isRemoved() || !spore.isAlive()) {
+            helper.fail("attached spore died before growth: tickCount=" + spore.tickCount + ", pos=" + spore.blockPosition()
+                + ", stalk=" + helper.getLevel().getBlockState(stalkPos) + ", tainted=" + TaintBiomes.isTainted(helper.getLevel(), spore.blockPosition()));
+            return;
+        }
+        if (spore.tickCount < 1201) {
+            helper.runAfterDelay(1, () -> awaitSporeGrowth(helper, spore, stalkPos));
+            return;
+        }
+        helper.assertValueEqual(spore.getSporeSize(), 3, "spore did not grow after its 1201st update: tickCount=" + spore.tickCount
+            + ", pos=" + spore.blockPosition() + ", stalk=" + helper.getLevel().getBlockState(stalkPos)
+            + ", tainted=" + TaintBiomes.isTainted(helper.getLevel(), spore.blockPosition()));
+        helper.succeed();
     }
 
     private static void sporeStarvesOutsideTaintBiome(GameTestHelper helper) {

@@ -1,7 +1,6 @@
 package thaumcraft.taint;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -25,8 +24,8 @@ public class EtherealBloomBlock extends CustomPlantBlock implements EntityBlock 
 
     @Override
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() || type != ModBlockEntities.ETHEREAL_BLOOM.get()
+        return type != ModBlockEntities.ETHEREAL_BLOOM.get()
             ? null
-            : (tickLevel, pos, tickState, entity) -> EtherealBloomBlockEntity.serverTick((ServerLevel) tickLevel, pos, (EtherealBloomBlockEntity) entity);
+            : (tickLevel, pos, tickState, entity) -> EtherealBloomBlockEntity.tick(tickLevel, pos, (EtherealBloomBlockEntity) entity);
     }
 }
