@@ -10,7 +10,6 @@ def write_damage_types(ctx):
         "tentacle": [],
         "swarm": [],
     }
-    tag_values = {}
     for name, tags in definitions.items():
         ctx.write(
             ctx.DATA / NS / "damage_type" / f"{name}.json",
@@ -51,11 +50,41 @@ def write_damage_types(ctx):
     )
 
 
+def write_spawn_modifiers(ctx):
+    profile = ctx.profile
+    modifiers = {
+        "brainy_zombie": ("#minecraft:is_overworld", 10),
+        "pech": ("#c:is_magical", 10),
+        "firebat": ("#minecraft:is_nether", 10, 1, 2),
+        "wisp": ("#minecraft:is_nether", 5),
+        "taintacle": (f"{NS}:tainted_land", 1),
+    }
+    for name, settings in modifiers.items():
+        biomes, weight, *counts = settings
+        ctx.write(
+            ctx.DATA / profile.biome_modifier_namespace / "biome_modifier" / f"{name}_spawns.json",
+            profile.spawn_modifier(biomes, f"{NS}:{name}", weight, *(counts or [1, 1])),
+        )
+
+
 def block(ctx, name, texture):
     ctx.cube_all(name, texture)
     ctx.simple_state(name)
     ctx.block_item(name)
-    ctx.self_drop(name)
+
+
+def silk_touch_drop(ctx, block, item=None, count=1):
+    entries = [{"type": "minecraft:item", "condition": "minecraft:tool/can_silk_touch", "name": f"{NS}:{block}"}]
+    if item is not None:
+        drop = {"type": "minecraft:item", "name": item}
+        if count > 1:
+            drop["functions"] = [{"function": "minecraft:set_count", "count": count}]
+        entries.append(drop)
+    ctx.write_loot(block, [{"rolls": 1, "entries": [{"type": "minecraft:alternatives", "children": entries}]}])
+
+
+def no_drop(ctx, name):
+    ctx.write_loot(name, [])
 
 
 def cross(ctx, name, texture):
@@ -71,6 +100,7 @@ def fluid_item(ctx, item, texture):
 
 def generate(ctx):
     write_damage_types(ctx)
+    write_spawn_modifiers(ctx)
 
     for name, texture in [
         ("crusted_taint", "taint_crust"),
@@ -78,6 +108,9 @@ def generate(ctx):
         ("flesh_block", "fleshblock"),
     ]:
         block(ctx, name, texture)
+    silk_touch_drop(ctx, "crusted_taint")
+    silk_touch_drop(ctx, "tainted_soil", "minecraft:dirt")
+    silk_touch_drop(ctx, "flesh_block", "minecraft:rotten_flesh", 9)
 
     for name, texture in [
         ("fibrous_taint", "taint_fibres"),
@@ -87,6 +120,7 @@ def generate(ctx):
         ("mature_spore_stalk", "taint_spore_stalk_2"),
     ]:
         cross(ctx, name, texture)
+        no_drop(ctx, name)
 
     for name, texture in [
         ("purifying_fluid_bucket", "bucket_pure"),
@@ -100,5 +134,5 @@ def generate(ctx):
     fluid_item(ctx, "crimson_rites", "crimson_rites")
 
     for name in ["purifying_fluid", "liquid_death"]:
-        ctx.block_model(name, {"parent": "minecraft:block/block", "textures": {"particle": "minecraft:block/water_still"}})
+        ctx.block_model(name, {"parent": "minecraft:block/block", "textures": {"particle": ctx.ref("fluidpure" if name == "purifying_fluid" else "fluiddeath", "block")}})
         ctx.simple_state(name)

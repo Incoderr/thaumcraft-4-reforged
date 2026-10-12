@@ -15,6 +15,7 @@ public final class TcRenderTypes {
     private static final Map<Identifier, RenderType> TRANSLUCENT = new HashMap<>();
     private static final Map<Identifier, RenderType> ADDITIVE_NO_DEPTH = new HashMap<>();
     private static final Map<Identifier, RenderType> TRANSLUCENT_NO_DEPTH = new HashMap<>();
+    private static final Map<Identifier, RenderType> ENTITY_TRANSLUCENT_NO_DEPTH = new HashMap<>();
 
     private TcRenderTypes() {
     }
@@ -100,6 +101,19 @@ public final class TcRenderTypes {
 
     public static RenderType entityTranslucent(Identifier texture) {
         return RenderTypes.entityTranslucent(texture);
+    }
+
+    public static RenderType entityTranslucentNoDepth(Identifier texture) {
+        return ENTITY_TRANSLUCENT_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
+            "thaumcraft_entity_translucent_no_depth",
+            RenderSetup.builder(ModRenderPipelines.ENTITY_TRANSLUCENT_NO_DEPTH)
+                .setOitPipelines(RenderPipelines.OIT_ENTITY)
+                .withTexture("Sampler0", key)
+                .useLightmap()
+                .useOverlay()
+                .sortOnUpload()
+                .createRenderSetup()
+        ));
     }
 
     public static RenderType byBlend(Identifier texture, int blendMode) {
