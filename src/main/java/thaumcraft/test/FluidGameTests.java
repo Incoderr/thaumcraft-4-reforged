@@ -17,6 +17,8 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -55,7 +57,8 @@ public final class FluidGameTests {
         "purifying_bucket_round_trip",
         "liquid_death_bucket_round_trip",
         "liquid_death_yields_essence",
-        "sanitizing_soap_full_use_once"
+        "sanitizing_soap_full_use_once",
+        "sanitizing_soap_full_lifecycle_once"
     };
 
     static {
@@ -69,6 +72,7 @@ public final class FluidGameTests {
         FUNCTIONS.register(TESTS[7], () -> FluidGameTests::liquidDeathBucketRoundTrip);
         FUNCTIONS.register(TESTS[8], () -> FluidGameTests::liquidDeathYieldsEssence);
         FUNCTIONS.register(TESTS[9], () -> FluidGameTests::sanitizingSoapFullUseOnce);
+        FUNCTIONS.register(TESTS[10], () -> FluidGameTests::sanitizingSoapFullLifecycleOnce);
     }
 
     private FluidGameTests() {
@@ -222,12 +226,15 @@ public final class FluidGameTests {
 
     private static void liquidDeathYieldsEssence(GameTestHelper helper) {
         var level = helper.getLevel();
-        BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
-        net.minecraft.world.entity.monster.Zombie zombie = new net.minecraft.world.entity.monster.Zombie(net.minecraft.world.entity.EntityType.ZOMBIE, level);
+        BlockPos relativePos = new BlockPos(2, 2, 2);
+        BlockPos pos = helper.absolutePos(relativePos);
+        Zombie zombie = new Zombie(EntityTypes.ZOMBIE, level);
+        zombie.getRandom().setSeed(0L);
         zombie.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
         level.addFreshEntity(zombie);
         zombie.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE), 100.0F);
-        helper.assertItemEntityPresent(ModItems.CRYSTALLIZED_ESSENCE.get(), pos.above(), 6.0);
+        helper.assertItemEntityPresent(ModItems.CRYSTALLIZED_ESSENCE.get(), relativePos, 6.0);
+        helper.assertItemEntityPresent(Items.ROTTEN_FLESH, relativePos, 6.0);
         helper.assertTrue(zombie.isDeadOrDying(), "dissolving liquid death damage did not kill the mob");
         helper.succeed();
     }
@@ -248,6 +255,27 @@ public final class FluidGameTests {
         helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 0, "completed soap use did not clear temporary warp");
         helper.assertFalse(player.isUsingItem(), "soap use did not stop at its completion threshold");
         helper.succeed();
+    }
+
+    private static void sanitizingSoapFullLifecycleOnce(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        Warp.set(player, 0, WarpType.STICKY);
+        Warp.set(player, 4, WarpType.TEMPORARY);
+        ItemStack soap = new ItemStack(ModItems.SANITIZING_SOAP.get(), 2);
+        player.setItemInHand(InteractionHand.MAIN_HAND, soap);
+        ModItems.SANITIZING_SOAP.get().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.runAfterDelay(195, () -> {
+            helper.assertValueEqual(soap.getCount(), 2, "soap lifecycle consumed the item before tick 196");
+            helper.assertTrue(player.isUsingItem(), "soap lifecycle stopped before tick 196");
+            helper.runAfterDelay(1, () -> {
+                helper.assertValueEqual(soap.getCount(), 1, "soap lifecycle did not consume exactly one item at tick 196");
+                helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 0, "soap lifecycle did not clear temporary warp");
+                helper.assertFalse(player.isUsingItem(), "soap lifecycle did not stop at tick 196");
+                player.releaseUsingItem();
+                helper.assertValueEqual(soap.getCount(), 1, "soap release or finish consumed the item twice");
+                helper.succeed();
+            });
+        });
     }
 
     private static int quanta(BlockState state) {
