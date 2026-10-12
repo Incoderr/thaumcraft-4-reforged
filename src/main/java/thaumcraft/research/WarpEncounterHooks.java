@@ -2,6 +2,9 @@ package thaumcraft.research;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 
 public final class WarpEncounterHooks {
     private static Spawner spawner;
@@ -17,11 +20,44 @@ public final class WarpEncounterHooks {
     }
 
     public static void spawnGuardians(ServerLevel level, ServerPlayer player, int count) {
-        requireSpawner().spawnGuardians(level, player, count);
+        Spawner encounterSpawner = requireSpawner();
+        RandomSource random = level.getRandom();
+        BlockPos origin = BlockPos.containing(player.getX(), player.getY(), player.getZ());
+        for (int index = 0; index < Math.min(8, Math.max(0, count)); index++) {
+            for (int attempt = 0; attempt < 50; attempt++) {
+                BlockPos pos = candidate(random, origin);
+                if (hasSolidTop(level, pos) && encounterSpawner.spawnGuardianAt(level, player, pos)) {
+                    break;
+                }
+            }
+        }
     }
 
     public static void spawnMindSpiders(ServerLevel level, ServerPlayer player, boolean harmless, int count) {
-        requireSpawner().spawnMindSpiders(level, player, harmless, count);
+        Spawner encounterSpawner = requireSpawner();
+        RandomSource random = level.getRandom();
+        BlockPos origin = BlockPos.containing(player.getX(), player.getY(), player.getZ());
+        for (int index = 0; index < Math.min(50, Math.max(0, count)); index++) {
+            for (int attempt = 0; attempt < 50; attempt++) {
+                BlockPos pos = candidate(random, origin);
+                if (hasSolidTop(level, pos) && encounterSpawner.spawnMindSpiderAt(level, player, pos, harmless)) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private static BlockPos candidate(RandomSource random, BlockPos origin) {
+        return origin.offset(randomOffset(random), randomOffset(random), randomOffset(random));
+    }
+
+    private static int randomOffset(RandomSource random) {
+        return (random.nextInt(18) + 7) * (random.nextInt(3) - 1);
+    }
+
+    private static boolean hasSolidTop(ServerLevel level, BlockPos pos) {
+        BlockPos below = pos.below();
+        return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP);
     }
 
     private static Spawner requireSpawner() {
@@ -32,8 +68,8 @@ public final class WarpEncounterHooks {
     }
 
     public interface Spawner {
-        void spawnGuardians(ServerLevel level, ServerPlayer player, int count);
+        boolean spawnGuardianAt(ServerLevel level, ServerPlayer player, BlockPos pos);
 
-        void spawnMindSpiders(ServerLevel level, ServerPlayer player, boolean harmless, int count);
+        boolean spawnMindSpiderAt(ServerLevel level, ServerPlayer player, BlockPos pos, boolean harmless);
     }
 }

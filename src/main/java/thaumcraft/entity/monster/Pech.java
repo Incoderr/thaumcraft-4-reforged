@@ -13,12 +13,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +29,8 @@ import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -40,12 +45,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.storage.ValueInput;
@@ -58,10 +66,12 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.entity.CombatUtils;
 import thaumcraft.item.ManaBeanItem;
 import thaumcraft.menu.PechTradeMenu;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.wand.WandItem;
 import thaumcraft.wand.Wands;
@@ -79,6 +89,7 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
     private boolean trading;
     private boolean updateCombatGoal;
     private int chargeCount;
+    private float mumble;
     private @Nullable Goal combatGoal;
 
     public Pech(EntityType<? extends Pech> type, Level level) {
@@ -95,10 +106,12 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
         this.goalSelector.addGoal(3, this.combatGoal);
         this.goalSelector.addGoal(4, new AvoidEntityGoal<>(this, Player.class, 8.0F, 0.5, 0.6, player -> !this.isTamed()));
         this.goalSelector.addGoal(5, new OpenDoorGoal(this, true));
-        this.goalSelector.addGoal(6, new RandomStrollGoal(this, 0.6));
-        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 3.0F));
-        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Mob.class, 8.0F));
-        this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(6, new MoveTowardsRestrictionGoal(this, 0.5));
+        this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, false, 10, () -> true));
+        this.goalSelector.addGoal(9, new RandomStrollGoal(this, 0.6));
+        this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 3.0F));
+        this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
+        this.goalSelector.addGoal(11, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true) {
             @Override
@@ -114,6 +127,22 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
             .add(Attributes.ATTACK_DAMAGE, 6.0)
             .add(Attributes.MOVEMENT_SPEED, 0.5)
             .add(Attributes.ARMOR, 2.0);
+    }
+
+    @Override
+    public EntityDimensions getDefaultDimensions(Pose pose) {
+        return EntityDimensions.scalable(0.6F, 1.8F).withEyeHeight(1.8F * 0.66F);
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        int occupied = 0;
+        for (ItemStack stack : this.loot) {
+            if (!stack.isEmpty()) {
+                occupied++;
+            }
+        }
+        return occupied < 5;
     }
 
     public static boolean checkPechSpawnRules(
@@ -310,9 +339,26 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
         } else if (held.getItem() instanceof BowItem) {
             this.setPechType(PechType.ARCHER);
         }
-        this.setCanPickUpLoot(this.random.nextFloat() < 0.75F);
         this.setDropChance(EquipmentSlot.MAINHAND, this.getMainHandItem().getItem() instanceof WandItem ? 0.1F : 0.2F);
+        if (!this.getMainHandItem().isEmpty() && !(this.getMainHandItem().getItem() instanceof WandItem)) {
+            this.enchantSpawnedWeapon(level, this.random, difficulty);
+        }
+        this.setCanPickUpLoot(this.random.nextFloat() < 0.75F * tensionFactor(level, this.blockPosition()));
         return result;
+    }
+
+    private static float tensionFactor(ServerLevelAccessor accessor, BlockPos pos) {
+        ServerLevel level = accessor.getLevel();
+        float factor = 0.0F;
+        boolean hard = level.getDifficulty() == Difficulty.HARD;
+        if (level.hasChunkAt(pos)) {
+            factor += Mth.clamp((float) level.getChunkAt(pos).getInhabitedTime() / 3600000.0F, 0.0F, 1.0F) * (hard ? 1.0F : 0.75F);
+            factor += level.getMoonBrightness(pos) * 0.25F;
+        }
+        if (level.getDifficulty() == Difficulty.EASY || level.getDifficulty() == Difficulty.PEACEFUL) {
+            factor *= level.getDifficulty().getId() / 2.0F;
+        }
+        return Mth.clamp(factor, 0.0F, hard ? 1.5F : 1.0F);
     }
 
     private void addRandomEquipment() {
@@ -366,7 +412,9 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
             this.goalSelector.removeGoal(this.combatGoal);
         }
         if (this.getMainHandItem().is(Items.BOW) || this.getMainHandItem().getItem() instanceof WandItem) {
-            this.combatGoal = new RangedAttackGoal(this, 0.6, this.getMainHandItem().is(Items.BOW) ? 50 : 30, 15.0F);
+            this.combatGoal = this.getMainHandItem().is(Items.BOW)
+                ? new RangedAttackGoal(this, 0.6, 20, 50, 15.0F)
+                : new RangedAttackGoal(this, 0.6, 20, 30, 15.0F);
         } else {
             this.combatGoal = new MeleeAttackGoal(this, 0.6, false);
         }
@@ -406,18 +454,36 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
         ItemStack held = this.getMainHandItem();
         if (held.getItem() instanceof WandItem && this.level() instanceof ServerLevel level) {
             boolean nightshade = this.random.nextFloat() < 0.1F;
-            level.addFreshEntity(thaumcraft.entity.projectile.PechBlast.create(level, this, 1, 0, nightshade));
+            thaumcraft.entity.projectile.PechBlast blast = new thaumcraft.entity.projectile.PechBlast(ModEntities.PECH_BLAST.get(), level);
+            blast.strength = 1;
+            blast.nightshade = nightshade;
+            double dx = target.getX() + target.getDeltaMovement().x - this.getX();
+            double dy = target.getY() + target.getEyeHeight() - 1.500000023841858 - this.getY();
+            double dz = target.getZ() + target.getDeltaMovement().z - this.getZ();
+            double horizontal = Math.sqrt(dx * dx + dz * dz);
+            blast.setOwner(this);
+            blast.setPos(this.getX(), this.getEyeY() - 0.1, this.getZ());
+            CombatUtils.aim(blast, dx, dy + horizontal * 0.1, dz, 1.5F, 4.0F);
+            this.playSound(ModSounds.ICE.get(), 0.4F, 1.0F + this.random.nextFloat() * 0.1F);
+            level.addFreshEntity(blast);
         } else if (held.getItem() instanceof BowItem && this.level() instanceof ServerLevel level) {
             Arrow arrow = new Arrow(level, this, new ItemStack(Items.ARROW), held);
-            Vec3 delta = target.position().add(0.0, target.getBbHeight() * 0.33, 0.0).subtract(this.position());
-            arrow.shoot(delta.x, delta.y + Math.sqrt(delta.horizontalDistanceSqr()) * 0.1, delta.z, 1.6F, 14.0F - level.getDifficulty().getId() * 4.0F);
+            Vec3 delta = target.position().add(target.getDeltaMovement()).subtract(this.position());
+            delta = delta.add(0.0, target.getBbHeight() / 3.0 - this.getEyeHeight(), 0.0);
+            arrow.shoot(delta.x, delta.y, delta.z, 1.6F, 14.0F - level.getDifficulty().getId() * 4.0F);
+            int power = EnchantmentHelper.getItemEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.POWER), held);
+            arrow.setBaseDamage(distanceFactor * 2.0 + this.random.nextGaussian() * 0.25 + level.getDifficulty().getId() * 0.11F + (power > 0 ? power * 0.5 + 0.5 : 0.0));
             level.addFreshEntity(arrow);
+            this.playSound(net.minecraft.sounds.SoundEvents.ARROW_SHOOT, 1.0F, 1.0F / (this.random.nextFloat() * 0.4F + 0.8F));
         }
     }
 
     @Override
     public void tick() {
         super.tick();
+        if (this.mumble > 0.0F) {
+            this.mumble *= 0.75F;
+        }
         if (this.getAnger() > 0 && this.level().isClientSide() && this.random.nextInt(15) == 0) {
             this.level().addParticle(net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER, this.getX(), this.getY() + 0.8, this.getZ(), 0.0, 0.0, 0.0);
         }
@@ -428,11 +494,16 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
 
     @Override
     public void handleEntityEvent(byte event) {
-        if (event == 18) {
+        if (event == 16) {
+            this.mumble = (float) Math.PI;
+        } else if (event == 17) {
+            this.mumble = (float) (Math.PI * 2.0);
+        } else if (event == 18) {
             for (int index = 0; index < 5; index++) {
                 this.level().addParticle(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getY() + this.random.nextDouble() * this.getBbHeight(), this.getRandomZ(1.0), 0.0, 0.0, 0.0);
             }
         } else if (event == 19) {
+            this.mumble = (float) (Math.PI * 2.0);
             for (int index = 0; index < 5; index++) {
                 this.level().addParticle(net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER, this.getRandomX(1.0), this.getY() + this.random.nextDouble() * this.getBbHeight(), this.getRandomZ(1.0), 0.0, 0.0, 0.0);
             }
@@ -444,6 +515,25 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
     @Override
     protected SoundEvent getAmbientSound() {
         return ModSounds.PECH_IDLE.get();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() {
+        return 120;
+    }
+
+    @Override
+    public void playAmbientSound() {
+        if (!this.level().isClientSide() && this.random.nextInt(3) == 0
+            && !this.level().getEntitiesOfClass(Pech.class, this.getBoundingBox().inflate(4.0, 2.0, 4.0), pech -> pech != this).isEmpty()) {
+            this.level().broadcastEntityEvent(this, (byte) 17);
+            this.playSound(ModSounds.PECH_TRADE.get(), this.getSoundVolume(), this.getVoicePitch());
+            return;
+        }
+        if (!this.level().isClientSide()) {
+            this.level().broadcastEntityEvent(this, (byte) 16);
+        }
+        super.playAmbientSound();
     }
 
     @Override
@@ -461,6 +551,10 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
         return 0.4F;
     }
 
+    public float getMumble() {
+        return this.mumble;
+    }
+
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
@@ -469,11 +563,17 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
                 this.spawnAtLocation(level, stack.copy(), 1.5F);
             }
         }
-        int looting = 0;
         for (int index = 0; index < 1 + this.getLootingLevel(source); index++) {
             if (this.random.nextBoolean()) {
                 this.spawnAtLocation(level, ManaBeanItem.withAspect(Aspect.getPrimalAspects().get(this.random.nextInt(6))), 1.5F);
             }
+        }
+        int looting = this.getLootingLevel(source);
+        if (this.random.nextInt(10) < 1 + looting) {
+            this.spawnAtLocation(level, new ItemStack(ModItems.GOLD_COIN.get()), 1.5F);
+        }
+        if (recentlyHit && this.random.nextInt(200) - looting < 5) {
+            this.spawnAtLocation(level, new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()), 1.5F);
         }
     }
 
