@@ -150,7 +150,7 @@ public class TaintSpore extends Monster implements TaintedMob {
             }
             return;
         }
-        if (!(this instanceof TaintSwarmer) && this.tickCount % 20 == 0 && !this.level().getBiome(this.blockPosition()).is(thaumcraft.taint.TaintBiomes.TAINTED_LAND)) {
+        if (!(this instanceof TaintSwarmer) && this.tickCount % 20 == 0 && !thaumcraft.taint.TaintBiomes.isTainted(this.level(), this.blockPosition())) {
             this.hurt(this.damageSources().starve(), 1.0F);
         }
         if (this instanceof TaintSwarmer) {
