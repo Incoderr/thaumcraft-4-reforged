@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ParticleStatus;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -252,6 +254,62 @@ public final class ClientFx implements FxProxy {
             SparkleFx fx = new SparkleFx(random, x, y, z, size, color, 6);
             fx.gravity(gravity);
             WorldFxRenderer.add(fx);
+        }
+    }
+
+    @Override
+    public void alumentumTrail(Level level, Entity projectile) {
+        RandomSource random = level.getRandom();
+        double x = projectile.getX();
+        double y = projectile.getY();
+        double z = projectile.getZ();
+        for (int index = 0; index < particleCount(3); index++) {
+            wisp(level, x + jitter(random, 0.12F), y + jitter(random, 0.12F), z + jitter(random, 0.12F), 0.45F, 7, true, 0.0F);
+        }
+        for (int index = 0; index < particleCount(6); index++) {
+            WispFx fx = new WispFx(random, x + jitter(random, 0.18F), y + jitter(random, 0.18F), z + jitter(random, 0.18F), 0.22F, 4, null);
+            fx.moveTo(x - projectile.getDeltaMovement().x * 2.0, y - projectile.getDeltaMovement().y * 2.0, z - projectile.getDeltaMovement().z * 2.0);
+            fx.gravity(0.0F);
+            WorldFxRenderer.add(fx);
+        }
+        if (particleCount(1) > 0) {
+            SparkleFx sparkle = new SparkleFx(random, x, y, z, 0.7F, 7, 1);
+            sparkle.gravity(0.0F);
+            WorldFxRenderer.add(sparkle);
+        }
+    }
+
+    @Override
+    public void purifyingFluid(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
+        BubbleFx bubble = new BubbleFx(
+            random,
+            pos.getX() + random.nextFloat(),
+            pos.getY() + 0.125F * (8 - fluidLevel),
+            pos.getZ() + random.nextFloat(),
+            0
+        );
+        bubble.color(1.0F, 1.0F, 1.0F).alpha(0.25F);
+        WorldFxRenderer.add(bubble);
+        if (random.nextInt(25) == 0) {
+            level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.25F, 0.8F + random.nextFloat() * 0.4F, false);
+        }
+    }
+
+    @Override
+    public void liquidDeath(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
+        BubbleFx bubble = new BubbleFx(
+            random,
+            pos.getX() + random.nextFloat(),
+            pos.getY() + 0.1F + 0.225F * fluidLevel,
+            pos.getZ() + random.nextFloat(),
+            0
+        );
+        bubble.color(0.65F, 0.1F, 0.8F);
+        bubble.alpha(0.8F);
+        bubble.scaleTo(0.075F + random.nextFloat() * 0.075F);
+        WorldFxRenderer.add(bubble);
+        if (random.nextInt(50) == 0) {
+            level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.25F, 0.7F + random.nextFloat() * 0.3F, false);
         }
     }
 
