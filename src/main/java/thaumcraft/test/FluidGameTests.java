@@ -220,7 +220,12 @@ public final class FluidGameTests {
         InteractionResult pickedUp = Items.BUCKET.use(level, player, InteractionHand.MAIN_HAND);
         helper.assertTrue(pickedUp.consumesAction(), "empty bucket did not pick up the source");
         helper.assertTrue(level.getBlockState(pos).isAir(), "bucket pickup did not remove the source block");
-        helper.assertTrue(player.getItemInHand(InteractionHand.MAIN_HAND).is(fluidBucket), "bucket pickup returned the wrong fluid bucket");
+        helper.assertTrue(
+            pickedUp instanceof InteractionResult.Success success
+                && success.heldItemTransformedTo() != null
+                && success.heldItemTransformedTo().is(fluidBucket),
+            "bucket pickup returned the wrong fluid bucket"
+        );
         helper.succeed();
     }
 
@@ -228,11 +233,12 @@ public final class FluidGameTests {
         var level = helper.getLevel();
         BlockPos relativePos = new BlockPos(2, 2, 2);
         BlockPos pos = helper.absolutePos(relativePos);
+        ServerPlayer player = mockServerPlayer(helper);
         Zombie zombie = new Zombie(EntityTypes.ZOMBIE, level);
         zombie.getRandom().setSeed(0L);
         zombie.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
         level.addFreshEntity(zombie);
-        zombie.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE), 100.0F);
+        zombie.hurtServer(level, level.damageSources().source(ModDamageTypes.DISSOLVE, player), 100.0F);
         helper.assertItemEntityPresent(ModItems.CRYSTALLIZED_ESSENCE.get(), relativePos, 6.0);
         helper.assertItemEntityPresent(Items.ROTTEN_FLESH, relativePos, 6.0);
         helper.assertTrue(zombie.isDeadOrDying(), "dissolving liquid death damage did not kill the mob");
