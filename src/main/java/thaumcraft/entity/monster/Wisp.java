@@ -157,7 +157,7 @@ public class Wisp extends Mob implements Enemy {
             Fx.get().sparkle(
                 level,
                 (float) (this.getX() + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.7F),
-                (float) (this.getY() + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.7F),
+                (float) (this.getY() + 0.45 + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.7F),
                 (float) (this.getZ() + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.7F),
                 0.1F,
                 color,

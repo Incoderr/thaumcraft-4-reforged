@@ -47,7 +47,7 @@ public final class WarpEvents {
     }
 
     static void checkWarpEvent(ServerPlayer player, RandomSource random) {
-        if (ResearchConfig.WUSS_MODE || player.hasEffect(ModEffects.WARP_WARD)) {
+        if (shouldSkipWarpEvents(player, ResearchConfig.WUSS_MODE)) {
             return;
         }
         ServerLevel level = player.level();
@@ -73,6 +73,10 @@ public final class WarpEvents {
         if (Warp.get(player, WarpType.TEMPORARY) > 0) {
             Warp.set(player, Warp.get(player, WarpType.TEMPORARY) - 1, WarpType.TEMPORARY);
         }
+    }
+
+    static boolean shouldSkipWarpEvents(ServerPlayer player, boolean wussMode) {
+        return wussMode || player.hasEffect(ModEffects.WARP_WARD);
     }
 
     static int scaledWarp(int warp, int counter) {

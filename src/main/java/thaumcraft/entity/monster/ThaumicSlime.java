@@ -19,13 +19,17 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import thaumcraft.entity.TaintedMob;
+import thaumcraft.entity.CombatUtils;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModSounds;
 
 public class ThaumicSlime extends Monster implements Enemy, TaintedMob {
     private static final EntityDataAccessor<Integer> DATA_SIZE = SynchedEntityData.defineId(ThaumicSlime.class, EntityDataSerializers.INT);
@@ -34,6 +38,9 @@ public class ThaumicSlime extends Monster implements Enemy, TaintedMob {
     private int launched = 10;
     private int spitCounter = 100;
     private boolean splitOnDeath;
+    public float squishAmount;
+    public float squishFactor;
+    public float prevSquishFactor;
 
     public ThaumicSlime(EntityType<? extends ThaumicSlime> type, Level level) {
         super(type, level);
@@ -138,15 +145,17 @@ public class ThaumicSlime extends Monster implements Enemy, TaintedMob {
                 double nz = dz / horizontal;
                 spit.setPos(this.getX() + nx, y, this.getZ() + nz);
                 double speed = horizontal * 0.2;
-                Vec3 motion = new Vec3(dx, dy + speed, dz).normalize().scale(1.5);
-                spit.setDeltaMovement(motion.add(
+                spit.setPos(this.getX() + nx, y, this.getZ() + nz);
+                Vec3 direction = new Vec3(dx, dy + speed, dz).normalize();
+                direction = direction.add(
                     this.random.nextGaussian() * 0.0075,
                     this.random.nextGaussian() * 0.0075,
                     this.random.nextGaussian() * 0.0075
-                ));
+                ).scale(1.5);
+                spit.setDeltaMovement(direction);
                 if (level.addFreshEntity(spit)) {
                     this.setSlimeSize(this.getSlimeSize() - 1);
-                    this.playSound(SoundEvents.SLIME_SQUISH, 1.0F, 0.8F);
+                    this.playSound(ModSounds.GORE.get(), 1.0F, 0.8F);
                 }
             }
         }
@@ -185,10 +194,40 @@ public class ThaumicSlime extends Monster implements Enemy, TaintedMob {
 
     @Override
     public void tick() {
+        boolean wasOnGround = this.onGround();
+        this.squishFactor += (this.squishAmount - this.squishFactor) * 0.5F;
+        this.prevSquishFactor = this.squishFactor;
         super.tick();
+        int size = (int) Math.sqrt(this.getSlimeSize());
         if (this.launched > 0) {
             this.launched--;
+            if (this.level().isClientSide()) {
+                for (int index = 0; index < size * (this.launched + 1); index++) {
+                    this.emitSlimeParticles(size);
+                }
+            }
         }
+        if (this.onGround() && !wasOnGround) {
+            if (this.level().isClientSide()) {
+                for (int index = 0; index < size * 8; index++) {
+                    this.emitSlimeParticles(size);
+                }
+            }
+            this.playSound(SoundEvents.SLIME_SQUISH, this.getSoundVolume(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) / 0.8F);
+            this.squishAmount = -0.5F;
+        } else if (!this.onGround() && wasOnGround) {
+            this.squishAmount = 1.0F;
+        }
+        this.squishAmount *= 0.6F;
+    }
+
+    private void emitSlimeParticles(int size) {
+        double x = this.getX() + (this.random.nextDouble() * 2.0 - 1.0) * this.getBbWidth() * 0.5;
+        double y = this.getY();
+        double z = this.getZ() + (this.random.nextDouble() * 2.0 - 1.0) * this.getBbWidth() * 0.5;
+        this.level().addParticle(new ItemParticleOption(ParticleTypes.ITEM, net.minecraft.world.item.Items.SLIME_BALL), x, y, z,
+            (this.random.nextDouble() * 2.0 - 1.0) * 0.08 * size, this.random.nextDouble() * 0.08 * size,
+            (this.random.nextDouble() * 2.0 - 1.0) * 0.08 * size);
     }
 
     @Override
@@ -219,6 +258,16 @@ public class ThaumicSlime extends Monster implements Enemy, TaintedMob {
         if (this.getSlimeSize() < 3 && this.random.nextInt(3) == 0) {
             this.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(ModItems.TAINTED_GOO.get()));
         }
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getHurtSound(DamageSource source) {
+        return SoundEvents.SLIME_HURT;
+    }
+
+    @Override
+    protected net.minecraft.sounds.SoundEvent getDeathSound() {
+        return SoundEvents.SLIME_DEATH;
     }
 
     @Override

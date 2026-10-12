@@ -37,7 +37,7 @@ public class BrainyZombie extends Zombie {
         return Zombie.createAttributes()
             .add(Attributes.MAX_HEALTH, 25.0)
             .add(Attributes.ATTACK_DAMAGE, 5.0)
-            .add(Attributes.ARMOR, 3.0);
+            .add(Attributes.ARMOR, 5.0);
     }
 
     @Override
