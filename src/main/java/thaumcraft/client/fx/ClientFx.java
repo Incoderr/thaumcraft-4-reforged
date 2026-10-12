@@ -21,6 +21,7 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.client.geom.LightningBolt;
 import thaumcraft.client.platform.ParticleSprites;
 import thaumcraft.client.platform.WorldFxRenderer;
+import thaumcraft.entity.monster.taint.TaintSwarm;
 import thaumcraft.fx.FxProxy;
 
 public final class ClientFx implements FxProxy {
@@ -88,7 +89,7 @@ public final class ClientFx implements FxProxy {
         }
         taintSwarmParticles.values().forEach(particles -> particles.removeIf(TaintSwarmFx::isDead));
         taintSwarmParticles.values().removeIf(List::isEmpty);
-        int targetCount = speed >= 0.2F ? Math.max(particleCount(maxParticles), 10) : maxParticles;
+        int targetCount = target instanceof TaintSwarm ? Math.max(particleCount(maxParticles), 10) : maxParticles;
         if (targetCount <= 0) {
             return;
         }
