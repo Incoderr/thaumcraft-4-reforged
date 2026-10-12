@@ -98,7 +98,7 @@ public final class TcRenderTypes {
     }
 
     public static RenderType entityCutoutNoCull(Identifier texture) {
-        return RenderTypes.entityCutoutNoCull(texture);
+        return RenderTypes.entityCutout(texture, false);
     }
 
     public static RenderType eyes(Identifier texture) {
@@ -128,6 +128,10 @@ public final class TcRenderTypes {
                 .sortOnUpload()
                 .createRenderSetup()
         ));
+    }
+
+    public static RenderType outline(Identifier texture) {
+        return RenderTypes.outline(texture);
     }
 
     public static RenderType byBlend(Identifier texture, int blendMode) {

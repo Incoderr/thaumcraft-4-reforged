@@ -1,5 +1,6 @@
 package thaumcraft.client.render.entity.eldritch;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Random;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;

@@ -3,6 +3,7 @@ package thaumcraft.entity.monster;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -56,6 +57,9 @@ public class InhabitedZombie extends Zombie {
         if (this.random.nextFloat() <= chance) {
             this.setItemSlot(EquipmentSlot.LEGS, new net.minecraft.world.item.ItemStack(ModItems.CRIMSON_CULT_GREAVES.get()));
         }
+        this.setItemSlot(EquipmentSlot.FEET, net.minecraft.world.item.ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.MAINHAND, net.minecraft.world.item.ItemStack.EMPTY);
+        this.setBaby(false);
         this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(0.0);
         return result;
     }
@@ -64,6 +68,20 @@ public class InhabitedZombie extends Zombie {
     protected void tickDeath() {
         if (this.level() instanceof ServerLevel serverLevel && this.deathTime == 0) {
             EldritchCrab.spawnFromInhabitedZombie(serverLevel, this);
+            this.dropExperience(serverLevel, this.getLastHurtByPlayer());
+            serverLevel.sendParticles(
+                ParticleTypes.EXPLOSION,
+                this.getX(),
+                this.getY() + this.getBbHeight() / 2.0,
+                this.getZ(),
+                20,
+                this.getBbWidth(),
+                this.getBbHeight() / 2.0,
+                this.getBbWidth(),
+                0.02
+            );
+            this.discard();
+            return;
         }
         super.tickDeath();
     }

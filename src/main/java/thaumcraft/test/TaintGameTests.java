@@ -392,7 +392,7 @@ public final class TaintGameTests {
         swarmer.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
         helper.getLevel().addFreshEntity(swarmer);
 
-        helper.assertTrue(swarmer.hurt(helper.getLevel().damageSources().generic(), 1000.0F), "lethal damage was rejected");
+        helper.assertTrue(swarmer.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1000.0F), "lethal damage was rejected");
         helper.assertTrue(swarmer.isDeadOrDying(), "lethal damage did not begin the swarmer death sequence");
         int swarms = helper.getLevel().getEntitiesOfClass(TaintSwarm.class, swarmer.getBoundingBox().inflate(4.0)).size();
         helper.assertValueEqual(swarms, 1, "first death must spawn exactly one swarm entity");

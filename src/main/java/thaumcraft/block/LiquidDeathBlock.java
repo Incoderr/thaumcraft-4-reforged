@@ -2,7 +2,6 @@ package thaumcraft.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -224,10 +223,4 @@ public class LiquidDeathBlock extends LiquidBlock {
         }
     }
 
-    @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (random.nextInt(50) == 0) {
-            level.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, pos.getX() + random.nextDouble(), pos.getY() + getQuanta(state) / 4.0, pos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
-        }
-    }
 }

@@ -305,6 +305,7 @@ public final class WarpGameTests {
             .sum();
         ItemStack shifted = menu.quickMoveStack(player, 1);
         int movedCount = shifted.getCount();
+        int unusedInputCount = tradeInventory.getItem(0).getCount();
         menu.removed(player);
         int retainedCount = 0;
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
@@ -313,7 +314,7 @@ public final class WarpGameTests {
         int droppedCount = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(8.0)).stream()
             .mapToInt(entity -> entity.getItem().getCount())
             .sum();
-        helper.assertValueEqual(retainedCount + droppedCount - inventoryBeforeMove - dropsBeforeMove, outputCount, "shift-click plus menu close must conserve every generated reward exactly once");
+        helper.assertValueEqual(retainedCount + droppedCount - inventoryBeforeMove - dropsBeforeMove, outputCount + unusedInputCount, "shift-click plus menu close must conserve rewards and return unused input exactly once");
         helper.assertTrue(movedCount <= outputCount, "shift-click cannot duplicate output count");
         helper.assertTrue(!pech.isTrading(), "closing the menu releases Pech trading state");
         helper.succeed();
@@ -376,17 +377,22 @@ public final class WarpGameTests {
         helper.assertTrue(exhaustion > 0.0F, "unnatural hunger should add food exhaustion");
         helper.assertTrue(!ModEffects.BLURRED_VISION.value().shouldApplyEffectTickThisTick(100, 0), "blurred vision is a client post effect and must not tick server-side");
 
-        LivingEntity fluxTarget = createMob(helper, EntityTypes.BAT, 3.5, 2.0, 3.5);
-        net.minecraft.core.BlockPos fluxPos = fluxTarget.blockPosition();
-        for (int index = 0; index < 100 && !helper.getBlockState(fluxPos).is(thaumcraft.registry.ModBlocks.FLUX_GOO); index++) {
+        BlockPos fluxRelativePos = new BlockPos(3, 2, 3);
+        BlockPos fluxAbsolutePos = helper.absolutePos(fluxRelativePos);
+        LivingEntity fluxTarget = createMob(helper, EntityTypes.BAT, fluxAbsolutePos.getX() + 0.5, fluxAbsolutePos.getY(), fluxAbsolutePos.getZ() + 0.5);
+        for (int index = 0; index < 100 && !helper.getBlockState(fluxRelativePos).is(thaumcraft.registry.ModBlocks.FLUX_GOO); index++) {
             ModEffects.THAUMARHIA.value().applyEffectTick(helper.getLevel(), fluxTarget, 0);
         }
-        helper.assertTrue(helper.getBlockState(fluxPos).is(thaumcraft.registry.ModBlocks.FLUX_GOO), "thaumarhia should create flux goo after a successful server roll");
+        helper.assertTrue(helper.getBlockState(fluxRelativePos).is(thaumcraft.registry.ModBlocks.FLUX_GOO), "thaumarhia should create flux goo after a successful server roll");
 
-        LivingEntity darkTarget = createMob(helper, EntityTypes.BAT, 5.5, 2.0, 3.5);
+        BlockPos darkRelativePos = new BlockPos(5, -40, 3);
+        BlockPos darkAbsolutePos = helper.absolutePos(darkRelativePos);
+        for (int relativeY = 0; relativeY <= 2; relativeY++) {
+            helper.setBlock(darkRelativePos.above(relativeY), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+        }
+        helper.setBlock(darkRelativePos.above(3), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        LivingEntity darkTarget = createMob(helper, EntityTypes.BAT, darkAbsolutePos.getX() + 0.5, darkAbsolutePos.getY(), darkAbsolutePos.getZ() + 0.5);
         darkTarget.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 4.0F);
-        net.minecraft.core.BlockPos roof = darkTarget.blockPosition().above(2);
-        helper.getLevel().setBlockAndUpdate(roof, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
             helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set night"
         );
@@ -399,15 +405,29 @@ public final class WarpGameTests {
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
             helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set day"
         );
-        LivingEntity sunlitTarget = createMob(helper, EntityTypes.BAT, 5.5, 20.0, 3.5);
+        BlockPos sunlitRelativePos = new BlockPos(5, 20, 3);
+        BlockPos sunlitAbsolutePos = helper.absolutePos(sunlitRelativePos);
+        LivingEntity sunlitTarget = createMob(helper, EntityTypes.BAT, sunlitAbsolutePos.getX() + 0.5, sunlitAbsolutePos.getY(), sunlitAbsolutePos.getZ() + 0.5);
         helper.assertTrue(helper.getLevel().canSeeSky(sunlitTarget.blockPosition()), "sun scorned damage test target must have open sky");
         for (int index = 0; index < 200 && !sunlitTarget.isOnFire(); index++) {
             ModEffects.SUN_SCORNED.value().applyEffectTick(helper.getLevel(), sunlitTarget, 0);
         }
         helper.assertTrue(sunlitTarget.isOnFire(), "sun scorned should ignite an exposed entity under daylight");
 
-        LivingEntity deathGazeTarget = createMob(helper, EntityTypes.SHEEP, player.getX(), player.getY(), player.getZ() + 2.0);
+        BlockPos gazeRelativePos = new BlockPos(3, 2, 3);
+        BlockPos gazeAbsolutePos = helper.absolutePos(gazeRelativePos);
+        player.setPos(gazeAbsolutePos.getX() + 0.5, gazeAbsolutePos.getY(), gazeAbsolutePos.getZ() + 0.5);
+        helper.assertTrue(helper.getLevel().addFreshEntity(player), "death gaze player must be present in the test level");
+        LivingEntity deathGazeTarget = createMob(helper, EntityTypes.SHEEP, gazeAbsolutePos.getX() + 0.5, gazeAbsolutePos.getY() + 1.0, gazeAbsolutePos.getZ() + 2.5);
         player.setYRot(0.0F);
+        helper.assertTrue(player.hasLineOfSight(deathGazeTarget), "death gaze fixture target must have line of sight");
+        net.minecraft.world.phys.Vec3 gazeTarget = new net.minecraft.world.phys.Vec3(
+            deathGazeTarget.getX(),
+            deathGazeTarget.getBoundingBox().minY + deathGazeTarget.getBbHeight() / 2.0,
+            deathGazeTarget.getZ()
+        );
+        double gazeAlignment = player.getViewVector(1.0F).normalize().dot(gazeTarget.subtract(player.getEyePosition()).normalize());
+        helper.assertTrue(gazeAlignment > Math.cos(0.75 / 2.0), "death gaze fixture target must be inside the cone, alignment=" + gazeAlignment);
         player.addEffect(new MobEffectInstance(ModEffects.DEATH_GAZE, 100, 0));
         try {
             var method = WarpEvents.class.getDeclaredMethod("checkDeathGaze", ServerPlayer.class);
@@ -421,7 +441,8 @@ public final class WarpGameTests {
 
         LivingEntity tainted = ModEntities.THAUMIC_SLIME.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(tainted != null, "tainted slime factory returned null");
-        tainted.setPos(7.5, 2.0, 3.5);
+        BlockPos taintedPos = helper.absolutePos(new BlockPos(7, 2, 3));
+        tainted.setPos(taintedPos.getX() + 0.5, taintedPos.getY(), taintedPos.getZ() + 0.5);
         helper.getLevel().addFreshEntity(tainted);
         float taintedHealth = tainted.getHealth();
         ModEffects.TAINT_POISON.value().applyEffectTick(helper.getLevel(), tainted, 0);
@@ -509,9 +530,18 @@ public final class WarpGameTests {
         helper.getLevel().addFreshEntity(zombie);
         zombie.setHealth(1.0F);
         zombie.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 4.0F);
+        helper.assertTrue(!zombie.isAlive(), "lethal damage should start the InhabitedZombie conversion");
+        awaitInhabitedCrab(helper, pos, 0);
+    }
+
+    private static void awaitInhabitedCrab(GameTestHelper helper, BlockPos pos, int waitedTicks) {
         helper.runAfterDelay(1, () -> {
-            List<EldritchCrab> crabs = helper.getLevel().getEntitiesOfClass(EldritchCrab.class, zombie.getBoundingBox().inflate(8.0));
-            helper.assertTrue(!crabs.isEmpty(), "death tick must spawn an Eldritch Crab from the InhabitedZombie");
+            List<EldritchCrab> crabs = helper.getLevel().getEntitiesOfClass(EldritchCrab.class, new net.minecraft.world.phys.AABB(pos).inflate(8.0));
+            if (crabs.isEmpty() && waitedTicks < 40) {
+                awaitInhabitedCrab(helper, pos, waitedTicks + 1);
+                return;
+            }
+            helper.assertTrue(!crabs.isEmpty(), "death tick must spawn an Eldritch Crab from the InhabitedZombie within 40 ticks");
             helper.assertTrue(crabs.stream().anyMatch(EldritchCrab::hasHelm), "crab born from an InhabitedZombie must carry its helm");
             helper.succeed();
         });
@@ -602,9 +632,10 @@ public final class WarpGameTests {
         drinkMilk(mergedDefault);
         helper.assertTrue(!mergedDefault.hasEffect(ModEffects.VIS_EXHAUST), "effect merge should retain the existing default curative policy");
         ServerPlayer infectedPlayer = mockServerPlayer(helper);
+        BlockPos infectionPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        infectedPlayer.setPos(infectionPos.getX() + 0.5, infectionPos.getY(), infectionPos.getZ() + 0.5);
         helper.getLevel().addFreshEntity(infectedPlayer);
-        infectedPlayer.setPos(player.getX() + 1.0, player.getY(), player.getZ());
-        LivingEntity source = createMob(helper, EntityTypes.BAT, player.getX() + 2.0, player.getY(), player.getZ());
+        LivingEntity source = createMob(helper, EntityTypes.BAT, infectionPos.getX() + 2.0, infectionPos.getY(), infectionPos.getZ() + 0.5);
         source.addEffect(new MobEffectInstance(ModEffects.INFECTIOUS_VIS_EXHAUST, 100, 0));
         ModEffects.INFECTIOUS_VIS_EXHAUST.value().applyEffectTick(helper.getLevel(), source, 0);
         helper.assertTrue(infectedPlayer.hasEffect(ModEffects.VIS_EXHAUST), "infectious effect should spread an ordinary vis exhaustion instance");

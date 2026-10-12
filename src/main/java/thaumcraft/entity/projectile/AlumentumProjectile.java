@@ -6,6 +6,7 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableIt
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.HitResult;
 import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModItems;
@@ -35,7 +36,7 @@ public class AlumentumProjectile extends ThrowableItemProjectile {
         if (!(this.level() instanceof ServerLevel level)) {
             return;
         }
-        boolean griefing = level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING);
+        boolean griefing = level.getGameRules().get(GameRules.MOB_GRIEFING);
         level.explode(null, this.getX(), this.getY(), this.getZ(), 1.66F,
             griefing ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE);
         this.discard();
