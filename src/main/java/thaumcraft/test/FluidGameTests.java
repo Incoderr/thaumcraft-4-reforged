@@ -264,6 +264,11 @@ public final class FluidGameTests {
         ItemStack soap = new ItemStack(ModItems.SANITIZING_SOAP.get(), 2);
         player.setItemInHand(InteractionHand.MAIN_HAND, soap);
         ModItems.SANITIZING_SOAP.get().use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
+        helper.onEachTick(() -> {
+            if (player.isUsingItem()) {
+                player.tick();
+            }
+        });
         helper.runAfterDelay(195, () -> {
             helper.assertValueEqual(soap.getCount(), 2, "soap lifecycle consumed the item before tick 196");
             helper.assertTrue(player.isUsingItem(), "soap lifecycle stopped before tick 196");
