@@ -24,12 +24,16 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.effect.EffectHooks;
+import thaumcraft.entity.monster.Pech;
+import thaumcraft.menu.PechTradeMenu;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.Warp;
@@ -40,12 +44,14 @@ import thaumcraft.wand.WandManager;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class WarpGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"warp_temp_decay_and_ward", "warp_vis_exhaust_wand_cost", "taint_poison_damages_bat"};
+    private static final String[] TESTS = {"warp_temp_decay_and_ward", "warp_vis_exhaust_wand_cost", "taint_poison_damages_bat", "warp_gap_effects_noop", "pech_trade_offer_tables"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> WarpGameTests::tempWarpDecayAndWard);
         FUNCTIONS.register(TESTS[1], () -> WarpGameTests::visExhaustWandCost);
         FUNCTIONS.register(TESTS[2], () -> WarpGameTests::taintPoisonDamagesBat);
+        FUNCTIONS.register(TESTS[3], () -> WarpGameTests::warpGapEffectsNoop);
+        FUNCTIONS.register(TESTS[4], () -> WarpGameTests::pechTradeOfferTables);
     }
 
     private WarpGameTests() {
@@ -87,9 +93,17 @@ public final class WarpGameTests {
         Warp.set(player, 2, WarpType.TEMPORARY);
         WarpEvents.checkWarpEvent(player);
         helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 1, "temporary warp should decay once per event check");
+        Warp.set(player, 3, WarpType.TEMPORARY);
+        player.tickCount = 1999;
+        NeoForge.EVENT_BUS.post(new PlayerTickEvent.Post(player));
+        helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 3, "temporary warp must not decay before the scheduled check");
+        player.tickCount = 2000;
+        NeoForge.EVENT_BUS.post(new PlayerTickEvent.Post(player));
+        helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 2, "scheduled check must decay temporary warp once");
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(ModEffects.WARP_WARD, 100, 0));
         Warp.set(player, 2, WarpType.TEMPORARY);
-        WarpEvents.checkWarpEvent(player);
+        player.tickCount = 4000;
+        NeoForge.EVENT_BUS.post(new PlayerTickEvent.Post(player));
         helper.assertValueEqual(Warp.get(player, WarpType.TEMPORARY), 2, "warp ward should suppress event and decay");
         helper.succeed();
     }
@@ -118,6 +132,48 @@ public final class WarpGameTests {
         float health = bat.getHealth();
         ModEffects.TAINT_POISON.value().applyEffectTick(helper.getLevel(), bat, 0);
         helper.assertTrue(bat.getHealth() < health, "taint poison should hurt an ordinary small non-undead mob");
+        helper.succeed();
+    }
+
+    private static void warpGapEffectsNoop(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        Knowledge.get(player);
+        Warp.set(player, 3, WarpType.STICKY);
+        int airPool = Knowledge.get(player).getAspectPool(Aspect.AIR);
+        try {
+            var method = WarpEvents.class.getDeclaredMethod("applyWarpEvent", ServerPlayer.class, int.class, int.class);
+            method.setAccessible(true);
+            for (int effect = 73; effect <= 75; effect++) {
+                method.invoke(null, player, 100, effect);
+            }
+        } catch (ReflectiveOperationException exception) {
+            helper.fail("warp event entry could not be invoked: " + exception.getMessage());
+            return;
+        }
+        helper.assertValueEqual(Warp.get(player, WarpType.STICKY), 3, "effects 73 through 75 must not change sticky warp");
+        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.AIR), airPool, "effects 73 through 75 must not grant aspects");
+        helper.assertTrue(player.getActiveEffects().isEmpty(), "effects 73 through 75 must not apply a potion effect");
+        helper.succeed();
+    }
+
+    private static void pechTradeOfferTables(GameTestHelper helper) {
+        var registryAccess = helper.getLevel().registryAccess();
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 1, registryAccess).size(), 8, "normal value-one offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 2, registryAccess).size(), 4, "normal value-two offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 3, registryAccess).size(), 5, "normal value-three offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 4, registryAccess).size(), 1, "normal value-four offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 5, registryAccess).size(), 3, "normal value-five offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 1, registryAccess).size(), 8, "warrior value-one offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 2, registryAccess).size(), 3, "warrior value-two offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 3, registryAccess).size(), 4, "warrior value-three offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 4, registryAccess).size(), 7, "warrior value-four offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.WARRIOR, 5, registryAccess).size(), 5, "warrior value-five offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 1, registryAccess).size(), 16, "archer value-one offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 2, registryAccess).size(), 4, "archer value-two offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 3, registryAccess).size(), 5, "archer value-three offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 4, registryAccess).size(), 1, "archer value-four offer count");
+        helper.assertValueEqual(PechTradeMenu.tradeOffers(Pech.PechType.ARCHER, 5, registryAccess).size(), 4, "archer value-five offer count");
+        helper.assertTrue(PechTradeMenu.tradeOffers(Pech.PechType.NORMAL, 1, registryAccess).stream().noneMatch(stack -> stack.is(thaumcraft.registry.ModItems.COPPER_NUGGET)), "normal value-one offers should use native clusters, not standalone metal nuggets");
         helper.succeed();
     }
 }

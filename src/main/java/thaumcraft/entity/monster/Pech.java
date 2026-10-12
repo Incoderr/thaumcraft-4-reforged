@@ -198,7 +198,8 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
         if (stack.isEmpty()) {
             return 0;
         }
-        return Math.max(VALUED_ITEMS.getOrDefault(stack.getItem(), 0), this.getGreedValue(stack));
+        int fixedValue = VALUED_ITEMS.getOrDefault(stack.getItem(), 0);
+        return fixedValue > 0 ? fixedValue : Math.min(32, this.getGreedValue(stack));
     }
 
     private int getGreedValue(ItemStack stack) {
@@ -254,7 +255,7 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
     }
 
     public boolean openTradeMenu(ServerPlayer player) {
-        if (!this.isTamed() || this.distanceToSqr(player) > 64.0) {
+        if (!this.isTamed() || this.isTrading() || this.distanceToSqr(player) > 64.0) {
             return false;
         }
         player.openMenu(this, buffer -> buffer.writeVarInt(this.getId()));
