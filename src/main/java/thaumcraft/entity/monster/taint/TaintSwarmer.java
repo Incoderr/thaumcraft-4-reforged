@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.sounds.SoundSource;
+import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
 
@@ -29,13 +30,23 @@ public class TaintSwarmer extends TaintSpore {
     public void tick() {
         super.tick();
         if (this.level().isClientSide()) {
+            if (this.spawnCounter > 0) {
+                this.spawnCounter--;
+            }
+            if (this.spawnCounter <= 0 && this.level().getNearestPlayer(this.getX(), this.getY(), this.getZ(), 16.0,
+                entity -> entity instanceof Player player && player.isAlive() && !player.getAbilities().invulnerable
+                    && !player.isCreative() && !player.isSpectator()) != null) {
+                this.spawnCounter = 500;
+            }
+            Fx.get().taintSwarm(this.level(), this, (500 - this.spawnCounter) / 25, 0.1F, 10.0F, 0.0F);
             return;
         }
         if (this.spawnCounter > 0) {
             this.spawnCounter--;
         }
         if (this.spawnCounter <= 0 && this.level().getNearestPlayer(this.getX(), this.getY(), this.getZ(), 16.0,
-            entity -> entity instanceof Player player && player.isAlive() && !player.isCreative() && !player.isSpectator()) != null) {
+            entity -> entity instanceof Player player && player.isAlive() && !player.getAbilities().invulnerable
+                && !player.isCreative() && !player.isSpectator()) != null) {
             this.spawnCounter = 500;
             this.spawnSwarm(1);
         }

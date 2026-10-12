@@ -11,6 +11,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
+import thaumcraft.entity.AspectOrb;
 import thaumcraft.entity.monster.FireBat;
 import thaumcraft.entity.monster.BrainyZombie;
 import thaumcraft.entity.monster.CultistCleric;
@@ -67,6 +68,12 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<ExplosiveOrb>> EXPLOSIVE_ORB = projectile("explosive_orb", ExplosiveOrb::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<EldritchOrb>> ELDRITCH_ORB = projectile("eldritch_orb", EldritchOrb::new, 0.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<GolemOrb>> GOLEM_ORB = projectile("golem_orb", GolemOrb::new, 0.5F);
+    public static final DeferredHolder<EntityType<?>, EntityType<AspectOrb>> ASPECT_ORB = ENTITIES.registerEntityType(
+        "aspect_orb",
+        AspectOrb::new,
+        MobCategory.MISC,
+        builder -> builder.sized(0.125F, 0.125F).clientTrackingRange(4).updateInterval(2)
+    );
     public static final DeferredHolder<EntityType<?>, EntityType<BottleTaint>> BOTTLE_TAINT = projectile("bottle_taint", BottleTaint::new, 0.25F);
     public static final DeferredHolder<EntityType<?>, EntityType<AlumentumProjectile>> ALUMENTUM_PROJECTILE = trackedProjectile("alumentum_projectile", AlumentumProjectile::new, 0.25F, 64);
     public static final DeferredHolder<EntityType<?>, EntityType<DartProjectile>> DART = trackedProjectile("dart", DartProjectile::new, 0.5F, 64);

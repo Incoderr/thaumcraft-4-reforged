@@ -6,6 +6,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -142,12 +143,12 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
                 rearRightLegPose = PartPose.offset(3.0F, 12.0F, -5.0F);
             }
             case CREEPER -> {
-                bodyPose = PartPose.offset(0.0F, 4.0F, 0.0F);
-                headPose = PartPose.offset(0.0F, 4.0F, 0.0F);
-                leftLegPose = PartPose.offset(-2.0F, 16.0F, 4.0F);
-                rightLegPose = PartPose.offset(2.0F, 16.0F, 4.0F);
-                rearLeftLegPose = PartPose.offset(-2.0F, 16.0F, -4.0F);
-                rearRightLegPose = PartPose.offset(2.0F, 16.0F, -4.0F);
+                bodyPose = PartPose.offset(0.0F, 6.0F, 0.0F);
+                headPose = PartPose.offset(0.0F, 6.0F, 0.0F);
+                leftLegPose = PartPose.offset(-2.0F, 18.0F, 4.0F);
+                rightLegPose = PartPose.offset(2.0F, 18.0F, 4.0F);
+                rearLeftLegPose = PartPose.offset(-2.0F, 18.0F, -4.0F);
+                rearRightLegPose = PartPose.offset(2.0F, 18.0F, -4.0F);
             }
             case VILLAGER -> {
                 leftLegPose = PartPose.offset(2.0F, 12.0F, 0.0F);
@@ -265,12 +266,20 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
 
     private static void addVillager(PartDefinition body, PartDefinition head, PartDefinition leftLeg, PartDefinition rightLeg, PartDefinition root) {
         body.addOrReplaceChild("body_cube", CubeListBuilder.create().texOffs(16, 20).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 12.0F, 6.0F), PartPose.ZERO);
+        body.addOrReplaceChild("jacket", CubeListBuilder.create().texOffs(0, 38)
+            .addBox(-4.0F, 0.0F, -3.0F, 8.0F, 20.0F, 6.0F, new CubeDeformation(0.5F)), PartPose.ZERO);
         head.addOrReplaceChild("head_cube", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F).texOffs(24, 0).addBox(-1.0F, -3.0F, -6.0F, 2.0F, 4.0F, 2.0F), PartPose.ZERO);
+        PartDefinition hat = head.addOrReplaceChild("hat",
+            CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F, new CubeDeformation(0.51F)), PartPose.ZERO);
+        hat.addOrReplaceChild("hat_rim",
+            CubeListBuilder.create().texOffs(30, 47).addBox(-8.0F, -8.0F, -6.0F, 16.0F, 16.0F, 1.0F),
+            PartPose.rotation((float) (-Math.PI / 2.0), 0.0F, 0.0F));
         leftLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.ZERO);
         rightLeg.addOrReplaceChild("leg", CubeListBuilder.create().texOffs(0, 20).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.ZERO);
         root.getChild("left_arm").addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(44, 22).addBox(-8.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.ZERO);
         root.getChild("right_arm").addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(44, 22).mirror().addBox(4.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F), PartPose.ZERO);
-        root.addOrReplaceChild("folded_arms", CubeListBuilder.create().texOffs(40, 38).addBox(-4.0F, 2.0F, -2.0F, 8.0F, 4.0F, 4.0F), PartPose.ZERO);
+        root.addOrReplaceChild("folded_arms", CubeListBuilder.create().texOffs(40, 38).addBox(-4.0F, 2.0F, -2.0F, 8.0F, 4.0F, 4.0F),
+            PartPose.offsetAndRotation(0.0F, 3.0F, -1.0F, -0.75F, 0.0F, 0.0F));
     }
 
     @Override
@@ -318,9 +327,10 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
             for (int index = 0; index < this.spiderLegs.size(); index++) {
                 ModelPart leg = this.spiderLegs.get(index);
                 float side = index % 2 == 0 ? -1.0F : 1.0F;
-                leg.zRot = side * (float) Math.PI / 4.0F * (index < 2 || index > 5 ? 1.0F : 0.74F);
+                leg.zRot = side * (float) Math.PI / 4.0F * (index < 2 || index > 5 ? 1.0F : 0.74F)
+                    + side * Mth.abs(Mth.sin(walk + stride[index]) * 0.4F) * state.walkAnimationSpeed;
                 leg.yRot = baseYaw[index] + (index % 2 == 0 ? -1.0F : 1.0F) * Mth.cos(walk * 2.0F + stride[index]) * 0.4F * state.walkAnimationSpeed;
-                leg.xRot = Mth.abs(Mth.sin(walk + stride[index] * 0.5F) * 0.4F) * state.walkAnimationSpeed;
+                leg.xRot = 0.0F;
             }
         }
         if (this.kind == Kind.CHICKEN) {

@@ -19,6 +19,7 @@ import gen_phase9_warded
 import gen_phase9_machines
 import gen_phase9_mirrors
 import gen_phase10_11
+import gen_warp_shaders
 import gen_villages
 import gen_world
 
@@ -706,6 +707,19 @@ def item_definition_models(definition):
         yield definition["model"]
 
 
+def blockstate_models(value):
+    if isinstance(value, dict):
+        model = value.get("model")
+        if isinstance(model, str):
+            yield model
+        for key, entry in value.items():
+            if key != "model":
+                yield from blockstate_models(entry)
+    elif isinstance(value, list):
+        for entry in value:
+            yield from blockstate_models(entry)
+
+
 def validate_models():
     missing = []
     for path in (ASSETS / "items").glob("*.json"):
@@ -714,16 +728,10 @@ def validate_models():
             if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
                 missing.append(f"{path.name}: {model}")
     for path in (ASSETS / "blockstates").glob("*.json"):
-        text = path.read_text(encoding="utf-8")
-        content = json.loads(text)
-        entries = content["variants"].values() if "variants" in content else [part["apply"] for part in content["multipart"]]
-        for entry in entries:
-            for variant in entry if isinstance(entry, list) else [entry]:
-                variant = variant.get("fallback", variant)
-                for model in [entry["model"] for entry in variant["models"]] if "models" in variant else [variant["model"]]:
-                    namespace, _, location = model.partition(":")
-                    if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
-                        missing.append(f"{path.name}: {model}")
+        for model in blockstate_models(json.loads(path.read_text(encoding="utf-8"))):
+            namespace, _, location = model.partition(":")
+            if namespace == NS and not (ASSETS / "models" / f"{location}.json").exists():
+                missing.append(f"{path.name}: {model}")
     if missing:
         raise SystemExit("missing models:\n  " + "\n  ".join(missing))
 
@@ -754,6 +762,7 @@ def main():
     gen_phase9_machines.generate(ctx)
     gen_phase9_mirrors.generate(ctx)
     gen_phase10_11.generate(ctx)
+    gen_warp_shaders.generate(mcformat.profile.name, OUT)
     gen_phase5.recipes(ctx)
     write_tags()
     validate_textures()

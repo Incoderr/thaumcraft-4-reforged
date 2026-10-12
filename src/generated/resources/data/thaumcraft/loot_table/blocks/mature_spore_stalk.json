@@ -1,18 +1,5 @@
 {
   "type": "minecraft:block",
-  "pools": [
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "thaumcraft:mature_spore_stalk"
-        }
-      ],
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      }
-    }
-  ],
+  "pools": [],
   "random_sequence": "thaumcraft:blocks/mature_spore_stalk"
 }

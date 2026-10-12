@@ -27,6 +27,7 @@ import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModMenus;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModVillagers;
+import thaumcraft.entity.monster.ChampionKeys;
 import thaumcraft.research.ConfigResearch;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchNoteKeys;
@@ -47,6 +48,8 @@ import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.test.WardedGameTests;
 import thaumcraft.test.WarpGameTests;
+import thaumcraft.test.WarpEncounterGameTests;
+import thaumcraft.test.ChampionGameTests;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.focus.FocusKeys;
 
@@ -67,6 +70,7 @@ public class Thaumcraft {
         ResearchNoteKeys.init();
         Knowledge.init();
         WardedKeys.init();
+        ChampionKeys.init();
         thaumcraft.device.MirrorKeys.init();
         Platform.register(modEventBus);
         ModEffects.register(modEventBus);
@@ -78,6 +82,7 @@ public class Thaumcraft {
         ModCreativeTabs.register(modEventBus);
         ModSounds.register(modEventBus);
         ModFeatures.register(modEventBus);
+        thaumcraft.world.gen.HalloweenFirebatSpawnModifier.register(modEventBus);
         ModVillagers.register(modEventBus);
         ModMenus.register(modEventBus);
         ModRecipes.register(modEventBus);
@@ -99,8 +104,11 @@ public class Thaumcraft {
         EldritchCrabGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
         WarpGameTests.register(modEventBus);
+        WarpEncounterGameTests.register(modEventBus);
+        ChampionGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
         thaumcraft.test.MirrorGameTests.register(modEventBus);
+        thaumcraft.entity.projectile.ProjectileGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {

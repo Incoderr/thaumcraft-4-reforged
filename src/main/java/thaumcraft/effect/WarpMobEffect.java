@@ -2,12 +2,13 @@ package thaumcraft.effect;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.tags.EntityTypeTags;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.damage.ModDamageTypes;
@@ -23,8 +24,8 @@ public final class WarpMobEffect extends MobEffect {
     @Override
     public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
         switch (kind) {
-            case SUN_SCORNED -> applySunScorned(level, entity);
-            case THAUMARHIA -> applyThaumarhia(level, entity);
+            case SUN_SCORNED -> applySunScorned(level, entity, level.getRandom());
+            case THAUMARHIA -> applyThaumarhia(level, entity, level.getRandom());
             case UNNATURAL_HUNGER -> {
                 if (entity instanceof Player player) {
                     player.causeFoodExhaustion(0.025F * (amplifier + 1));
@@ -49,20 +50,20 @@ public final class WarpMobEffect extends MobEffect {
         };
     }
 
-    private static void applySunScorned(ServerLevel level, LivingEntity entity) {
+    private static void applySunScorned(ServerLevel level, LivingEntity entity, RandomSource random) {
         BlockPos pos = entity.blockPosition();
         float brightness = entity.getLightLevelDependentMagicValue();
         if (brightness > 0.5F
-            && level.getRandom().nextFloat() * 30.0F < (brightness - 0.4F) * 2.0F
+            && random.nextFloat() * 30.0F < (brightness - 0.4F) * 2.0F
             && level.canSeeSky(pos)) {
             entity.igniteForSeconds(4.0F);
-        } else if (brightness < 0.25F && level.getRandom().nextFloat() > brightness * 2.0F) {
+        } else if (brightness < 0.25F && random.nextFloat() > brightness * 2.0F) {
             entity.heal(1.0F);
         }
     }
 
-    private static void applyThaumarhia(ServerLevel level, LivingEntity entity) {
-        if (level.getRandom().nextInt(15) != 0) {
+    private static void applyThaumarhia(ServerLevel level, LivingEntity entity, RandomSource random) {
+        if (random.nextInt(15) != 0) {
             return;
         }
         BlockPos pos = entity.blockPosition();

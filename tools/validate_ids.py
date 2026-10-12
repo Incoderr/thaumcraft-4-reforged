@@ -168,6 +168,17 @@ class Validator:
         self.textures = {"minecraft:" + texture for texture in self.textures}
         self.models |= self.asset_ids(out, "models", ".json")
         self.textures |= self.asset_ids(out, "textures", ".png")
+        self.shaders = set()
+        for archive_names in (server, client):
+            self.shaders |= {
+                name[len("assets/"):-len(suffix)].replace("/shaders/", ":", 1)
+                for name in archive_names
+                for suffix in (".vsh", ".fsh", ".json")
+                if name.startswith("assets/") and "/shaders/" in name and name.endswith(suffix)
+            }
+        self.shaders |= self.asset_ids(out, "shaders", ".vsh")
+        self.shaders |= self.asset_ids(out, "shaders", ".fsh")
+        self.shaders |= self.asset_ids(out, "shaders", ".json")
         profile = mcformat.PROFILES[version]
         self.loot_tables = datapack_ids(server, [profile.loot_folder])
         self.enchantments = datapack_ids(server, ["enchantment"]) | self.registry.get("enchantment", set())
@@ -282,6 +293,8 @@ class Validator:
             known = value in self.enchantments
         elif kind == "model":
             known = value in self.models or value.split(":", 1)[1] in BUILTIN_MODELS
+        elif kind == "shader":
+            known = value in self.shaders
         elif kind == "texture":
             known = value in self.textures
         elif kind == "skip":
@@ -329,6 +342,11 @@ class Validator:
 
     def classify(self, value, keys, file_kind):
         key = keys[-1] if keys else ""
+        if file_kind == "post_effect":
+            if key in ("vertex_shader", "fragment_shader"):
+                return "shader"
+            if key in ("target", "output") and value == "minecraft:main":
+                return "skip"
         if value.startswith("#"):
             if "matching_block_tag" in keys:
                 return "tag:block"
@@ -405,6 +423,8 @@ class Validator:
             file_kind = "model"
         elif relative.startswith("assets/") and "/items/" in relative:
             file_kind = "item_model"
+        elif relative.startswith("assets/") and "/post_effect/" in relative:
+            file_kind = "post_effect"
         else:
             file_kind = "other"
         content = json.loads(path.read_text(encoding="utf-8"))

@@ -72,6 +72,7 @@ public final class EldritchCrabGameTests {
         helper.getLevel().addFreshEntity(crab);
         crab.setLastHurtByMob(target);
         crab.setHelm(false);
+        crab.getRandom().setSeed(0L);
         crab.tick();
         helper.assertTrue(crab.getVehicle() == target, "crab did not mount its airborne revenge target");
         helper.succeed();

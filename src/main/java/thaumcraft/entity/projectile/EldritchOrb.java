@@ -1,6 +1,5 @@
 package thaumcraft.entity.projectile;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -18,6 +17,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import thaumcraft.entity.CombatUtils;
+import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModEntities;
 
 public class EldritchOrb extends ThrowableProjectile {
@@ -60,18 +60,23 @@ public class EldritchOrb extends ThrowableProjectile {
         }
         level.playSound(null, this.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.HOSTILE, 0.5F, 2.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.8F);
         level.broadcastEntityEvent(this, (byte) 16);
-        this.discard();
+        this.tickCount = 100;
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (this.level().isClientSide()) {
-            if (this.tickCount % 2 == 0) {
-                this.level().addParticle(ParticleTypes.PORTAL, this.getX(), this.getY(), this.getZ(), (this.random.nextFloat() - 0.5) * 0.3, (this.random.nextFloat() - 0.5) * 0.3, (this.random.nextFloat() - 0.5) * 0.3);
-            }
-        } else if (this.tickCount > 100) {
+        if (!this.level().isClientSide() && this.tickCount > 100) {
             this.discard();
+        }
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == 16 && this.level().isClientSide()) {
+            Fx.get().eldritchOrbBurst(this.level(), this);
+        } else {
+            super.handleEntityEvent(id);
         }
     }
 

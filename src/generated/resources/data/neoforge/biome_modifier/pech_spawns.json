@@ -1,0 +1,9 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#c:is_magical",
+  "spawners": {
+    "type": "thaumcraft:pech",
+    "count": 1,
+    "weight": 10
+  }
+}

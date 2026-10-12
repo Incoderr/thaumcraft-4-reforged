@@ -1,18 +1,5 @@
 {
   "type": "minecraft:block",
-  "pools": [
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "thaumcraft:tainted_grass"
-        }
-      ],
-      "condition": {
-        "type": "minecraft:survives_explosion"
-      }
-    }
-  ],
+  "pools": [],
   "random_sequence": "thaumcraft:blocks/tainted_grass"
 }

@@ -98,7 +98,7 @@ public final class TcRenderTypes {
     }
 
     public static RenderType entityCutoutNoCull(Identifier texture) {
-        return RenderTypes.entityCutoutNoCull(texture);
+        return RenderTypes.entityCutout(texture, false);
     }
 
     public static RenderType eyes(Identifier texture) {

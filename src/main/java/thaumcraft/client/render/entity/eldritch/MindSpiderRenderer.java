@@ -6,36 +6,20 @@ import net.minecraft.client.model.monster.spider.SpiderModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.layers.EyesLayer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import thaumcraft.Thaumcraft;
-import thaumcraft.client.platform.TcRenderTypes;
+import thaumcraft.client.platform.AbstractTranslucentMobRenderer;
+import thaumcraft.client.platform.ClientLayers;
 import thaumcraft.entity.monster.eldritch.MindSpider;
 
-public class MindSpiderRenderer extends MobRenderer<MindSpider, LivingEntityRenderState, SpiderModel> {
+public class MindSpiderRenderer extends AbstractTranslucentMobRenderer<MindSpider, LivingEntityRenderState, SpiderModel> {
     private static final Identifier TEXTURE = Thaumcraft.id("textures/model/taint_spider.png");
-    private static final RenderType EYES = TcRenderTypes.eyes(Thaumcraft.id("textures/model/taint_spider_eyes.png"));
 
     public MindSpiderRenderer(EntityRendererProvider.Context context) {
         super(context, new SpiderModel(context.bakeLayer(ModelLayers.SPIDER)), 0.0F);
-        this.addLayer(new EyesLayer<>(this) {
-            @Override
-            public RenderType renderType() {
-                return EYES;
-            }
-
-            @Override
-            public void submit(PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector collector, int lightCoords, LivingEntityRenderState state, float yRot, float xRot) {
-                int previousLight = state.lightCoords;
-                state.lightCoords = 15728880;
-                super.submit(poseStack, collector, state.lightCoords, state, yRot, xRot);
-                state.lightCoords = previousLight;
-            }
-        });
+        this.addLayer(ClientLayers.fullbrightEyes(this, Thaumcraft.id("textures/model/taint_spider_eyes.png")));
     }
 
     @Override
@@ -54,13 +38,13 @@ public class MindSpiderRenderer extends MobRenderer<MindSpider, LivingEntityRend
     }
 
     @Override
-    protected int getModelTint(LivingEntityRenderState state) {
-        return ARGB.colorFromFloat(Math.min(0.1F, state.ageInTicks / 100.0F), 1.0F, 1.0F, 1.0F);
+    public LivingEntityRenderState createRenderState() {
+        return new LivingEntityRenderState();
     }
 
     @Override
-    protected RenderType getRenderType(LivingEntityRenderState state, boolean isBodyVisible, boolean forceTransparent, boolean appearsGlowing) {
-        return TcRenderTypes.entityTranslucentNoDepth(TEXTURE);
+    protected int getModelTint(LivingEntityRenderState state) {
+        return ARGB.colorFromFloat(Math.min(0.1F, state.ageInTicks / 100.0F), 1.0F, 1.0F, 1.0F);
     }
 
     @Override
