@@ -26,6 +26,7 @@ public final class TcRenderTypes {
         ADDITIVE_NO_DEPTH,
         TRANSLUCENT_NO_DEPTH,
         ENTITY_CUTOUT,
+        ENTITY_CUTOUT_NO_CULL,
         ENTITY_TRANSLUCENT
     }
 
@@ -36,6 +37,7 @@ public final class TcRenderTypes {
             case ADDITIVE_NO_DEPTH -> additiveNoDepth(texture);
             case TRANSLUCENT_NO_DEPTH -> translucentNoDepth(texture);
             case ENTITY_CUTOUT -> entityCutout(texture);
+            case ENTITY_CUTOUT_NO_CULL -> entityCutoutNoCull(texture);
             case ENTITY_TRANSLUCENT -> entityTranslucent(texture);
         };
     }
@@ -93,6 +95,18 @@ public final class TcRenderTypes {
 
     public static RenderType entityCutout(Identifier texture) {
         return RenderTypes.entityCutout(texture);
+    }
+
+    public static RenderType entityCutoutNoCull(Identifier texture) {
+        return RenderTypes.entityCutoutNoCull(texture);
+    }
+
+    public static RenderType eyes(Identifier texture) {
+        return RenderTypes.eyes(texture);
+    }
+
+    public static RenderType translucentMovingBlock() {
+        return RenderTypes.translucentMovingBlock();
     }
 
     public static RenderType dragonRays() {
