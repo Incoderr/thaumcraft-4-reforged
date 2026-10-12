@@ -1,6 +1,5 @@
 package thaumcraft.entity.projectile;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.util.Mth;
 import thaumcraft.entity.CombatUtils;
+import thaumcraft.fx.Fx;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
 
@@ -69,9 +69,7 @@ public class GolemOrb extends ThrowableProjectile {
             entityHit.getEntity().hurtServer(level, source, (float) owner.getAttributeValue(Attributes.ATTACK_DAMAGE) * multiplier);
         }
         this.level().playSound(null, this.blockPosition(), ModSounds.SHOCK.get(), net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
-        if (this.level() instanceof ServerLevel level) {
-            level.sendParticles(ParticleTypes.WITCH, this.getX(), this.getY(), this.getZ(), 12, 0.25, 0.25, 0.25, 0.0);
-        }
+        Fx.get().golemOrbBurst(this.level(), this.getX(), this.getY(), this.getZ(), 1.0F);
         this.discard();
     }
 
