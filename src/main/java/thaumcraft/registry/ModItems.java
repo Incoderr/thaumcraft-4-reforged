@@ -1,11 +1,14 @@
 package thaumcraft.registry;
 
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
@@ -108,6 +111,31 @@ public final class ModItems {
     public static final DeferredItem<Item> VOID_SEED = ITEMS.registerSimpleItem("void_seed");
     public static final DeferredItem<Item> GOLD_COIN = ITEMS.registerSimpleItem("gold_coin");
     public static final DeferredItem<Item> CRIMSON_RITES = ITEMS.registerSimpleItem("crimson_rites", properties -> properties.rarity(Rarity.RARE));
+
+    public static final DeferredItem<SpawnEggItem> BRAINY_ZOMBIE_SPAWN_EGG = spawnEgg("brainy_zombie_spawn_egg", ModEntities.BRAINY_ZOMBIE);
+    public static final DeferredItem<SpawnEggItem> GIANT_BRAINY_ZOMBIE_SPAWN_EGG = spawnEgg("giant_brainy_zombie_spawn_egg", ModEntities.GIANT_BRAINY_ZOMBIE);
+    public static final DeferredItem<SpawnEggItem> WISP_SPAWN_EGG = spawnEgg("wisp_spawn_egg", ModEntities.WISP);
+    public static final DeferredItem<SpawnEggItem> FIRE_BAT_SPAWN_EGG = spawnEgg("fire_bat_spawn_egg", ModEntities.FIREBAT);
+    public static final DeferredItem<SpawnEggItem> PECH_SPAWN_EGG = spawnEgg("pech_spawn_egg", ModEntities.PECH);
+    public static final DeferredItem<SpawnEggItem> MIND_SPIDER_SPAWN_EGG = spawnEgg("mind_spider_spawn_egg", ModEntities.MIND_SPIDER);
+    public static final DeferredItem<SpawnEggItem> ELDRITCH_GUARDIAN_SPAWN_EGG = spawnEgg("eldritch_guardian_spawn_egg", ModEntities.ELDRITCH_GUARDIAN);
+    public static final DeferredItem<SpawnEggItem> CULTIST_KNIGHT_SPAWN_EGG = spawnEgg("cultist_knight_spawn_egg", ModEntities.CULTIST_KNIGHT);
+    public static final DeferredItem<SpawnEggItem> CULTIST_CLERIC_SPAWN_EGG = spawnEgg("cultist_cleric_spawn_egg", ModEntities.CULTIST_CLERIC);
+    public static final DeferredItem<SpawnEggItem> ELDRITCH_CRAB_SPAWN_EGG = spawnEgg("eldritch_crab_spawn_egg", ModEntities.ELDRITCH_CRAB);
+    public static final DeferredItem<SpawnEggItem> INHABITED_ZOMBIE_SPAWN_EGG = spawnEgg("inhabited_zombie_spawn_egg", ModEntities.INHABITED_ZOMBIE);
+    public static final DeferredItem<SpawnEggItem> THAUMIC_SLIME_SPAWN_EGG = spawnEgg("thaumic_slime_spawn_egg", ModEntities.THAUMIC_SLIME);
+    public static final DeferredItem<SpawnEggItem> TAINT_SPIDER_SPAWN_EGG = spawnEgg("taint_spider_spawn_egg", ModEntities.TAINT_SPIDER);
+    public static final DeferredItem<SpawnEggItem> TAINTACLE_SPAWN_EGG = spawnEgg("taintacle_spawn_egg", ModEntities.TAINTACLE);
+    public static final DeferredItem<SpawnEggItem> TAINTACLE_SMALL_SPAWN_EGG = spawnEgg("taintacle_small_spawn_egg", ModEntities.TAINTACLE_TINY);
+    public static final DeferredItem<SpawnEggItem> TAINT_SPORE_SPAWN_EGG = spawnEgg("taint_spore_spawn_egg", ModEntities.TAINT_SPORE);
+    public static final DeferredItem<SpawnEggItem> TAINT_SPORE_SWARMER_SPAWN_EGG = spawnEgg("taint_spore_swarmer_spawn_egg", ModEntities.TAINT_SPORE_SWARMER);
+    public static final DeferredItem<SpawnEggItem> TAINT_SWARM_SPAWN_EGG = spawnEgg("taint_swarm_spawn_egg", ModEntities.TAINT_SWARM);
+    public static final DeferredItem<SpawnEggItem> TAINT_CHICKEN_SPAWN_EGG = spawnEgg("taint_chicken_spawn_egg", ModEntities.TAINTED_CHICKEN);
+    public static final DeferredItem<SpawnEggItem> TAINT_COW_SPAWN_EGG = spawnEgg("taint_cow_spawn_egg", ModEntities.TAINTED_COW);
+    public static final DeferredItem<SpawnEggItem> TAINT_CREEPER_SPAWN_EGG = spawnEgg("taint_creeper_spawn_egg", ModEntities.TAINTED_CREEPER);
+    public static final DeferredItem<SpawnEggItem> TAINT_PIG_SPAWN_EGG = spawnEgg("taint_pig_spawn_egg", ModEntities.TAINTED_PIG);
+    public static final DeferredItem<SpawnEggItem> TAINT_SHEEP_SPAWN_EGG = spawnEgg("taint_sheep_spawn_egg", ModEntities.TAINTED_SHEEP);
+    public static final DeferredItem<SpawnEggItem> TAINT_VILLAGER_SPAWN_EGG = spawnEgg("taint_villager_spawn_egg", ModEntities.TAINTED_VILLAGER);
 
     public static final DeferredItem<Item> AIR_SHARD = ITEMS.registerSimpleItem("air_shard");
     public static final DeferredItem<Item> FIRE_SHARD = ITEMS.registerSimpleItem("fire_shard");
@@ -289,6 +317,10 @@ public final class ModItems {
 
     private static DeferredItem<Item> nugget(String name) {
         return ITEMS.registerSimpleItem(name, properties -> Registration.food(properties, 1, 0.3F, false, 0.5F));
+    }
+
+    private static DeferredItem<SpawnEggItem> spawnEgg(String name, DeferredHolder<EntityType<?>, ? extends EntityType<?>> entityType) {
+        return ITEMS.registerItem(name, SpawnEggItem::new, properties -> properties.spawnEgg(entityType.get()));
     }
 
     public static void register(IEventBus bus) {

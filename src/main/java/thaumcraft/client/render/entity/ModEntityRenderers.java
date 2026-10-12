@@ -42,6 +42,8 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.FROST_SHARD.get(), FrostShardRenderer::new);
         event.registerEntityRenderer(ModEntities.PECH_BLAST.get(), NoopRenderer::new);
         event.registerEntityRenderer(ModEntities.ALUMENTUM_PROJECTILE.get(), AlumentumRenderer::new);
+        event.registerEntityRenderer(ModEntities.BOTTLE_TAINT.get(), BottleTaintRenderer::new);
+        event.registerEntityRenderer(ModEntities.FALLING_TAINT.get(), FallingTaintRenderer::new);
         event.registerEntityRenderer(ModEntities.DART.get(), DartRenderer::new);
         event.registerEntityRenderer(ModEntities.PRIMAL_ARROW.get(), PrimalArrowRenderer::new);
         event.registerEntityRenderer(ModEntities.MIND_SPIDER.get(), MindSpiderRenderer::new);
