@@ -63,6 +63,9 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TENTACLE = register("tentacle");
     public static final DeferredHolder<SoundEvent, SoundEvent> SWARM = register("swarm");
     public static final DeferredHolder<SoundEvent, SoundEvent> SWARM_ATTACK = register("swarmattack");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAB_CLAW = register("crabclaw");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAB_DEATH = register("crabdeath");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAB_TALK = register("crabtalk");
 
     private ModSounds() {
     }

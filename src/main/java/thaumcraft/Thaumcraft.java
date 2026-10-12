@@ -35,6 +35,7 @@ import thaumcraft.registry.ModRecipes;
 import thaumcraft.test.AlchemyGameTests;
 import thaumcraft.test.ArmorGameTests;
 import thaumcraft.test.DeviceGameTests;
+import thaumcraft.test.EldritchCrabGameTests;
 import thaumcraft.test.ArcaneGameTests;
 import thaumcraft.test.EssentiaGameTests;
 import thaumcraft.test.FluidGameTests;
@@ -93,6 +94,7 @@ public class Thaumcraft {
         ArmorGameTests.register(modEventBus);
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);
+        EldritchCrabGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
         WarpGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
