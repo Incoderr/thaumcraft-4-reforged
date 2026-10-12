@@ -5,7 +5,6 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
@@ -137,7 +136,7 @@ public final class ChampionGameTests {
 
     private static void aspectOrbPersistencePickupAndNode(GameTestHelper helper) {
         var level = helper.getLevel();
-        AspectOrb orb = AspectOrb.create(level, helper.absolutePos(new BlockPos(3, 2, 3)).getX() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getY() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getZ() + 0.5, Aspect.FIRE, 7);
+        AspectOrb orb = AspectOrb.create(level, helper.absolutePos(new BlockPos(3, 2, 3)).getX() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getY() + 0.5, helper.absolutePos(new BlockPos(3, 2, 3)).getZ() + 0.5, Aspect.FIRE, 1);
         helper.assertTrue(orb != null, "aspect orb factory creates an entity");
         orb.tick();
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
@@ -145,7 +144,7 @@ public final class ChampionGameTests {
         AspectOrb loaded = ModEntities.ASPECT_ORB.get().create(level, EntitySpawnReason.TRIGGERED);
         loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), output.buildResult()));
         helper.assertTrue(loaded.getAspect() == Aspect.FIRE, "aspect orb saves and restores its aspect");
-        helper.assertValueEqual(loaded.getAspectValue(), 7, "aspect orb saves and restores its amount");
+        helper.assertValueEqual(loaded.getAspectValue(), 1, "aspect orb saves and restores its amount");
         helper.assertValueEqual(loaded.getAge(), 1, "aspect orb saves and restores lifetime");
 
         ServerPlayer player = mockServerPlayer(helper);
@@ -154,7 +153,13 @@ public final class ChampionGameTests {
         loaded.setPos(player.getX(), player.getY(), player.getZ());
         loaded.playerTouch(player);
         helper.assertTrue(loaded.isRemoved(), "touching a primal orb with wand space consumes it");
-        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), 7, "picked-up orb fills held inventory wand");
+        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), 100, "one vis picked up is stored as 100 centivis");
+
+        Wands.storeVis(wand, Aspect.FIRE, Wands.getMaxVis(wand) - 200);
+        AspectOrb partial = AspectOrb.create(level, player.getX(), player.getY(), player.getZ(), Aspect.FIRE, 7);
+        partial.playerTouch(player);
+        helper.assertTrue(partial.isRemoved(), "partial wand capacity still attracts and consumes the orb");
+        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), Wands.getMaxVis(wand), "partial pickup caps the wand at capacity");
 
         BlockPos nodePos = helper.absolutePos(new BlockPos(2, 2, 5));
         helper.assertTrue(NodeHooks.spawnAspectOrb(level, nodePos, Aspect.AIR, 3), "node hook successfully spawns aspect orb");

@@ -22,7 +22,6 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.wand.Wands;
 
-/** Experience-like aspect dropped by creatures and aura nodes. */
 public final class AspectOrb extends Entity {
     private static final EntityDataAccessor<Integer> DATA_ASPECT = SynchedEntityData.defineId(AspectOrb.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_VALUE = SynchedEntityData.defineId(AspectOrb.class, EntityDataSerializers.INT);
@@ -102,7 +101,7 @@ public final class AspectOrb extends Entity {
     private int wandSlot(Player player) {
         for (int slot = 0; slot < 9; slot++) {
             var stack = player.getInventory().getItem(slot);
-            if (Wands.isWand(stack) && Wands.getVis(stack, getAspect()) + getAspectValue() <= Wands.getMaxVis(stack)) return slot;
+            if (Wands.isWand(stack) && Wands.getVis(stack, getAspect()) < Wands.getMaxVis(stack)) return slot;
         }
         return -1;
     }
@@ -112,8 +111,7 @@ public final class AspectOrb extends Entity {
         int slot = wandSlot(player);
         if (slot < 0) return;
         var wand = player.getInventory().getItem(slot);
-        int stored = Wands.getVis(wand, getAspect());
-        Wands.storeVis(wand, getAspect(), stored + getAspectValue());
+        Wands.addVis(wand, getAspect(), getAspectValue(), true);
         player.takeXpDelay = 2;
         serverLevel.playSound(null, getX(), getY(), getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.1F, 0.5F + random.nextFloat() * 0.2F);
         discard();
