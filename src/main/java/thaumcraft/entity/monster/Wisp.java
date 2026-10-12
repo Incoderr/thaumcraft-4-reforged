@@ -129,6 +129,11 @@ public class Wisp extends Mob implements Enemy {
     }
 
     @Override
+    public int getMaxSpawnClusterSize() {
+        return 2;
+    }
+
+    @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
         if (source.getDirectEntity() instanceof LivingEntity living) {
             this.targetedEntity = living;

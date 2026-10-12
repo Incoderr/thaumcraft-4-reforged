@@ -26,7 +26,6 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import thaumcraft.entity.TaintedMob;
-import thaumcraft.entity.CombatUtils;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
