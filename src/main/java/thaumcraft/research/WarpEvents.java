@@ -213,7 +213,7 @@ public final class WarpEvents {
         int range = Math.min(8 + amplifier * 3, 24);
         AABB area = player.getBoundingBox().inflate(range);
         Vec3 look = player.getViewVector(1.0F).normalize();
-        for (LivingEntity living : player.level().getEntitiesOfClass(LivingEntity.class, area, entity -> entity != player && entity.isAlive() && entity.canBeCollidedWith(player))) {
+        for (LivingEntity living : player.level().getEntitiesOfClass(LivingEntity.class, area, entity -> entity != player && entity.isAlive() && entity.isPickable())) {
             if (living.hasEffect(MobEffects.WITHER) || !player.hasLineOfSight(living)) {
                 continue;
             }

@@ -108,7 +108,7 @@ public class GiantBrainyZombie extends BrainyZombie {
         if (this.random.nextInt(10) - looting <= 4) {
             this.spawnAtLocation(level, new ItemStack(ModItems.ZOMBIE_BRAIN.get()), 2.0F);
         }
-        if (recentlyHit && this.random.nextInt(200) <= looting) {
+        if (recentlyHit && this.random.nextInt(200) - looting < 5) {
             ItemStack rare = switch (this.random.nextInt(4)) {
                 case 0 -> new ItemStack(ModItems.THAUMIUM_INGOT.get());
                 case 1 -> new ItemStack(Items.CARROT);
