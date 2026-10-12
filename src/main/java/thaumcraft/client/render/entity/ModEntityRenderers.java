@@ -6,6 +6,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.render.entity.AspectOrbRenderer;
 import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.client.render.entity.taint.TaintEntityModel;
@@ -37,6 +38,7 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.EMBER.get(), EmberRenderer::new);
         event.registerEntityRenderer(ModEntities.SHOCK_ORB.get(), ShockOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.GOLEM_ORB.get(), GolemOrbRenderer::new);
+        event.registerEntityRenderer(ModEntities.ASPECT_ORB.get(), AspectOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.EXPLOSIVE_ORB.get(), ExplosiveOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.PRIMAL_ORB.get(), PrimalOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.FROST_SHARD.get(), FrostShardRenderer::new);
