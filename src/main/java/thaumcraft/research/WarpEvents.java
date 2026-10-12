@@ -124,6 +124,8 @@ public final class WarpEvents {
             spawnMist(player, Math.min(8, warp / 30));
         } else if (effect <= 72) {
             applyEffect(player, MobEffects.BLINDNESS, Math.min(32000, 5 * warp), 0);
+        } else if (effect <= 75) {
+            return;
         } else if (effect == 76) {
             if (Warp.get(player, WarpType.STICKY) > 0) {
                 Warp.add(player, -1, WarpType.STICKY);
@@ -202,7 +204,8 @@ public final class WarpEvents {
             Vec3 target = new Vec3(living.getX(), living.getBoundingBox().minY + living.getBbHeight() / 2.0, living.getZ());
             Vec3 direction = target.subtract(player.getEyePosition());
             double distance = direction.length();
-            if (distance > range || distance == 0.0 || look.dot(direction.scale(1.0 / distance)) <= Math.cos(0.75 / 2.0)) {
+            double axialProjection = look.dot(direction);
+            if (distance == 0.0 || axialProjection >= range || look.dot(direction.scale(1.0 / distance)) <= Math.cos(0.75 / 2.0)) {
                 continue;
             }
             living.setLastHurtByPlayer(player, 100);

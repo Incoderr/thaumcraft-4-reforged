@@ -2,33 +2,46 @@ package thaumcraft.menu;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.util.Prediction;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.level.ServerLevel;
 import org.jspecify.annotations.Nullable;
-import thaumcraft.aspect.Aspect;
 import thaumcraft.entity.monster.Pech;
-import thaumcraft.item.ManaBeanItem;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.registry.ModEnchantments;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModMenus;
+import thaumcraft.registry.ModSounds;
 
 public class PechTradeMenu extends AbstractContainerMenu {
     private static final int INPUT_SLOT = 0;
     private static final int OUTPUT_START = 1;
     private static final int OUTPUT_END = 5;
     private static final int PLAYER_START = 5;
-    private static final int HOTBAR_START = 32;
     private static final int SLOT_END = 41;
 
-    private final Inventory playerInventory;
     private final @Nullable Pech pech;
     private final SimpleContainer tradeInventory;
 
@@ -42,7 +55,6 @@ public class PechTradeMenu extends AbstractContainerMenu {
 
     private PechTradeMenu(int containerId, Inventory inventory, int pechEntityId, SimpleContainer tradeInventory) {
         super(ModMenus.PECH_TRADE.get(), containerId);
-        this.playerInventory = inventory;
         this.pech = inventory.player.level().getEntity(pechEntityId) instanceof Pech entity ? entity : null;
         this.tradeInventory = tradeInventory;
         if (this.pech != null) {
@@ -80,140 +92,255 @@ public class PechTradeMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int button) {
-        if (button != 0 || !(player instanceof net.minecraft.server.level.ServerPlayer) || this.pech == null || !this.stillValid(player)) {
-            return false;
-        }
-        if (!this.canTrade()) {
+        if (button != 0 || !(player instanceof ServerPlayer) || pech == null || !stillValid(player) || !canTrade()) {
             return false;
         }
         ItemStack input = tradeInventory.getItem(INPUT_SLOT);
-        int value = pech.getValue(input);
-        if (player.getRandom().nextInt(100) <= value / 2) {
-            pech.setTamed(false);
-        }
-        if (player.getRandom().nextInt(5) == 0) {
-            value += player.getRandom().nextInt(3);
-        } else if (player.getRandom().nextBoolean()) {
-            value -= player.getRandom().nextInt(3);
-        }
-        List<ItemStack> outputs = new ArrayList<>();
-        while (value > 0 && outputs.size() < 4) {
-            int amount = Math.min(5, Math.max((value + 1) / 2, player.getRandom().nextInt(value) + 1));
-            value -= amount;
-            ItemStack output = this.chooseOutput(amount, player);
-            if (output.isEmpty()) {
-                value += amount;
-                break;
-            }
-            outputs.add(output);
-        }
-        if (outputs.isEmpty()) {
+        TradePlan plan = createPlan(pech, pech.getValue(input), pech.getRandom(), pech.level().registryAccess());
+        if (plan == null) {
             return false;
         }
-        input.shrink(1);
-        for (int index = 0; index < outputs.size(); index++) {
-            tradeInventory.setItem(OUTPUT_START + index, outputs.get(index));
+        if (plan.betray()) {
+            pech.setTamed(false);
         }
-        if (this.pech.level() instanceof net.minecraft.server.level.ServerLevel level) {
-            level.playSound(null, pech.blockPosition(), thaumcraft.registry.ModSounds.PECH_TRADE.get(), net.minecraft.sounds.SoundSource.NEUTRAL, 0.4F, 1.0F);
+        for (int slot = 0; slot < plan.remainingLoot().size(); slot++) {
+            pech.setLoot(slot, plan.remainingLoot().get(slot));
+        }
+        input.shrink(1);
+        for (int index = 0; index < plan.outputs().size(); index++) {
+            tradeInventory.setItem(OUTPUT_START + index, plan.outputs().get(index));
+        }
+        tradeInventory.setChanged();
+        if (pech.level() instanceof ServerLevel level) {
+            level.playSound(null, pech.blockPosition(), ModSounds.PECH_TRADE.get(), net.minecraft.sounds.SoundSource.NEUTRAL, 0.4F, 1.0F);
         }
         return true;
     }
 
-    private ItemStack chooseOutput(int value, Player player) {
-        if (value == 1 && player.getRandom().nextBoolean()) {
-            List<Integer> occupied = new ArrayList<>();
-            for (int index = 0; index < 9; index++) {
-                if (!pech.getLoot(index).isEmpty()) {
-                    occupied.add(index);
+    private static @Nullable TradePlan createPlan(Pech pech, int value, RandomSource random, RegistryAccess registryAccess) {
+        boolean betray = random.nextInt(100) <= value / 2;
+        if (random.nextInt(5) == 0) {
+            value += random.nextInt(3);
+        } else if (random.nextBoolean()) {
+            value -= random.nextInt(3);
+        }
+        List<ItemStack> outputs = new ArrayList<>(4);
+        List<ItemStack> remainingLoot = new ArrayList<>(9);
+        for (int slot = 0; slot < 9; slot++) {
+            remainingLoot.add(pech.getLoot(slot).copy());
+        }
+        while (value > 0) {
+            int amount = Math.min(5, Math.max((value + 1) / 2, random.nextInt(value) + 1));
+            value -= amount;
+            ItemStack reward;
+            if (amount == 1 && random.nextBoolean() && hasLoot(remainingLoot)) {
+                List<Integer> occupied = new ArrayList<>();
+                for (int slot = 0; slot < remainingLoot.size(); slot++) {
+                    if (!remainingLoot.get(slot).isEmpty()) {
+                        occupied.add(slot);
+                    }
                 }
+                int slot = occupied.get(random.nextInt(occupied.size()));
+                reward = remainingLoot.get(slot).copyWithCount(1);
+                remainingLoot.get(slot).shrink(1);
+            } else if (amount >= 4 && random.nextBoolean()) {
+                reward = dungeonReward(random, registryAccess);
+            } else {
+                List<ItemStack> offers = tradeOffers(pech.getPechType(), amount, registryAccess);
+                if (offers.isEmpty()) {
+                    return null;
+                }
+                reward = offers.get(random.nextInt(offers.size()));
             }
-            if (!occupied.isEmpty()) {
-                int slot = occupied.get(player.getRandom().nextInt(occupied.size()));
-                ItemStack stored = pech.getLoot(slot);
-                ItemStack output = stored.copyWithCount(1);
-                stored.shrink(1);
-                if (stored.isEmpty()) {
-                    pech.setLoot(slot, ItemStack.EMPTY);
-                }
-                return output;
+            if (!insertReward(outputs, reward)) {
+                return null;
             }
         }
-        List<ItemStack> offers = this.offers(value);
-        return offers.isEmpty() ? ItemStack.EMPTY : offers.get(player.getRandom().nextInt(offers.size()));
+        return new TradePlan(List.copyOf(outputs), List.copyOf(remainingLoot), betray);
     }
 
-    private List<ItemStack> offers(int value) {
+    private static boolean hasLoot(List<ItemStack> loot) {
+        for (ItemStack stack : loot) {
+            if (!stack.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean insertReward(List<ItemStack> outputs, ItemStack reward) {
+        ItemStack remaining = reward.copy();
+        for (ItemStack output : outputs) {
+            if (ItemStack.isSameItemSameComponents(output, remaining) && output.getCount() < output.getMaxStackSize()) {
+                int moved = Math.min(remaining.getCount(), output.getMaxStackSize() - output.getCount());
+                output.grow(moved);
+                remaining.shrink(moved);
+                if (remaining.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        if (outputs.size() < 4) {
+            outputs.add(remaining);
+            return true;
+        }
+        return false;
+    }
+
+    private static ItemStack dungeonReward(RandomSource random, RegistryAccess registryAccess) {
+        List<WeightedOffer> offers = dungeonOffers();
+        int totalWeight = offers.stream().mapToInt(WeightedOffer::weight).sum();
+        int choice = random.nextInt(totalWeight);
+        for (WeightedOffer offer : offers) {
+            choice -= offer.weight();
+            if (choice < 0) {
+                if (offer.stack().is(Items.ENCHANTED_BOOK)) {
+                    return EnchantmentHelper.enchantItem(random, new ItemStack(Items.BOOK), 30, registryAccess, Optional.empty());
+                }
+                return offer.stack().copy();
+            }
+        }
+        throw new IllegalStateException("Dungeon offer weights are empty");
+    }
+
+    private static List<WeightedOffer> dungeonOffers() {
+        List<WeightedOffer> offers = new ArrayList<>();
+        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_APPLE), 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.GOLDEN_HORSE_ARMOR), 2));
+        offers.add(new WeightedOffer(new ItemStack(Items.IRON_HORSE_ARMOR), 5));
+        offers.add(new WeightedOffer(new ItemStack(Items.DIAMOND_HORSE_ARMOR), 1));
+        offers.add(new WeightedOffer(new ItemStack(Items.ENCHANTED_BOOK), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.RARE_LOOT_BAG.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMONOMICON.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_SWORD.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_PICKAXE.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_AXE.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.THAUMIUM_HOE.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.PROTECTION_RING.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_AIR.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_EARTH.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_FIRE.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_WATER.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ORDER.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.APPRENTICE_RING_ENTROPY.get()), 1));
+        offers.add(new WeightedOffer(new ItemStack(ModItems.VIS_AMULET.get()), 1));
+        return offers;
+    }
+
+    public static List<ItemStack> tradeOffers(Pech.PechType type, int value, RegistryAccess registryAccess) {
         List<ItemStack> result = new ArrayList<>();
-        switch (pech.getPechType()) {
+        switch (type) {
             case NORMAL -> {
                 switch (value) {
-                    case 1 -> {
-                        result.add(new ItemStack(ModBlocks.MANA_BEAN.get()));
-                        result.add(new ItemStack(ModItems.COPPER_NUGGET.get()));
-                        result.add(new ItemStack(ModItems.TIN_NUGGET.get()));
-                        result.add(new ItemStack(ModItems.SILVER_NUGGET.get()));
-                        result.add(new ItemStack(ModItems.LEAD_NUGGET.get()));
-                    }
-                    case 2 -> {
-                        result.add(new ItemStack(Items.BLAZE_ROD));
-                        result.add(new ItemStack(Items.GOLDEN_APPLE));
-                        result.add(new ItemStack(ModItems.AMBER.get()));
-                    }
-                    case 3 -> {
-                        result.add(new ItemStack(Items.EXPERIENCE_BOTTLE));
-                        result.add(new ItemStack(ModItems.QUICKSILVER.get()));
-                    }
+                    case 1 -> result.addAll(List.of(
+                        new ItemStack(ModBlocks.MANA_BEAN.get()),
+                        new ItemStack(ModItems.NATIVE_IRON_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_GOLD_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_CINNABAR_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_COPPER_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_TIN_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_SILVER_CLUSTER.get()),
+                        new ItemStack(ModItems.NATIVE_LEAD_CLUSTER.get())
+                    ));
+                    case 2 -> result.addAll(List.of(new ItemStack(Items.BLAZE_ROD), new ItemStack(ModBlocks.GREATWOOD_SAPLING.get()), legacyPotion(8201), legacyPotion(8194)));
+                    case 3 -> result.addAll(List.of(new ItemStack(Items.EXPERIENCE_BOTTLE), new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()), new ItemStack(Items.GOLDEN_APPLE), legacyPotion(8265), legacyPotion(8262)));
                     case 4 -> result.add(new ItemStack(ModItems.THAUMIUM_PICKAXE.get()));
-                    case 5 -> result.add(new ItemStack(ModItems.THAUMIUM_INGOT.get(), 2));
+                    case 5 -> result.addAll(List.of(new ItemStack(Items.ENCHANTED_GOLDEN_APPLE), new ItemStack(ModBlocks.SILVERWOOD_SAPLING.get()), new ItemStack(ModBlocks.SILVERWOOD_SAPLING.get())));
                 }
             }
             case WARRIOR -> {
                 switch (value) {
-                    case 1 -> {
-                        result.add(new ItemStack(ModBlocks.MANA_BEAN.get()));
-                        result.add(new ItemStack(ModItems.AIR_SHARD.get()));
-                        result.add(new ItemStack(ModItems.FIRE_SHARD.get()));
-                        result.add(new ItemStack(ModItems.WATER_SHARD.get()));
-                        result.add(new ItemStack(ModItems.EARTH_SHARD.get()));
-                        result.add(new ItemStack(ModItems.ORDER_SHARD.get()));
-                        result.add(new ItemStack(ModItems.ENTROPY_SHARD.get()));
-                    }
-                    case 2 -> {
-                        result.add(new ItemStack(ModItems.AMBER.get()));
-                        result.add(new ItemStack(ModItems.THAUMIUM_NUGGET.get()));
-                    }
-                    case 3 -> {
-                        result.add(new ItemStack(Items.GOLDEN_APPLE));
-                        result.add(new ItemStack(ModItems.THAUMIUM_INGOT.get()));
-                    }
-                    case 4 -> result.add(new ItemStack(ModItems.THAUMIUM_SWORD.get()));
-                    case 5 -> {
-                        result.add(new ItemStack(ModItems.FOCUS_POUCH.get()));
-                        result.add(new ItemStack(ModItems.VIS_AMULET.get()));
-                    }
+                    case 1 -> result.addAll(List.of(
+                        new ItemStack(ModBlocks.MANA_BEAN.get()),
+                        new ItemStack(ModItems.AIR_SHARD.get()),
+                        new ItemStack(ModItems.FIRE_SHARD.get()),
+                        new ItemStack(ModItems.WATER_SHARD.get()),
+                        new ItemStack(ModItems.EARTH_SHARD.get()),
+                        new ItemStack(ModItems.ORDER_SHARD.get()),
+                        new ItemStack(ModItems.ENTROPY_SHARD.get()),
+                        new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get())
+                    ));
+                    case 2 -> result.addAll(List.of(new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()), legacyPotion(8193), legacyPotion(8261)));
+                    case 3 -> result.addAll(List.of(new ItemStack(Items.GOLDEN_APPLE), enchantmentBook(registryAccess, ModEnchantments.HASTE, 1), legacyPotion(8225), legacyPotion(8229)));
+                    case 4 -> result.addAll(List.of(
+                        new ItemStack(ModBlocks.AIR_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.FIRE_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.WATER_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.EARTH_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.ORDER_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.ENTROPY_CRYSTAL_CLUSTER.get()),
+                        new ItemStack(ModBlocks.MIXED_CRYSTAL_CLUSTER.get())
+                    ));
+                    case 5 -> result.addAll(List.of(
+                        new ItemStack(Items.ENCHANTED_GOLDEN_APPLE),
+                        enchantmentBook(registryAccess, ModEnchantments.REPAIR, 1),
+                        new ItemStack(ModItems.FOCUS_POUCH.get()),
+                        new ItemStack(ModItems.FOCUS_PECH.get()),
+                        new ItemStack(ModItems.VIS_AMULET.get())
+                    ));
                 }
             }
             case ARCHER -> {
                 switch (value) {
-                    case 1 -> result.add(new ItemStack(ModBlocks.MANA_BEAN.get()));
-                    case 2 -> {
-                        result.add(new ItemStack(Items.GHAST_TEAR));
-                        result.add(new ItemStack(Items.ARROW, 8));
+                    case 1 -> {
+                        result.add(new ItemStack(ModBlocks.MANA_BEAN.get()));
+                        int index = 0;
+                        for (var candle : ModBlocks.CANDLES.values()) {
+                            if (index++ == 15) {
+                                break;
+                            }
+                            result.add(new ItemStack(candle.get()));
+                        }
                     }
-                    case 3 -> {
-                        result.add(new ItemStack(Items.EXPERIENCE_BOTTLE));
-                        result.add(new ItemStack(Items.GOLDEN_APPLE));
-                    }
+                    case 2 -> result.addAll(List.of(
+                        new ItemStack(Items.GHAST_TEAR), legacyPotion(8194), legacyPotion(8201),
+                        enchantmentBook(registryAccess, net.minecraft.world.item.enchantment.Enchantments.POWER, 1)
+                    ));
+                    case 3 -> result.addAll(List.of(
+                        new ItemStack(Items.EXPERIENCE_BOTTLE), new ItemStack(ModItems.KNOWLEDGE_FRAGMENT.get()),
+                        legacyPotion(8270), legacyPotion(8225), new ItemStack(Items.GOLDEN_APPLE)
+                    ));
                     case 4 -> result.add(new ItemStack(ModItems.THAUMIUM_BOOTS.get()));
-                    case 5 -> {
-                        result.add(new ItemStack(ModItems.FOCUS_PECH.get()));
-                        result.add(new ItemStack(ModItems.VIS_AMULET.get()));
-                    }
+                    case 5 -> result.addAll(List.of(
+                        new ItemStack(Items.ENCHANTED_GOLDEN_APPLE),
+                        new ItemStack(ModItems.PROTECTION_RING.get()),
+                        enchantmentBook(registryAccess, net.minecraft.world.item.enchantment.Enchantments.FLAME, 1),
+                        enchantmentBook(registryAccess, net.minecraft.world.item.enchantment.Enchantments.INFINITY, 1)
+                    ));
                 }
             }
         }
         return result;
+    }
+
+    private static ItemStack legacyPotion(int metadata) {
+        Holder<MobEffect> effect = switch (metadata) {
+            case 8201, 8265 -> MobEffects.STRENGTH;
+            case 8194 -> MobEffects.SPEED;
+            case 8262 -> MobEffects.NIGHT_VISION;
+            case 8193, 8225 -> MobEffects.REGENERATION;
+            case 8261, 8229 -> MobEffects.INSTANT_HEALTH;
+            case 8270 -> MobEffects.INVISIBILITY;
+            default -> throw new IllegalArgumentException("Unsupported Pech potion: " + metadata);
+        };
+        int duration = switch (metadata) {
+            case 8201 -> 3600;
+            case 8194 -> 5400;
+            case 8265, 8262, 8270 -> 7200;
+            case 8193 -> 900;
+            case 8261, 8229 -> 1;
+            case 8225 -> 450;
+            default -> throw new IllegalArgumentException("Unsupported Pech potion: " + metadata);
+        };
+        int amplifier = metadata == 8225 || metadata == 8229 ? 1 : 0;
+        ItemStack stack = new ItemStack(Items.POTION);
+        stack.set(DataComponents.POTION_CONTENTS, new PotionContents(Optional.empty(), Optional.empty(), List.of(new MobEffectInstance(effect, duration, amplifier))));
+        return stack;
+    }
+
+    private static ItemStack enchantmentBook(RegistryAccess registryAccess, net.minecraft.resources.ResourceKey<Enchantment> key, int level) {
+        Holder<Enchantment> enchantment = registryAccess.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+        return EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, level));
     }
 
     @Override
@@ -261,6 +388,12 @@ public class PechTradeMenu extends AbstractContainerMenu {
                 pech.setTrading(false);
             }
         }
+    }
+
+    private record TradePlan(List<ItemStack> outputs, List<ItemStack> remainingLoot, boolean betray) {
+    }
+
+    private record WeightedOffer(ItemStack stack, int weight) {
     }
 
     private static final class OutputSlot extends Slot {
