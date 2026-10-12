@@ -109,13 +109,17 @@ public class TaintFibresModel implements DynamicBlockStateModel {
                 continue;
             }
             List<BakedQuad> sideQuads = new ArrayList<>();
-            collect(this.faces.get(face), level, pos, level.getBlockState(pos), direction, sideQuads);
+            List<BakedQuad> base = new ArrayList<>();
+            collect(this.faces.get(face), level, pos, level.getBlockState(pos), direction.getOpposite(), base);
+            for (BakedQuad quad : base) {
+                sideQuads.add(attachedFace(quad, direction, 0.995F));
+            }
             int overlay = overlayVariant(pos, face);
             if (overlay != BLANK_OVERLAY) {
                 List<BakedQuad> selected = new ArrayList<>();
-                collect(this.overlays.get(face).get(overlay), level, pos, level.getBlockState(pos), direction, selected);
+                collect(this.overlays.get(face).get(overlay), level, pos, level.getBlockState(pos), direction.getOpposite(), selected);
                 for (BakedQuad quad : selected) {
-                    sideQuads.add(emissiveOverlay(quad));
+                    sideQuads.add(emissiveOverlay(attachedFace(quad, direction, 0.98F)));
                 }
             }
             quads[face] = sideQuads;
@@ -135,6 +139,20 @@ public class TaintFibresModel implements DynamicBlockStateModel {
         long seed = side + pos.getY() + (long) pos.getX() * pos.getZ();
         Random random = new Random(seed);
         return random.nextInt(100) < 95 ? BLANK_OVERLAY : random.nextInt(OVERLAY_VARIANTS - 1) + 1;
+    }
+
+    private static BakedQuad attachedFace(BakedQuad quad, Direction support, float distance) {
+        float x = support.getStepX() * distance;
+        float y = support.getStepY() * distance;
+        float z = support.getStepZ() * distance;
+        return new BakedQuad(
+            new Vector3f(quad.position0()).add(x, y, z),
+            new Vector3f(quad.position1()).add(x, y, z),
+            new Vector3f(quad.position2()).add(x, y, z),
+            new Vector3f(quad.position3()).add(x, y, z),
+            quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(),
+            quad.direction(), quad.materialInfo(), quad.bakedNormals(), quad.bakedColors()
+        );
     }
 
     private static float[] crossedOffset(BlockPos pos) {
@@ -188,7 +206,14 @@ public class TaintFibresModel implements DynamicBlockStateModel {
     private record Part(List<BakedQuad>[] quads, Material.Baked particle, @BakedQuad.MaterialFlags int flags) implements BlockStateModelPart {
         @Override
         public List<BakedQuad> getQuads(@Nullable Direction direction) {
-            return direction == null ? List.of() : quads[direction.get3DDataValue()];
+            if (direction != null) {
+                return List.of();
+            }
+            List<BakedQuad> attached = new ArrayList<>();
+            for (List<BakedQuad> face : quads) {
+                attached.addAll(face);
+            }
+            return attached;
         }
 
         @Override
