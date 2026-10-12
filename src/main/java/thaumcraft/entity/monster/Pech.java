@@ -263,8 +263,17 @@ public class Pech extends Monster implements RangedAttackMob, net.minecraft.worl
     }
 
     @Override
+    protected Component getTypeName() {
+        return Component.translatable(switch (this.getPechType()) {
+            case NORMAL -> "entity.thaumcraft.pech";
+            case WARRIOR -> "entity.thaumcraft.pech_mage";
+            case ARCHER -> "entity.thaumcraft.pech_stalker";
+        });
+    }
+
+    @Override
     public Component getDisplayName() {
-        return Component.translatable("entity.thaumcraft.pech");
+        return this.getName();
     }
 
     @Override
