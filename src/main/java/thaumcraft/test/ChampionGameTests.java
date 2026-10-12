@@ -109,12 +109,15 @@ public final class ChampionGameTests {
     private static void championCombatAndRewards(GameTestHelper helper) {
         var level = helper.getLevel();
         var zombieType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("zombie"));
+        var sheepType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("sheep"));
         Mob attacker = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
-        Mob victim = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
+        Mob victim = (Mob) sheepType.create(level, EntitySpawnReason.TRIGGERED);
+        Mob undeadVictim = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
         Vec3 attackerPos = Vec3.atCenterOf(helper.absolutePos(new BlockPos(3, 2, 3)));
         Vec3 victimPos = Vec3.atCenterOf(helper.absolutePos(new BlockPos(5, 2, 3)));
         attacker.setPos(attackerPos.x, attackerPos.y, attackerPos.z);
         victim.setPos(victimPos.x, victimPos.y, victimPos.z);
+        undeadVictim.setPos(victimPos.x, victimPos.y, victimPos.z + 1.0);
         ChampionModifier.assign(attacker, 4, false);
         ChampionModifier.applyAttackEffect(4, attacker, victim, 4.0F, 0.39F, 0);
         helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.WITHER), "grim applies wither below the 40 percent threshold");
@@ -125,6 +128,8 @@ public final class ChampionGameTests {
         helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.HUNGER), "sickly applies hunger");
         ChampionModifier.applyAttackEffect(10, attacker, victim, 4.0F, 0.1F, 0);
         helper.assertTrue(victim.hasEffect(net.minecraft.world.effect.MobEffects.POISON), "venomous applies poison");
+        ChampionModifier.applyAttackEffect(10, attacker, undeadVictim, 4.0F, 0.1F, 0);
+        helper.assertFalse(undeadVictim.hasEffect(net.minecraft.world.effect.MobEffects.POISON), "venomous respects undead poison immunity");
         attacker.setHealth(1.0F);
         ChampionModifier.applyAttackEffect(11, attacker, victim, 4.0F, 0.99F, 0);
         helper.assertValueEqual(attacker.getHealth(), 3.0F, "vampiric heals by half of damage with a two point minimum");
@@ -162,8 +167,15 @@ public final class ChampionGameTests {
         Wands.storeVis(wand, Aspect.FIRE, Wands.getMaxVis(wand) - 200);
         AspectOrb partial = AspectOrb.create(level, player.getX(), player.getY(), player.getZ(), Aspect.FIRE, 7);
         partial.playerTouch(player);
-        helper.assertTrue(partial.isRemoved(), "partial wand capacity still attracts and consumes the orb");
-        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), Wands.getMaxVis(wand), "partial pickup caps the wand at capacity");
+        helper.assertFalse(partial.isRemoved(), "recent XP pickup cooldown blocks an immediate second orb pickup");
+        ServerPlayer partialPlayer = mockServerPlayer(helper);
+        ItemStack partialWand = Wands.create(thaumcraft.wand.WandRegistry.cap("iron"), thaumcraft.wand.WandRegistry.rod("greatwood"), false);
+        partialPlayer.getInventory().setItem(0, partialWand);
+        Wands.storeVis(partialWand, Aspect.FIRE, Wands.getMaxVis(partialWand) - 200);
+        AspectOrb partialCapacity = AspectOrb.create(level, partialPlayer.getX(), partialPlayer.getY(), partialPlayer.getZ(), Aspect.FIRE, 7);
+        partialCapacity.playerTouch(partialPlayer);
+        helper.assertTrue(partialCapacity.isRemoved(), "partial wand capacity still attracts and consumes the orb");
+        helper.assertValueEqual(Wands.getVis(partialWand, Aspect.FIRE), Wands.getMaxVis(partialWand), "partial pickup caps the wand at capacity");
 
         BlockPos nodePos = helper.absolutePos(new BlockPos(2, 2, 5));
         helper.assertTrue(NodeHooks.spawnAspectOrb(level, nodePos, Aspect.AIR, 3), "node hook successfully spawns aspect orb");
