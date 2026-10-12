@@ -17,6 +17,8 @@ import thaumcraft.client.render.entity.eldritch.EldritchGuardianModel;
 import thaumcraft.client.render.entity.eldritch.EldritchGuardianRenderer;
 import thaumcraft.client.render.entity.eldritch.EldritchOrbRenderer;
 import thaumcraft.client.render.entity.eldritch.MindSpiderRenderer;
+import thaumcraft.client.render.entity.eldritch.EldritchCrabModel;
+import thaumcraft.client.render.entity.eldritch.EldritchCrabRenderer;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
 public final class ModEntityRenderers {
@@ -44,6 +46,9 @@ public final class ModEntityRenderers {
         event.registerEntityRenderer(ModEntities.PRIMAL_ARROW.get(), PrimalArrowRenderer::new);
         event.registerEntityRenderer(ModEntities.MIND_SPIDER.get(), MindSpiderRenderer::new);
         event.registerEntityRenderer(ModEntities.ELDRITCH_GUARDIAN.get(), EldritchGuardianRenderer::new);
+        event.registerEntityRenderer(ModEntities.ELDRITCH_CRAB.get(), EldritchCrabRenderer::new);
+        event.registerEntityRenderer(ModEntities.CULTIST_KNIGHT.get(), CultistKnightRenderer::new);
+        event.registerEntityRenderer(ModEntities.CULTIST_CLERIC.get(), CultistClericRenderer::new);
         event.registerEntityRenderer(ModEntities.ELDRITCH_ORB.get(), EldritchOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.TAINT_SPIDER.get(), TaintMobRenderer.provider(TaintEntityModel.Kind.SPIDER, 0.3F));
         event.registerEntityRenderer(ModEntities.TAINTACLE.get(), TaintMobRenderer.provider(TaintEntityModel.Kind.TENTACLE, 0.5F));
@@ -65,6 +70,7 @@ public final class ModEntityRenderers {
         event.registerLayerDefinition(FireBatModel.LAYER, FireBatModel::createBodyLayer);
         event.registerLayerDefinition(PechModel.LAYER, PechModel::createBodyLayer);
         event.registerLayerDefinition(EldritchGuardianModel.LAYER, EldritchGuardianModel::createBodyLayer);
+        event.registerLayerDefinition(EldritchCrabModel.LAYER, EldritchCrabModel::createBodyLayer);
         for (TaintEntityModel.Kind kind : TaintEntityModel.Kind.values()) {
             event.registerLayerDefinition(kind.layer(), () -> TaintEntityModel.createLayer(kind));
         }

@@ -2,6 +2,7 @@ package thaumcraft.entity.monster;
 
 import java.util.List;
 import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -68,7 +69,7 @@ public final class ChampionModifier {
             mob.setAbsorptionAmount(mob.getAbsorptionAmount() + (float) (mob.getAttributeBaseValue(Attributes.MAX_HEALTH) / 2.0));
         }
         mob.heal(25.0F);
-        if (mob.getType() != EntityType.ENDER_DRAGON) {
+        if (!isVanilla(mob, "ender_dragon")) {
             mob.setCustomName(Component.translatable("champion.mod." + NAMES[id]).append(" ").append(mob.getName()));
         }
         if (persist) {
@@ -91,7 +92,7 @@ public final class ChampionModifier {
             ChampionKeys.MODIFIER.set(mob, NORMAL);
             return;
         }
-        int roll = level.random.nextInt(100);
+        int roll = level.getRandom().nextInt(100);
         if (level.getDifficulty() == net.minecraft.world.Difficulty.EASY) {
             roll += 2;
         }
@@ -103,7 +104,7 @@ public final class ChampionModifier {
         }
         roll -= whitelist - 1;
         if (roll <= 0 && mob.getAttributeBaseValue(Attributes.MAX_HEALTH) >= 10.0) {
-            int id = mob.getType() == EntityType.CREEPER ? 0 : level.random.nextInt(NAMES.length);
+            int id = isVanilla(mob, "creeper") ? 0 : level.getRandom().nextInt(NAMES.length);
             assign(mob, id, false);
         } else {
             ChampionKeys.MODIFIER.set(mob, NORMAL);
@@ -112,10 +113,10 @@ public final class ChampionModifier {
 
     private static int whitelistLevel(Mob mob) {
         EntityType<?> type = mob.getType();
-        if (type == EntityType.ZOMBIE || type == EntityType.SPIDER || type == EntityType.BLAZE || type == EntityType.ENDERMAN || type == EntityType.SKELETON) {
+        if (isVanilla(mob, "zombie") || isVanilla(mob, "spider") || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || isVanilla(mob, "skeleton")) {
             return 0;
         }
-        if (type == EntityType.WITCH || type == ModEntities.WISP.get() || type == ModEntities.PECH.get()
+        if (isVanilla(mob, "witch") || type == ModEntities.WISP.get() || type == ModEntities.PECH.get()
             || type == ModEntities.CULTIST_KNIGHT.get() || type == ModEntities.CULTIST_CLERIC.get()) {
             return 1;
         }
@@ -129,6 +130,10 @@ public final class ChampionModifier {
             return 3;
         }
         return -1;
+    }
+
+    private static boolean isVanilla(Mob mob, String path) {
+        return BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).equals(Identifier.withDefaultNamespace(path));
     }
 
     @SubscribeEvent
@@ -160,15 +165,15 @@ public final class ChampionModifier {
             if (absorptionBranch && defender.level() instanceof ServerLevel serverLevel) {
                 int targetId = source.getEntity() == null ? -1 : source.getEntity().getId();
                 ModNetwork.sendToNear(serverLevel, null, defender.getX(), defender.getY(), defender.getZ(), 32.0, new ShieldFxPayload(defender.getId(), targetId));
-                serverLevel.playSound(null, defender.blockPosition(), ModSounds.RUNIC_SHIELD_EFFECT.get(), SoundSource.HOSTILE, 0.66F, 1.1F + serverLevel.random.nextFloat() * 0.1F);
+                serverLevel.playSound(null, defender.blockPosition(), ModSounds.RUNIC_SHIELD_EFFECT.get(), SoundSource.HOSTILE, 0.66F, 1.1F + serverLevel.getRandom().nextFloat() * 0.1F);
             } else if (id == 1 && !source.is(DamageTypes.THORNS) && defender.level() instanceof ServerLevel serverLevel) {
                 attacker.hurtServer(serverLevel, defender.damageSources().thorns(defender), 1 + defender.getRandom().nextInt(3));
             } else if (id == 2 && !source.is(DamageTypeTags.BYPASSES_ARMOR)) {
                 event.setAmount(event.getAmount() * 19.0F / 25.0F);
-            } else if (id == 12 && defender.level() instanceof ServerLevel serverLevel && serverLevel.random.nextFloat() < 0.4F) {
+            } else if (id == 12 && defender.level() instanceof ServerLevel serverLevel && serverLevel.getRandom().nextFloat() < 0.4F) {
                 var spider = ModEntities.TAINT_SPIDER.get().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
                 if (spider != null) {
-                    spider.moveTo(defender.getX(), defender.getY() + defender.getBbHeight() / 2.0, defender.getZ(), serverLevel.random.nextFloat() * 360.0F, 0.0F);
+                    spider.snapTo(defender.getX(), defender.getY() + defender.getBbHeight() / 2.0, defender.getZ(), serverLevel.getRandom().nextFloat() * 360.0F, 0.0F);
                     serverLevel.addFreshEntity(spider);
                     serverLevel.playSound(null, defender.blockPosition(), ModSounds.GORE.get(), SoundSource.HOSTILE, 0.5F, 1.0F);
                 }
@@ -183,21 +188,21 @@ public final class ChampionModifier {
         }
         switch (id) {
             case 4 -> {
-                if (level.random.nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200));
+                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200));
             }
             case 6 -> {
-                if (target instanceof ServerPlayer player && level.random.nextFloat() < 0.33F) {
-                    Warp.add(player, 1 + level.random.nextInt(3), WarpType.PERMANENT);
+                if (target instanceof ServerPlayer player && level.getRandom().nextFloat() < 0.33F) {
+                    Warp.add(player, 1 + level.getRandom().nextInt(3), WarpType.PERMANENT);
                 }
             }
             case 8 -> {
-                if (level.random.nextFloat() < 0.4F) target.setSecondsOnFire(4);
+                if (level.getRandom().nextFloat() < 0.4F) target.igniteForSeconds(4.0F);
             }
             case 9 -> {
-                if (level.random.nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 500));
+                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 500));
             }
             case 10 -> {
-                if (level.random.nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
+                if (level.getRandom().nextFloat() < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
             }
             case 11 -> mob.heal(Math.max(2.0F, event.getAmount() / 2.0F));
             default -> { }

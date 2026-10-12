@@ -48,6 +48,8 @@ import thaumcraft.test.MachineGameTests;
 import thaumcraft.test.ThaumcraftGameTests;
 import thaumcraft.test.WardedGameTests;
 import thaumcraft.test.WarpGameTests;
+import thaumcraft.test.WarpEncounterGameTests;
+import thaumcraft.test.ChampionGameTests;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.focus.FocusKeys;
 
@@ -101,6 +103,8 @@ public class Thaumcraft {
         EldritchCrabGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
         WarpGameTests.register(modEventBus);
+        WarpEncounterGameTests.register(modEventBus);
+        ChampionGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
         thaumcraft.test.MirrorGameTests.register(modEventBus);
     }
