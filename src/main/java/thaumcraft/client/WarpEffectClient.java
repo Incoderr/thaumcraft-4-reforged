@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
@@ -19,6 +17,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.platform.WarpPostEffects;
+import thaumcraft.client.platform.WarpVignetteOverlay;
 import thaumcraft.network.WarpEventPayload;
 import thaumcraft.registry.ModEffects;
 import thaumcraft.registry.ModSounds;
@@ -29,7 +28,6 @@ public final class WarpEffectClient {
     private static final Identifier BLURRED_VISION_SHADER = Thaumcraft.id("blurtc");
     private static final Identifier HUNGER_SHADER = Thaumcraft.id("hunger");
     private static final Identifier SUN_SCORNED_SHADER = Thaumcraft.id("sunscorned");
-    private static final Identifier WARP_VIGNETTE = Identifier.fromNamespaceAndPath(Thaumcraft.MODID, "textures/misc/vignette.png");
     private static final List<Identifier> OWNED_SHADERS = List.of(DEATH_GAZE_SHADER, BLURRED_VISION_SHADER, HUNGER_SHADER, SUN_SCORNED_SHADER);
     private static int warpVignetteTicks;
     private static int fogTicks;
@@ -107,27 +105,16 @@ public final class WarpEffectClient {
         if (warpVignetteTicks <= 0 || !event.getName().equals(VanillaGuiLayers.CAMERA_OVERLAYS)) {
             return;
         }
-        GuiGraphicsExtractor graphics = event.getGuiGraphics();
         int alpha = Math.min(255, warpVignetteTicks * 255 / 20);
-        graphics.blit(
-            RenderPipelines.GUI_TEXTURED,
-            WARP_VIGNETTE,
-            0,
-            0,
-            0.0F,
-            0.0F,
-            graphics.guiWidth(),
-            graphics.guiHeight(),
-            graphics.guiWidth(),
-            graphics.guiHeight(),
-            0x00FFFFFF | (alpha << 24)
-        );
+        WarpVignetteOverlay.draw(event, alpha);
     }
 
     @SubscribeEvent
     static void renderWarpFog(ViewportEvent.RenderFog event) {
         if (fogTarget > 0.0F && Minecraft.getInstance().player != null) {
-            event.scaleFarPlaneDistance(1.0F - fogTarget * 8.0F);
+            float distanceScale = 1.0F - fogTarget * 8.0F;
+            event.scaleNearPlaneDistance(distanceScale);
+            event.scaleFarPlaneDistance(distanceScale);
         }
     }
 
