@@ -85,6 +85,8 @@ public class TaintedVillager extends TaintedAnimalMonster {
     protected void registerGoals() {
         this.getNavigation().setCanOpenDoors(true);
         super.registerGoals();
+        this.goalSelector.addGoal(2, new TaintedVillagerIndoorGoal(this));
+        this.goalSelector.addGoal(3, new TaintedVillagerRestrictDoorGoal(this));
         this.goalSelector.addGoal(2, new MoveTowardsRestrictionGoal(this, 1.0));
         this.goalSelector.addGoal(4, new OpenDoorGoal(this, true));
         this.goalSelector.addGoal(6, new MoveThroughVillageGoal(this, 1.0, false, 2, () -> true));

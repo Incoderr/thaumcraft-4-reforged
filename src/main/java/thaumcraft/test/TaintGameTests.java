@@ -80,7 +80,8 @@ public final class TaintGameTests {
         BlockPos target = new BlockPos(3, 2, 3);
         helper.setBlock(target.below(), Blocks.STONE);
         helper.setBlock(target.east(), ModBlocks.FIBROUS_TAINT.get());
-        helper.assertTrue(TaintSpread.spreadFibres(helper.getLevel(), target), "fibres rejected replaceable air next to solid support");
+        BlockPos worldTarget = helper.absolutePos(target);
+        helper.assertTrue(TaintSpread.spreadFibres(helper.getLevel(), worldTarget), "fibres rejected replaceable air next to solid support");
         helper.assertTrue(TaintSpread.isTaintBlock(helper.getBlockState(target)), "fibres spread did not place a taint block");
         helper.succeed();
     }
@@ -88,40 +89,44 @@ public final class TaintGameTests {
     private static void fluxSeedsFibresAndBiome(GameTestHelper helper) {
         BlockPos target = new BlockPos(3, 2, 3);
         helper.setBlock(target.below(), Blocks.STONE);
-        helper.assertTrue(TaintSpread.taintFromFlux(helper.getLevel(), target), "flux failed to seed taint");
-        helper.assertTrue(TaintBiomes.isTainted(helper.getLevel(), target), "flux did not taint the biome column");
+        BlockPos worldTarget = helper.absolutePos(target);
+        helper.assertTrue(TaintSpread.taintFromFlux(helper.getLevel(), worldTarget), "flux failed to seed taint");
+        helper.assertTrue(TaintBiomes.isTainted(helper.getLevel(), worldTarget), "flux did not taint the biome column");
         helper.assertTrue(helper.getBlockState(target).is(ModBlocks.FIBROUS_TAINT.get()), "flux did not place fibres on supported air");
         helper.succeed();
     }
 
     private static void bloomRestoresOriginalBiome(GameTestHelper helper) {
         BlockPos target = new BlockPos(3, 2, 3);
-        var original = helper.getLevel().getBiome(target);
-        helper.assertTrue(TaintBiomes.set(helper.getLevel(), target, TaintBiomes.TAINTED_LAND), "test setup failed to taint biome column");
-        helper.assertTrue(TaintBiomes.purify(helper.getLevel(), target), "purification did not restore a biome column");
+        BlockPos worldTarget = helper.absolutePos(target);
+        var original = helper.getLevel().getBiome(worldTarget);
+        helper.assertTrue(TaintBiomes.set(helper.getLevel(), worldTarget, TaintBiomes.TAINTED_LAND), "test setup failed to taint biome column");
+        helper.assertTrue(TaintBiomes.purify(helper.getLevel(), worldTarget), "purification did not restore a biome column");
         var expected = original.is(TaintBiomes.TAINTED_LAND)
             ? helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS)
             : original;
-        helper.assertValueEqual(helper.getLevel().getBiome(target), expected, "purification did not restore the original biome source");
+        helper.assertValueEqual(helper.getLevel().getBiome(worldTarget), expected, "purification did not restore the original biome source");
         helper.succeed();
     }
 
     private static void tentacleStaysStationary(GameTestHelper helper) {
         Taintacle tentacle = ModEntities.TAINTACLE.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(tentacle != null, "failed to create taintacle");
-        tentacle.absSnapTo(3.5, 2.0, 3.5, 0.0F, 0.0F);
+        BlockPos worldPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        tentacle.absSnapTo(worldPos.getX() + 0.5, worldPos.getY(), worldPos.getZ() + 0.5, 0.0F, 0.0F);
         helper.getLevel().addFreshEntity(tentacle);
         tentacle.move(MoverType.SELF, new Vec3(2.0, 2.0, -3.0));
-        helper.assertValueEqual(tentacle.getX(), 3.5, "taintacle accepted horizontal movement");
-        helper.assertValueEqual(tentacle.getZ(), 3.5, "taintacle accepted horizontal movement");
-        helper.assertValueEqual(tentacle.getY(), 2.0, "taintacle accepted upward movement");
+        helper.assertValueEqual(tentacle.getX(), worldPos.getX() + 0.5, "taintacle accepted horizontal movement");
+        helper.assertValueEqual(tentacle.getZ(), worldPos.getZ() + 0.5, "taintacle accepted horizontal movement");
+        helper.assertValueEqual(tentacle.getY(), (double) worldPos.getY(), "taintacle accepted upward movement");
         helper.succeed();
     }
 
     private static void poisonReplacementPreservesPosition(GameTestHelper helper) {
         Cow original = EntityTypes.COW.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(original != null, "failed to create test cow");
-        original.absSnapTo(2.25, 2.0, 4.75, 47.0F, 0.0F);
+        BlockPos worldPos = helper.absolutePos(new BlockPos(2, 2, 4));
+        original.absSnapTo(worldPos.getX() + 0.25, worldPos.getY(), worldPos.getZ() + 0.75, 47.0F, 0.0F);
         Entity replacement = TaintMobFactory.createReplacement(original);
         helper.assertTrue(replacement instanceof TaintedCow, "cow replacement did not create tainted cow");
         helper.assertTrue(replacement instanceof TaintedMob, "replacement does not implement tainted mob contract");
@@ -135,17 +140,21 @@ public final class TaintGameTests {
     private static void poisonConversionRemovesOriginal(GameTestHelper helper) {
         Cow original = EntityTypes.COW.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(original != null, "failed to create test cow");
-        original.absSnapTo(2.25, 2.0, 4.75, 47.0F, 16.0F);
+        BlockPos worldPos = helper.absolutePos(new BlockPos(2, 2, 4));
+        double x = worldPos.getX() + 0.25;
+        double y = worldPos.getY();
+        double z = worldPos.getZ() + 0.75;
+        original.absSnapTo(x, y, z, 47.0F, 16.0F);
         helper.getLevel().addFreshEntity(original);
         original.addEffect(new MobEffectInstance(ModEffects.TAINT_POISON, 100, 0));
-        TaintPoisonEvents.onLivingDeath(new LivingDeathEvent(original, helper.getLevel().damageSources().generic()));
+        original.hurtServer(helper.getLevel(), helper.getLevel().damageSources().genericKill(), original.getMaxHealth() + 1.0F);
         helper.assertTrue(original.isRemoved(), "original entity was not removed after replacement");
         var replacements = helper.getLevel().getEntitiesOfClass(TaintedCow.class, original.getBoundingBox().inflate(2.0));
         helper.assertValueEqual(replacements.size(), 1, "poison conversion should add exactly one tainted cow");
         TaintedCow replacement = replacements.getFirst();
-        helper.assertValueEqual(replacement.getX(), 2.25, "replacement changed source x coordinate");
-        helper.assertValueEqual(replacement.getY(), 2.0, "replacement changed source y coordinate");
-        helper.assertValueEqual(replacement.getZ(), 4.75, "replacement changed source z coordinate");
+        helper.assertValueEqual(replacement.getX(), x, "replacement changed source x coordinate");
+        helper.assertValueEqual(replacement.getY(), y, "replacement changed source y coordinate");
+        helper.assertValueEqual(replacement.getZ(), z, "replacement changed source z coordinate");
         helper.assertValueEqual(replacement.getYRot(), 47.0F, "replacement changed source yaw");
         helper.assertValueEqual(replacement.getXRot(), 0.0F, "replacement did not reset source pitch");
         helper.succeed();
@@ -154,7 +163,8 @@ public final class TaintGameTests {
     private static void poisonIgnoresTaintedMobs(GameTestHelper helper) {
         TaintedCow tainted = ModEntities.TAINTED_COW.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(tainted != null, "failed to create tainted cow");
-        tainted.absSnapTo(3.5, 2.0, 3.5, 0.0F, 0.0F);
+        BlockPos worldPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        tainted.absSnapTo(worldPos.getX() + 0.5, worldPos.getY(), worldPos.getZ() + 0.5, 0.0F, 0.0F);
         helper.getLevel().addFreshEntity(tainted);
         tainted.addEffect(new MobEffectInstance(ModEffects.TAINT_POISON, 100, 0));
         TaintPoisonEvents.onLivingDeath(new LivingDeathEvent(tainted, helper.getLevel().damageSources().generic()));
