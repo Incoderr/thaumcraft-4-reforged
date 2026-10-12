@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
@@ -118,6 +119,14 @@ public class TaintSwarm extends Monster implements TaintedMob {
 
     @Override
     public void tick() {
+        if (this.level().isClientSide()) {
+            if (this.random.nextBoolean()) {
+                this.level().addParticle(ParticleTypes.PORTAL, this.getX() + (this.random.nextDouble() - 0.5) * 1.5,
+                    this.getY() + this.random.nextDouble() * 1.5, this.getZ() + (this.random.nextDouble() - 0.5) * 1.5,
+                    (this.random.nextDouble() - 0.5) * 0.08, (this.random.nextDouble() - 0.5) * 0.08,
+                    (this.random.nextDouble() - 0.5) * 0.08);
+            }
+        }
         if (!this.level().isClientSide()) {
             this.tickAttack();
             this.tickTarget();
@@ -173,7 +182,7 @@ public class TaintSwarm extends Monster implements TaintedMob {
         }
         if (this.flightTarget != null && (!this.level().isEmptyBlock(this.flightTarget) || this.flightTarget.getY() < 1
             || this.flightTarget.getY() > this.level().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, this.flightTarget.getX(), this.flightTarget.getZ()) + 8
-            || !this.level().getBiome(this.flightTarget).is(TaintBiomes.TAINTED_LAND))) {
+            || !TaintBiomes.isTainted(this.level(), this.flightTarget))) {
             this.flightTarget = null;
         }
         if (this.flightTarget == null || this.random.nextInt(30) == 0 || this.flightTarget.distToCenterSqr(this.position()) < 4.0) {
