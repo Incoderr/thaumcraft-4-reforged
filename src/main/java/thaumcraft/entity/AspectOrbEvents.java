@@ -8,6 +8,8 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.research.ScanManager;
+import thaumcraft.entity.TaintedMob;
+import thaumcraft.registry.ModEffects;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class AspectOrbEvents {
@@ -16,7 +18,7 @@ public final class AspectOrbEvents {
     @SubscribeEvent
     static void onLivingDeath(LivingDeathEvent event) {
         var entity = event.getEntity();
-        if (entity.level().isClientSide() || entity.getLastHurtByMob() == null) return;
+        if (entity.level().isClientSide() || entity.getLastHurtByPlayer() == null || (!(entity instanceof TaintedMob) && entity.hasEffect(ModEffects.TAINT_POISON))) return;
         AspectList aspects = ScanManager.entityAspects(entity);
         if (aspects == null || aspects.isEmpty()) return;
         AspectList primal = AspectHelper.reduceToPrimals(aspects, true);

@@ -6,7 +6,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.Witch;
@@ -44,6 +43,7 @@ import thaumcraft.registry.ModEntities;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.registry.ModItems;
 import thaumcraft.entity.monster.eldritch.EldritchGuardian;
+import thaumcraft.entity.monster.taint.Taintacle;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
@@ -129,20 +129,12 @@ public final class ChampionModifier {
 
     private static int whitelistLevel(Mob mob) {
         EntityType<?> type = mob.getType();
-        if (mob instanceof Zombie || mob instanceof Spider || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || mob instanceof AbstractSkeleton || type == ModEntities.ELDRITCH_CRAB.get()) {
-            return 0;
-        }
-        if (mob instanceof Witch || type == ModEntities.WISP.get() || mob instanceof thaumcraft.entity.monster.Pech
-            || mob instanceof thaumcraft.entity.monster.CultistKnight || mob instanceof thaumcraft.entity.monster.CultistCleric) {
-            return 1;
-        }
-        if (type == ModEntities.TAINTACLE.get()) {
-            return 2;
-        }
-        if (type == ModEntities.INHABITED_ZOMBIE.get()) {
-            return 3;
-        }
-        return -1;
+        int level = -1;
+        if (mob instanceof Zombie || mob instanceof Spider || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || mob instanceof AbstractSkeleton || type == ModEntities.ELDRITCH_CRAB.get()) level = 0;
+        if (mob instanceof Witch || type == ModEntities.WISP.get() || mob instanceof thaumcraft.entity.monster.Pech || mob instanceof thaumcraft.entity.monster.Cultist) level = Math.max(level, 1);
+        if (mob instanceof Taintacle) level = Math.max(level, 2);
+        if (mob instanceof thaumcraft.entity.monster.InhabitedZombie) level = Math.max(level, 3);
+        return level;
     }
 
     private static boolean isVanilla(Mob mob, String path) {
@@ -202,7 +194,6 @@ public final class ChampionModifier {
         applyAttackEffect(id, mob, target, event.getAmount(), level.getRandom().nextFloat(), level.getRandom().nextInt(3));
     }
 
-    /** Applies the attack-side effect using explicit random values, also used by deterministic GameTests. */
     public static void applyAttackEffect(int id, Mob attacker, LivingEntity target, float damage, float chanceRoll, int roll) {
         switch (id) {
             case 4 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200)); }
@@ -218,7 +209,7 @@ public final class ChampionModifier {
     @SubscribeEvent
     static void onChampionDrops(LivingDropsEvent event) {
         if (!(event.getEntity() instanceof Mob mob) || !(mob.level() instanceof ServerLevel level) || get(mob) < 0
-            || !event.isRecentlyHit() || mob.getLastHurtByPlayer() == null || event.getSource().getEntity() instanceof FakePlayer) return;
+            || !event.isRecentlyHit() || event.getSource().getEntity() instanceof FakePlayer) return;
         int looting = event.getSource().getEntity() instanceof LivingEntity killer
             ? EnchantmentHelper.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING), killer)
             : 0;
