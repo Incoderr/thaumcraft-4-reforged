@@ -14,7 +14,7 @@ def write_damage_types(ctx):
     for name, tags in definitions.items():
         ctx.write(
             ctx.DATA / NS / "damage_type" / f"{name}.json",
-            {"exhaustion": 0.1, "message_id": f"{NS}.{name}", "scaling": "when_caused_by_living_non_player"},
+            {"exhaustion": 0.3, "message_id": f"{NS}.{name}", "scaling": "when_caused_by_living_non_player"},
         )
         for tag in tags:
             namespace, path = tag.split(":", 1)
@@ -25,6 +25,11 @@ def write_damage_types(ctx):
                 values.append(f"{NS}:{name}")
             current["values"] = sorted(values, key=lambda entry: entry if isinstance(entry, str) else entry["id"])
             ctx.write(tag_path, current)
+
+    ctx.write(
+        ctx.DATA / "minecraft" / "tags" / "entity_type" / "arthropod.json",
+        {"replace": False, "values": [f"{NS}:eldritch_crab"]},
+    )
 
 
 def block(ctx, name, texture):

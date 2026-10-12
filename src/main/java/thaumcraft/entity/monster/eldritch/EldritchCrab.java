@@ -15,6 +15,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -28,6 +29,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -59,6 +61,11 @@ public class EldritchCrab extends Monster {
             .add(Attributes.ATTACK_DAMAGE, 4.0)
             .add(Attributes.MOVEMENT_SPEED, 0.3)
             .add(Attributes.ARMOR, 0.0);
+    }
+
+    @Override
+    protected int getBaseExperienceReward(ServerLevel level) {
+        return 6;
     }
 
     @Override
@@ -103,6 +110,19 @@ public class EldritchCrab extends Monster {
         @Nullable SpawnGroupData spawnGroupData
     ) {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, spawnReason, spawnGroupData);
+        Spider.SpiderEffectsGroupData spiderData;
+        if (result instanceof Spider.SpiderEffectsGroupData data) {
+            spiderData = data;
+        } else {
+            spiderData = new Spider.SpiderEffectsGroupData();
+            if (level.getLevel().getDifficulty() == net.minecraft.world.Difficulty.HARD && this.random.nextFloat() < 0.1F * difficulty.getSpecialMultiplier()) {
+                spiderData.setRandomEffect(this.random);
+            }
+            result = spiderData;
+        }
+        if (spiderData.effect != null) {
+            this.addEffect(new MobEffectInstance(spiderData.effect, -1));
+        }
         this.setHelm(level.getLevel().getDifficulty() == net.minecraft.world.Difficulty.HARD || this.random.nextFloat() < 0.33F);
         return result;
     }
@@ -123,8 +143,8 @@ public class EldritchCrab extends Monster {
         if (this.tickCount < 20) {
             this.fallDistance = 0.0F;
         }
-        LivingEntity target = this.getTarget();
-        if (this.getVehicle() == null && target != null && target.getVehicle() == null && !this.onGround() && !this.hasHelm()
+        LivingEntity target = this.getLastHurtByMob();
+        if (this.getVehicle() == null && target != null && !target.isVehicle() && !this.onGround() && !this.hasHelm()
             && target.isAlive() && this.getY() - target.getY() >= target.getBbHeight() / 2.0 && this.distanceToSqr(target) < 4.0) {
             this.startRiding(target);
         }
@@ -143,6 +163,22 @@ public class EldritchCrab extends Monster {
     }
 
     @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+        boolean hurt = super.hurtServer(level, source, damage);
+        if (this.hasHelm() && this.getHealth() / this.getMaxHealth() <= 0.5F) {
+            this.setHelm(false);
+            this.spawnItemParticles(new ItemStack(ModItems.CRIMSON_CULT_CHESTPLATE.get()), 20);
+        }
+        return hurt;
+    }
+
+    @Override
+    public net.minecraft.world.phys.Vec3 getVehicleAttachmentPoint(Entity vehicle) {
+        net.minecraft.world.phys.Vec3 point = super.getVehicleAttachmentPoint(vehicle);
+        return this.getVehicle() == null ? point : point.add(0.0, 0.5, 0.0);
+    }
+
+    @Override
     public boolean canBeAffected(MobEffectInstance effect) {
         return !effect.is(MobEffects.POISON) && super.canBeAffected(effect);
     }
@@ -155,6 +191,11 @@ public class EldritchCrab extends Monster {
     @Override
     protected SoundEvent getAmbientSound() {
         return ModSounds.CRAB_TALK.get();
+    }
+
+    @Override
+    public int getAmbientSoundInterval() {
+        return 160;
     }
 
     @Override
