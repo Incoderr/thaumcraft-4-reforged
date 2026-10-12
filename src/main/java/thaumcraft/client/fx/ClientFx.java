@@ -280,6 +280,25 @@ public final class ClientFx implements FxProxy {
     }
 
     @Override
+    public void eldritchOrbBurst(Level level, Entity orb) {
+        RandomSource random = level.getRandom();
+        double x = orb.getX();
+        double y = orb.getY();
+        double z = orb.getZ();
+        for (int index = 0; index < 30; index++) {
+            float dx = jitter(random, 0.3F);
+            float dy = jitter(random, 0.3F);
+            float dz = jitter(random, 0.3F);
+            wispTo(level, x + dx, y + dy, z + dz, x + dx * 8.0, y + dy * 8.0, z + dz * 8.0, 0.3F, 5, true, 0.02F);
+        }
+    }
+
+    @Override
+    public void golemOrbBurst(Level level, double x, double y, double z, float size) {
+        WorldFxRenderer.add(new BurstFx(level.getRandom(), x, y, z, size));
+    }
+
+    @Override
     public void purifyingFluid(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
         BubbleFx bubble = new BubbleFx(
             random,
