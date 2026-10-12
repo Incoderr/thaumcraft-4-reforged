@@ -1,8 +1,10 @@
 package thaumcraft.client.fx;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -24,6 +26,7 @@ import thaumcraft.fx.FxProxy;
 public final class ClientFx implements FxProxy {
     private static final int EXCAVATION_COLOR = 65382;
     private final Map<Integer, WandBeamFx> beams = new HashMap<>();
+    private final Map<UUID, List<TaintSwarmFx>> taintSwarmParticles = new HashMap<>();
 
     @Override
     public void beamPulse(Level level, Entity source, Entity target, int color) {
@@ -76,6 +79,25 @@ public final class ClientFx implements FxProxy {
             return 0;
         }
         return status == ParticleStatus.DECREASED ? base : base * 2;
+    }
+
+    @Override
+    public void taintSwarm(Level level, Entity target, int maxParticles, float speed, float turnSpeed, float gravity) {
+        if (!level.isClientSide() || target.isRemoved()) {
+            return;
+        }
+        taintSwarmParticles.values().forEach(particles -> particles.removeIf(TaintSwarmFx::isDead));
+        taintSwarmParticles.values().removeIf(List::isEmpty);
+        int targetCount = speed >= 0.2F ? Math.max(particleCount(maxParticles), 10) : maxParticles;
+        if (targetCount <= 0) {
+            return;
+        }
+        List<TaintSwarmFx> particles = taintSwarmParticles.computeIfAbsent(target.getUUID(), ignored -> new ArrayList<>());
+        if (particles.size() < targetCount) {
+            TaintSwarmFx particle = new TaintSwarmFx(level, target, level.getRandom(), speed, turnSpeed, gravity);
+            particles.add(particle);
+            WorldFxRenderer.add(particle);
+        }
     }
 
     @Override
