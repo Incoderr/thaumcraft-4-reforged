@@ -395,6 +395,8 @@ public final class WarpGameTests {
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
             helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set night"
         );
+        helper.getLevel().environmentAttributes().invalidateTickCache();
+        helper.getLevel().updateSkyBrightness();
         helper.assertTrue(darkTarget.getLightLevelDependentMagicValue() < 0.25F, "sun scorned healing test target must be dark enough for its healing branch");
         float darkHealth = darkTarget.getHealth();
         invokeRandomEffect("applySunScorned", helper, darkTarget, new FixedRandomSource(999));
@@ -403,6 +405,8 @@ public final class WarpGameTests {
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
             helper.getLevel().getServer().createCommandSourceStack().withLevel(helper.getLevel()), "time set day"
         );
+        helper.getLevel().environmentAttributes().invalidateTickCache();
+        helper.getLevel().updateSkyBrightness();
         BlockPos sunlitRelativePos = new BlockPos(5, 20, 3);
         BlockPos sunlitAbsolutePos = helper.absolutePos(sunlitRelativePos);
         LivingEntity sunlitTarget = createMob(helper, EntityTypes.SHEEP, sunlitAbsolutePos.getX() + 0.5, sunlitAbsolutePos.getY(), sunlitAbsolutePos.getZ() + 0.5);
