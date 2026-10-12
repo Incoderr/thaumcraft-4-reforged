@@ -327,9 +327,10 @@ public class TaintEntityModel extends EntityModel<TaintMobRenderState> {
             for (int index = 0; index < this.spiderLegs.size(); index++) {
                 ModelPart leg = this.spiderLegs.get(index);
                 float side = index % 2 == 0 ? -1.0F : 1.0F;
-                leg.zRot = side * (float) Math.PI / 4.0F * (index < 2 || index > 5 ? 1.0F : 0.74F);
+                leg.zRot = side * (float) Math.PI / 4.0F * (index < 2 || index > 5 ? 1.0F : 0.74F)
+                    + side * Mth.abs(Mth.sin(walk + stride[index]) * 0.4F) * state.walkAnimationSpeed;
                 leg.yRot = baseYaw[index] + (index % 2 == 0 ? -1.0F : 1.0F) * Mth.cos(walk * 2.0F + stride[index]) * 0.4F * state.walkAnimationSpeed;
-                leg.xRot = Mth.abs(Mth.sin(walk + stride[index] * 0.5F) * 0.4F) * state.walkAnimationSpeed;
+                leg.xRot = 0.0F;
             }
         }
         if (this.kind == Kind.CHICKEN) {
