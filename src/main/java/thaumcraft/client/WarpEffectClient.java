@@ -2,10 +2,12 @@ package thaumcraft.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -23,6 +25,8 @@ public final class WarpEffectClient {
     private static final Identifier SUN_SCORNED_SHADER = Identifier.withDefaultNamespace("sunscorned");
     private static int warpVignetteTicks;
     private static int fogTicks;
+    private static @Nullable LocalPlayer lastPlayer;
+    private static @Nullable Level lastLevel;
 
     private WarpEffectClient() {
     }
@@ -48,6 +52,16 @@ public final class WarpEffectClient {
     static void clientTick(ClientTickEvent.Post event) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
+            boolean changedLevel = lastLevel != null && lastLevel != player.level();
+            if (lastPlayer != null && (lastPlayer != player || changedLevel)) {
+                clearOurPostEffects(lastPlayer);
+            }
+            if (changedLevel) {
+                warpVignetteTicks = 0;
+                fogTicks = 0;
+            }
+            lastPlayer = player;
+            lastLevel = player.level();
             syncPostEffects(player);
             if (player.hasEffect(ModEffects.DEATH_GAZE)) {
                 warpVignetteTicks = 10;
@@ -60,13 +74,17 @@ public final class WarpEffectClient {
             fogTicks--;
         }
         if (Minecraft.getInstance().player == null) {
+            clearOurPostEffects(lastPlayer);
+            lastPlayer = null;
+            lastLevel = null;
             warpVignetteTicks = 0;
             fogTicks = 0;
         }
     }
 
     private static void syncPostEffects(LocalPlayer player) {
-        List<Identifier> active = new ArrayList<>(4);
+        List<Identifier> active = new ArrayList<>(player.getActivePostEffects());
+        active.removeIf(WarpEffectClient::isOurPostEffect);
         if (player.hasEffect(ModEffects.DEATH_GAZE)) {
             active.add(DEATH_GAZE_SHADER);
         }
@@ -82,5 +100,22 @@ public final class WarpEffectClient {
         if (!player.getActivePostEffects().equals(active)) {
             player.setActivePostEffects(active);
         }
+    }
+
+    private static void clearOurPostEffects(@Nullable LocalPlayer player) {
+        if (player == null) {
+            return;
+        }
+        List<Identifier> active = new ArrayList<>(player.getActivePostEffects());
+        if (active.removeIf(WarpEffectClient::isOurPostEffect)) {
+            player.setActivePostEffects(active);
+        }
+    }
+
+    private static boolean isOurPostEffect(Identifier identifier) {
+        return identifier.equals(DEATH_GAZE_SHADER)
+            || identifier.equals(BLURRED_VISION_SHADER)
+            || identifier.equals(HUNGER_SHADER)
+            || identifier.equals(SUN_SCORNED_SHADER);
     }
 }
