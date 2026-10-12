@@ -71,6 +71,12 @@ public interface FxProxy {
     default void alumentumTrail(Level level, Entity projectile) {
     }
 
+    default void eldritchOrbBurst(Level level, Entity orb) {
+    }
+
+    default void golemOrbBurst(Level level, double x, double y, double z, float size) {
+    }
+
     default void purifyingFluid(Level level, BlockPos pos, int fluidLevel, RandomSource random) {
     }
 
