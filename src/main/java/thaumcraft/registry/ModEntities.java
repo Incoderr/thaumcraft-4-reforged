@@ -33,6 +33,8 @@ import thaumcraft.entity.projectile.PrimalArrow;
 import thaumcraft.entity.projectile.PrimalOrb;
 import thaumcraft.entity.projectile.ShockOrb;
 import thaumcraft.entity.projectile.BottleTaint;
+import thaumcraft.entity.projectile.AlumentumProjectile;
+import thaumcraft.entity.projectile.DartProjectile;
 import thaumcraft.entity.monster.taint.FallingTaint;
 import thaumcraft.entity.monster.taint.TaintSpider;
 import thaumcraft.entity.monster.taint.Taintacle;
@@ -66,6 +68,8 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<EldritchOrb>> ELDRITCH_ORB = projectile("eldritch_orb", EldritchOrb::new, 0.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<GolemOrb>> GOLEM_ORB = projectile("golem_orb", GolemOrb::new, 0.5F);
     public static final DeferredHolder<EntityType<?>, EntityType<BottleTaint>> BOTTLE_TAINT = projectile("bottle_taint", BottleTaint::new, 0.25F);
+    public static final DeferredHolder<EntityType<?>, EntityType<AlumentumProjectile>> ALUMENTUM_PROJECTILE = trackedProjectile("alumentum_projectile", AlumentumProjectile::new, 0.25F, 64);
+    public static final DeferredHolder<EntityType<?>, EntityType<DartProjectile>> DART = trackedProjectile("dart", DartProjectile::new, 0.5F, 64);
     public static final DeferredHolder<EntityType<?>, EntityType<FallingTaint>> FALLING_TAINT = projectile("falling_taint", FallingTaint::new, 0.98F);
     public static final DeferredHolder<EntityType<?>, EntityType<TaintSpider>> TAINT_SPIDER = mob("taint_spider", TaintSpider::new, 0.4F, 0.3F);
     public static final DeferredHolder<EntityType<?>, EntityType<Taintacle>> TAINTACLE = mob("taintacle", Taintacle::new, 0.66F, 3.0F);
@@ -89,13 +93,22 @@ public final class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<CultistCleric>> CULTIST_CLERIC = mob("cultist_cleric", CultistCleric::new, 0.6F, 1.8F);
     public static final DeferredHolder<EntityType<?>, EntityType<EldritchCrab>> ELDRITCH_CRAB = mob("eldritch_crab", EldritchCrab::new, 0.8F, 0.6F);
     public static final DeferredHolder<EntityType<?>, EntityType<MindSpider>> MIND_SPIDER = mob("mind_spider", MindSpider::new, 0.3F, 0.3F);
-    public static final DeferredHolder<EntityType<?>, EntityType<EldritchGuardian>> ELDRITCH_GUARDIAN = mob("eldritch_guardian", EldritchGuardian::new, 0.8F, 2.25F);
+    public static final DeferredHolder<EntityType<?>, EntityType<EldritchGuardian>> ELDRITCH_GUARDIAN = ENTITIES.registerEntityType(
+        "eldritch_guardian",
+        EldritchGuardian::new,
+        MobCategory.MONSTER,
+        builder -> builder.sized(0.8F, 2.25F).eyeHeight(2.1F).clientTrackingRange(8).updateInterval(3)
+    );
 
     private ModEntities() {
     }
 
     private static <T extends Entity> DeferredHolder<EntityType<?>, EntityType<T>> projectile(String name, EntityType.EntityFactory<T> factory, float size) {
-        return ENTITIES.registerEntityType(name, factory, MobCategory.MISC, builder -> builder.sized(size, size).clientTrackingRange(4).updateInterval(20));
+        return trackedProjectile(name, factory, size, 4);
+    }
+
+    private static <T extends Entity> DeferredHolder<EntityType<?>, EntityType<T>> trackedProjectile(String name, EntityType.EntityFactory<T> factory, float size, int range) {
+        return ENTITIES.registerEntityType(name, factory, MobCategory.MISC, builder -> builder.sized(size, size).clientTrackingRange(range).updateInterval(20));
     }
 
     private static <T extends net.minecraft.world.entity.Mob> DeferredHolder<EntityType<?>, EntityType<T>> mob(String name, EntityType.EntityFactory<T> factory, float width, float height) {

@@ -13,6 +13,7 @@ import thaumcraft.device.ArcaneKeyItem;
 import thaumcraft.device.OwnedBlockEntity;
 import thaumcraft.essentia.PhialItem;
 import thaumcraft.item.AspectContainerItem;
+import thaumcraft.item.AlumentumItem;
 import thaumcraft.item.BathSaltsItem;
 import thaumcraft.item.BottledTaintItem;
 import thaumcraft.item.CrystalEssenceItem;
@@ -88,7 +89,7 @@ public final class ModItems {
     public static final DeferredItem<SanitizingSoapItem> SANITIZING_SOAP = ITEMS.registerItem("sanitizing_soap", SanitizingSoapItem::new);
     public static final DeferredItem<BottledTaintItem> BOTTLED_TAINT = ITEMS.registerItem("bottled_taint", BottledTaintItem::new);
 
-    public static final DeferredItem<Item> ALUMENTUM = ITEMS.registerSimpleItem("alumentum", properties -> Registration.fuel(properties, 6400));
+    public static final DeferredItem<Item> ALUMENTUM = ITEMS.registerItem("alumentum", properties -> new AlumentumItem(Registration.fuel(properties, 6400)));
     public static final DeferredItem<Item> NITOR = ITEMS.registerItem("nitor", properties -> new net.minecraft.world.item.BlockItem(ModBlocks.NITOR_LIGHT.get(), properties));
     public static final DeferredItem<Item> THAUMIUM_INGOT = ITEMS.registerSimpleItem("thaumium_ingot");
     public static final DeferredItem<Item> QUICKSILVER = ITEMS.registerSimpleItem("quicksilver");

@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FlowingFluid;
 import thaumcraft.registry.ModEffects;
+import thaumcraft.fx.Fx;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
@@ -33,9 +34,7 @@ public class PurifyingFluidBlock extends LiquidBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (random.nextInt(4) == 0) {
-            level.addParticle(ParticleTypes.BUBBLE, pos.getX() + random.nextDouble(), pos.getY() + 0.125, pos.getZ() + random.nextDouble(), 0.0, 0.02, 0.0);
-        }
+        Fx.get().purifyingFluid(level, pos, state.getValue(LEVEL), random);
         super.animateTick(state, level, pos, random);
     }
 }

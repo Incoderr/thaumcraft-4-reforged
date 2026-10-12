@@ -26,6 +26,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.damage.ModDamageTypes;
 import thaumcraft.registry.ModFluids;
+import thaumcraft.fx.Fx;
 
 public class LiquidDeathBlock extends LiquidBlock {
     public static final int QUANTA_PER_BLOCK = 4;
@@ -70,6 +71,12 @@ public class LiquidDeathBlock extends LiquidBlock {
     @Override
     protected boolean canBeReplaced(BlockState state, Fluid fluid) {
         return getQuanta(state) <= 2;
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        Fx.get().liquidDeath(level, pos, state.getValue(LEVEL), random);
+        super.animateTick(state, level, pos, random);
     }
 
     @Override

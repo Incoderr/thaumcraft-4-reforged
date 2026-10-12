@@ -50,9 +50,9 @@ def fetch(version):
     return directory
 
 
-def run_reports(directory, version):
-    reports = directory / "reports"
-    registries = reports / "reports" / "registries.json"
+def run_reports(directory, version, reports_directory=None):
+    reports = reports_directory / "reports" if reports_directory and not (reports_directory / "registries.json").exists() else reports_directory or directory / "reports"
+    registries = reports / ("registries.json" if reports_directory else "reports/registries.json")
     if not registries.exists():
         reports.mkdir(exist_ok=True)
         command = [f"/opt/homebrew/opt/{JAVA_HOMES[version]}/bin/java", "-DbundlerMainClass=net.minecraft.data.Main", "-jar", "server.jar", "--reports", "--output", "reports"]
@@ -132,15 +132,19 @@ def read_nbt(data):
 
 
 class Validator:
-    def __init__(self, version, out):
+    def __init__(self, version, out, reports_directory=None, server_jar=None, client_jar=None):
         self.version = version
         self.out = out
         self.problems = []
-        directory = fetch(version)
-        registries = run_reports(directory, version)
-        self.registry = {name.split(":", 1)[1]: set(content["entries"]) for name, content in registries.items()}
-        server = jar_names(directory / "server.jar")
-        client = jar_names(directory / "client.jar")
+        directory = None if reports_directory and server_jar and client_jar else fetch(version)
+        registries = run_reports(directory, version, Path(reports_directory) if reports_directory else None)
+        self.registry = {
+            name.split(":", 1)[1]: set(entries if isinstance(entries, list) else entries.keys())
+            for name, content in registries.items()
+            for entries in [content["entries"]]
+        }
+        server = jar_names(Path(server_jar) if server_jar else directory / "server.jar")
+        client = jar_names(Path(client_jar) if client_jar else directory / "client.jar")
         self.models = {name[len("assets/minecraft/models/"):-5] for name in client if name.startswith("assets/minecraft/models/") and name.endswith(".json")}
         self.textures = {name[len("assets/minecraft/textures/"):-4] for name in client if name.startswith("assets/minecraft/textures/") and name.endswith(".png")}
         profile = mcformat.PROFILES[version]
@@ -162,6 +166,14 @@ class Validator:
         for entries in self.registry.values():
             self.flat |= entries
         self.flat |= self.loot_tables | self.enchantments
+        self.block_states = {}
+        if reports_directory:
+            reports_root = Path(reports_directory)
+            blocks_file = reports_root / "blocks.json"
+            if not blocks_file.exists():
+                blocks_file = reports_root / "reports/blocks.json"
+            if blocks_file.exists():
+                self.block_states = json.loads(blocks_file.read_text(encoding="utf-8"))
 
     def report(self, source, value, expected):
         self.problems.append((source, value, expected))
@@ -263,12 +275,53 @@ class Validator:
             file_kind = "item_tag"
         elif "/" + profile.loot_folder + "/" in "/" + relative:
             file_kind = "loot"
-        elif relative.startswith("assets/") and ("/models/" in relative or "/blockstates/" in relative):
+        elif "/blockstates/" in "/" + relative:
+            file_kind = "blockstate"
+        elif relative.startswith("assets/") and "/models/" in relative:
             file_kind = "model"
         else:
             file_kind = "other"
         content = json.loads(path.read_text(encoding="utf-8"))
         self.walk(relative, content, [], file_kind)
+        if file_kind == "blockstate":
+            self.check_blockstate(relative, content)
+
+    def check_blockstate(self, relative, content):
+        asset_path = relative.split("/blockstates/", 1)[1]
+        namespace = relative.split("/", 2)[1]
+        block_id = f"{namespace}:{Path(asset_path).with_suffix('').as_posix()}"
+        report = self.block_states.get(block_id)
+        if report is None:
+            return
+        properties = report.get("properties", {})
+        for selector in content.get("variants", {}):
+            self.check_state_selector(relative, block_id, selector, properties)
+        for part in content.get("multipart", []):
+            when = part.get("when", {})
+            selectors = [when] if isinstance(when, dict) else when.values()
+            for selector in selectors:
+                self.check_state_properties(relative, block_id, selector, properties)
+
+    def check_state_selector(self, source, block_id, selector, properties):
+        if not selector:
+            return
+        values = {}
+        for property_value in selector.split(","):
+            name, separator, value = property_value.partition("=")
+            if not separator:
+                self.report(source, selector, f"valid {block_id} block-state selector")
+                return
+            values[name] = value.split("|")
+        self.check_state_properties(source, block_id, values, properties)
+
+    def check_state_properties(self, source, block_id, values, properties):
+        for name, expected_values in values.items():
+            if name not in properties:
+                self.report(source, f"{block_id}[{name}]", "block-state property")
+                continue
+            for value in expected_values:
+                if value not in properties[name]:
+                    self.report(source, f"{block_id}[{name}={value}]", "block-state property value")
 
     def check_structure(self, path):
         relative = path.relative_to(self.out).as_posix()
@@ -309,15 +362,18 @@ def main():
     parser.add_argument("--aspects", help="ConfigAspects.java to check (default: the committed one)")
     parser.add_argument("--no-aspects", action="store_true")
     parser.add_argument("--fetch-only", action="store_true")
+    parser.add_argument("--reports-dir", help="Minecraft data-generator reports directory")
+    parser.add_argument("--server-jar", help="Vanilla server jar including its bundled server")
+    parser.add_argument("--client-jar", help="Vanilla client jar for model and texture IDs")
     profile = mcformat.init(parser=parser)
-    if profile.modern:
-        raise SystemExit("validation needs a vanilla server jar, use --mc 1.21.1 or --mc 1.19.2")
     args, _ = parser.parse_known_args()
+    if profile.modern and not (args.reports_dir and args.server_jar and args.client_jar):
+        raise SystemExit("validation needs a vanilla server jar, use --mc 1.21.1 or --mc 1.19.2")
     if args.fetch_only:
         print(fetch(profile.name))
         return
     aspects = None if args.no_aspects else Path(args.aspects) if args.aspects else ASPECTS
-    problems = Validator(profile.name, mcformat.out_root).run(aspects)
+    problems = Validator(profile.name, mcformat.out_root, args.reports_dir, args.server_jar, args.client_jar).run(aspects)
     for source, value, expected in problems:
         print(f"{source}: {value} (expected {expected})")
     print(f"{profile.name}: {len(problems)} problem(s)")

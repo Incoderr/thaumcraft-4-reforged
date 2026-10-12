@@ -33,6 +33,14 @@ public final class ModRenderPipelines {
         .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
         .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
         .build();
+    public static final RenderPipeline ENTITY_TRANSLUCENT_NO_DEPTH = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+        .withLocation(Thaumcraft.id("pipeline/entity_translucent_no_depth"))
+        .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+        .withShaderDefine("PER_FACE_LIGHTING")
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
+        .withCull(false)
+        .build();
     public static final RenderPipeline GUI_ADDITIVE = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/gui_additive"))
         .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
