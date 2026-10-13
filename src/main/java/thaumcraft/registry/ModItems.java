@@ -86,6 +86,28 @@ import thaumcraft.wand.focus.WardingFocus;
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
 
+    private static final java.util.List<DeferredItem<? extends Item>> GOLEM_ITEMS = registerGolemItems();
+
+    private static java.util.List<DeferredItem<? extends Item>> registerGolemItems() {
+        var result = new java.util.ArrayList<DeferredItem<? extends Item>>();
+        for (var type : thaumcraft.entity.golem.GolemType.values()) result.add(ITEMS.registerItem(type.itemId(), properties -> new thaumcraft.item.golem.GolemPlacerItem(properties, type)));
+        result.add(ITEMS.registerItem("golem_core_blank", properties -> new thaumcraft.item.golem.GolemPartItem(properties, thaumcraft.item.golem.GolemPartItem.Kind.CORE, -1)));
+        for (int i = 0; i < thaumcraft.item.golem.GolemItems.CORES.length; i++) {
+            int index = i;
+            result.add(ITEMS.registerItem("golem_core_" + thaumcraft.item.golem.GolemItems.CORES[i], properties -> new thaumcraft.item.golem.GolemPartItem(properties, thaumcraft.item.golem.GolemPartItem.Kind.CORE, index)));
+        }
+        for (int i = 0; i < 6; i++) {
+            int index = i;
+            result.add(ITEMS.registerItem("golem_upgrade_" + thaumcraft.item.golem.GolemItems.UPGRADES[i], properties -> new thaumcraft.item.golem.GolemPartItem(properties, thaumcraft.item.golem.GolemPartItem.Kind.UPGRADE, index)));
+        }
+        for (int i = 0; i < 8; i++) {
+            int index = i;
+            result.add(ITEMS.registerItem(thaumcraft.item.golem.GolemItems.DECORATIONS[i], properties -> new thaumcraft.item.golem.GolemPartItem(properties, thaumcraft.item.golem.GolemPartItem.Kind.DECORATION, index)));
+        }
+        result.add(ITEMS.registerItem("golem_bell", thaumcraft.item.golem.GolemBellItem::new));
+        return java.util.List.copyOf(result);
+    }
+
     public static final DeferredItem<BucketItem> PURIFYING_FLUID_BUCKET = ITEMS.registerItem("purifying_fluid_bucket", properties -> new BucketItem(ModFluids.PURIFYING_FLUID.get(), properties.stacksTo(1)));
     public static final DeferredItem<BucketItem> LIQUID_DEATH_BUCKET = ITEMS.registerItem("liquid_death_bucket", properties -> new BucketItem(ModFluids.LIQUID_DEATH.get(), properties.stacksTo(1)));
     public static final DeferredItem<BathSaltsItem> BATH_SALTS = ITEMS.registerItem("bath_salts", BathSaltsItem::new);

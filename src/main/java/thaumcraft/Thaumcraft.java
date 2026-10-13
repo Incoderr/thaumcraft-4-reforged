@@ -59,6 +59,7 @@ public class Thaumcraft {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
+        thaumcraft.entity.golem.GolemKeys.init();
         AspectKeys.init();
         WandKeys.init();
         FocusKeys.init();

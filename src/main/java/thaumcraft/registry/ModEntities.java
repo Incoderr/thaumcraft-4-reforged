@@ -107,6 +107,8 @@ public final class ModEntities {
         builder -> builder.sized(0.8F, 2.25F).eyeHeight(2.1F).clientTrackingRange(8).updateInterval(3)
     );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.GolemBase>> GOLEM = ENTITIES.registerEntityType("golem", thaumcraft.entity.golem.GolemBase::new, MobCategory.MISC, builder -> builder.sized(0.4F, 0.95F).clientTrackingRange(4).updateInterval(3));
+
     private ModEntities() {
     }
 
@@ -140,6 +142,7 @@ public final class ModEntities {
     }
 
     private static void createAttributes(EntityAttributeCreationEvent event) {
+        event.put(GOLEM.get(), thaumcraft.entity.golem.GolemBase.createAttributes().build());
         event.put(FIREBAT.get(), FireBat.createAttributes().build());
         event.put(TAINT_SPIDER.get(), TaintSpider.createAttributes().build());
         event.put(TAINTACLE.get(), Taintacle.createAttributes().build());
