@@ -18,6 +18,7 @@ import gen_phase9_devices
 import gen_phase9_warded
 import gen_phase9_machines
 import gen_phase9_mirrors
+import gen_phase12
 import gen_phase10_11
 import gen_warp_shaders
 import gen_villages
@@ -685,6 +686,8 @@ def validate_textures():
 
 
 def item_definition_models(definition):
+    if definition["type"] == "minecraft:empty":
+        return
     if definition["type"] == "minecraft:select":
         for case in definition["cases"]:
             yield from item_definition_models(case["model"])
@@ -762,6 +765,7 @@ def main():
     gen_phase9_machines.generate(ctx)
     gen_phase9_mirrors.generate(ctx)
     gen_phase10_11.generate(ctx)
+    gen_phase12.generate(ctx)
     gen_warp_shaders.generate(mcformat.profile.name, OUT)
     gen_phase5.recipes(ctx)
     write_tags()
