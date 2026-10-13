@@ -1,6 +1,7 @@
 package thaumcraft.entity.golem;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ public final class LogisticsGoals {
                 selector.addGoal(4, new HomeSourceGoal(golem, 1));
             }
             case 2 -> {
+                selector.addGoal(0, new HomeReplaceGoal(golem));
                 selector.addGoal(1, new HomeDepositGoal(golem));
                 selector.addGoal(2, new PickupGoal(golem));
             }
@@ -68,7 +70,7 @@ public final class LogisticsGoals {
             case 10 -> {
                 selector.addGoal(0, new HomeReplaceGoal(golem));
                 selector.addGoal(1, new MarkerPlaceGoal(golem, true));
-                selector.addGoal(3, new HomeSourceGoal(golem, true));
+                selector.addGoal(4, new HomeSourceGoal(golem, 10));
             }
         }
     }
@@ -86,8 +88,8 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canContinueToUse() {
-            return target != null && !finished && age < 200
-                && (!golem.getNavigation().isDone() || GolemLogistics.closeTo(golem, target, 2.25));
+            return golem.isWorking() && target != null && !finished && age < 200
+                && (!golem.getNavigation().isDone() || GolemLogistics.closeTo(golem, target, interactionDistanceSquared()));
         }
 
         @Override
@@ -105,7 +107,7 @@ public final class LogisticsGoals {
                 return;
             }
             golem.getLookControl().setLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5);
-            if (GolemLogistics.closeTo(golem, target, 2.25)) {
+            if (GolemLogistics.closeTo(golem, target, interactionDistanceSquared())) {
                 finished = interact(target);
             } else if (golem.getNavigation().isDone() && age % 20 == 0) {
                 navigate();
@@ -120,9 +122,11 @@ public final class LogisticsGoals {
 
         protected void navigate() {
             if (target != null) {
-                golem.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, golem.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue());
+                golem.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, 1.0);
             }
         }
+
+        protected double interactionDistanceSquared() { return 4.0; }
 
         protected abstract boolean interact(BlockPos pos);
     }
@@ -130,9 +134,12 @@ public final class LogisticsGoals {
     private static final class HomeDepositGoal extends TravelGoal {
         private HomeDepositGoal(GolemBase golem) { super(golem); }
 
+        @Override protected double interactionDistanceSquared() { return 5.0; }
+
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()) return false;
+            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()
+                || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             BlockPos home = GolemLogistics.homeContainer(golem);
             ItemStack remainder = Transfer.insert(golem.level(), home, golem.getHomeFacing(), golem.getCarried(), true);
             if (remainder.getCount() == golem.getCarried().getCount()) return false;
@@ -152,9 +159,12 @@ public final class LogisticsGoals {
     private static final class HomeDropGoal extends TravelGoal {
         private HomeDropGoal(GolemBase golem) { super(golem); }
 
+        @Override protected double interactionDistanceSquared() { return 5.0; }
+
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.getCarried().isEmpty() || Transfer.hasItems(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing())) return false;
+            if (!golem.isWorking() || golem.getCarried().isEmpty() || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)
+                || Transfer.hasItems(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing())) return false;
             target = golem.getHomePosition();
             return true;
         }
@@ -169,9 +179,12 @@ public final class LogisticsGoals {
     private static final class HomeReplaceGoal extends TravelGoal {
         private HomeReplaceGoal(GolemBase golem) { super(golem); }
 
+        @Override protected double interactionDistanceSquared() { return 5.0; }
+
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()) return false;
+            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()
+                || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             int core = golem.getCore();
             boolean stillWanted = switch (core) {
                 case 1 -> hasMarkerDestination(golem, golem.getCarried());
@@ -209,7 +222,7 @@ public final class LogisticsGoals {
         @Override
         public boolean canUse() {
             if (!golem.isWorking() || !golem.getCarried().isEmpty() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0
-                || golem.getNavigation().isInProgress() || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
+                || !golem.getNavigation().isDone() || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             BlockPos source = GolemLogistics.homeContainer(golem);
             Direction side = golem.getHomeFacing();
             if (!Transfer.hasItems(golem.level(), source, side)) return false;
@@ -388,10 +401,10 @@ public final class LogisticsGoals {
         }
 
         @Override
-        public boolean canContinueToUse() { return target != null && target.isAlive() && !golem.getNavigation().isDone(); }
+        public boolean canContinueToUse() { return golem.isWorking() && target != null && target.isAlive() && (!golem.getNavigation().isDone() || golem.distanceToSqr(target) <= 2.0); }
 
         @Override
-        public void start() { if (target != null) golem.getNavigation().moveTo(target, golem.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue()); }
+        public void start() { if (target != null) golem.getNavigation().moveTo(target, 1.0); }
 
         @Override
         public void tick() {
@@ -431,7 +444,7 @@ public final class LogisticsGoals {
             Direction sourceSide = entity instanceof JarBlockEntity || entity instanceof AlembicBlockEntity ? Direction.UP : golem.getHomeFacing();
             if (entity instanceof EssentiaReservoirBlockEntity reservoir) sourceSide = reservoir.getFacing();
             if (entity instanceof EssentiaTransport transport && transport.canOutputTo(sourceSide)
-                && transport.getEssentiaAmount(sourceSide) > 0 && accepts(transport.getEssentiaType(sourceSide), transport.getEssentiaType(null))) {
+                && transport.getEssentiaAmount(sourceSide) > 0 && accepts(sourceAspect(entity, transport, sourceSide))) {
                 source = home;
                 return true;
             }
@@ -439,7 +452,7 @@ public final class LogisticsGoals {
             int previousAmount = -1;
             for (int offset = 0; offset <= 5; offset++) {
                 BlockPos pos = home.above(offset);
-                if (golem.level().getBlockEntity(pos) instanceof AlembicBlockEntity alembic && accepts(alembic.getAspect(), null) && alembic.getAmount() > previousAmount) {
+                if (golem.level().getBlockEntity(pos) instanceof AlembicBlockEntity alembic && accepts(alembic.getAspect()) && alembic.getAmount() > previousAmount) {
                     selectedY = offset;
                     previousAmount = alembic.getAmount();
                 }
@@ -463,8 +476,8 @@ public final class LogisticsGoals {
             if (entity instanceof EssentiaReservoirBlockEntity reservoir) face = reservoir.getFacing();
             if (entity instanceof EssentiaTransport transport && transport.getEssentiaAmount(face) > 0) {
                 Aspect aspect = transport.getEssentiaType(face);
-                if (aspect == null) aspect = transport.getEssentiaType(null);
-                if (aspect != null && accepts(aspect, null)) {
+                if (aspect == null) aspect = sourceAspect(entity, transport, face);
+                if (aspect != null && accepts(aspect)) {
                     int amount = Math.min(transport.getEssentiaAmount(face), golem.getCarryLimit() - golem.getEssentiaAmount());
                     if (entity instanceof EssentiaReservoirBlockEntity reservoir) amount = Math.min(reservoir.containerContains(aspect), amount);
                     int taken = transport.takeEssentia(aspect, amount, face);
@@ -472,7 +485,6 @@ public final class LogisticsGoals {
                         golem.setEssentia(aspect, golem.getEssentiaAmount() + taken);
                         golem.startActionTimer();
                     }
-                    else golem.setEssentia(null, 0);
                 }
             }
             delayUntil = System.currentTimeMillis() + 1000L;
@@ -481,8 +493,13 @@ public final class LogisticsGoals {
         @Override
         public void stop() { source = null; }
 
-        private boolean accepts(@Nullable Aspect aspect, @Nullable Aspect unknown) {
-            return golem.getEssentiaAmount() == 0 || golem.getEssentia() == null || golem.getEssentia().equals(aspect) || golem.getEssentia().equals(unknown);
+        private boolean accepts(@Nullable Aspect aspect) {
+            return golem.getEssentiaAmount() == 0 || golem.getEssentia() == null || golem.getEssentia().equals(aspect);
+        }
+
+        private @Nullable Aspect sourceAspect(BlockEntity entity, EssentiaTransport transport, Direction face) {
+            Aspect aspect = transport.getEssentiaType(face);
+            return aspect == null && entity instanceof EssentiaReservoirBlockEntity reservoir ? reservoir.getEssentiaType(null) : aspect;
         }
     }
 
@@ -525,7 +542,7 @@ public final class LogisticsGoals {
                     }
                 }
             }
-            if (golem.getEssentiaAmount() > 0) golem.getNavigation().moveTo(destination.pos().getX() + 0.5, destination.pos().getY(), destination.pos().getZ() + 0.5, golem.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue());
+            if (golem.getEssentiaAmount() > 0) golem.getNavigation().moveTo(destination.pos().getX() + 0.5, destination.pos().getY(), destination.pos().getZ() + 0.5, 1.0);
         }
 
         @Override public void stop() { destination = null; }
@@ -544,10 +561,10 @@ public final class LogisticsGoals {
             return destination != null && !GolemLogistics.closeTo(golem, destination.pos(), 4.0);
         }
 
-        @Override public boolean canContinueToUse() { return destination != null && !golem.getNavigation().isDone(); }
+        @Override public boolean canContinueToUse() { return golem.isWorking() && destination != null && !golem.getNavigation().isDone(); }
 
         @Override public void start() {
-            if (destination != null) golem.getNavigation().moveTo(destination.pos().getX() + 0.5, destination.pos().getY(), destination.pos().getZ() + 0.5, golem.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).getValue());
+            if (destination != null) golem.getNavigation().moveTo(destination.pos().getX() + 0.5, destination.pos().getY(), destination.pos().getZ() + 0.5, 1.0);
         }
 
         @Override public void tick() {
@@ -559,7 +576,6 @@ public final class LogisticsGoals {
 
     private static final class FluidHomeDepositGoal extends Goal {
         private final GolemBase golem;
-        private @Nullable FluidStack moved;
 
         private FluidHomeDepositGoal(GolemBase golem) { this.golem = golem; setFlags(EnumSet.of(Flag.MOVE)); }
 
@@ -569,7 +585,6 @@ public final class LogisticsGoals {
             if (!golem.isWorking() || carried.isEmpty() || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             FluidStack remainder = Transfer.insertFluid(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing(), carried, true);
             if (remainder.getAmount() >= carried.getAmount()) return false;
-            moved = carried.copy();
             return true;
         }
 
@@ -577,14 +592,15 @@ public final class LogisticsGoals {
 
         @Override
         public void start() {
-            if (moved == null) return;
-            FluidStack remainder = Transfer.insertFluid(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing(), moved, false);
-            golem.setFluidCarried(remainder);
+            FluidStack carried = golem.getFluidCarried();
+            if (carried.isEmpty()) return;
+            FluidStack remainder = Transfer.insertFluid(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing(), carried, true);
+            if (remainder.getAmount() >= carried.getAmount()) return;
+            golem.setFluidCarried(Transfer.insertFluid(golem.level(), GolemLogistics.homeContainer(golem), golem.getHomeFacing(), carried, false));
             golem.startActionTimer();
-            moved = null;
         }
 
-        @Override public void stop() { moved = null; }
+        @Override public void stop() { }
     }
 
     private record FluidSource(BlockPos pos, @Nullable Direction side, boolean worldBlock) {
@@ -692,7 +708,7 @@ public final class LogisticsGoals {
             return true;
         }
 
-        @Override public boolean canContinueToUse() { return plan.source != null && gatherTicks < 20 && plan.fluid.getAmount() > 0; }
+        @Override public boolean canContinueToUse() { return golem.isWorking() && plan.source != null && gatherTicks < 20 && plan.fluid.getAmount() > 0; }
         @Override public boolean isInterruptable() { return false; }
         @Override public void start() { delay = 0; gatherTicks = 0; }
 
@@ -704,6 +720,13 @@ public final class LogisticsGoals {
             int free = golem.getFluidCarryLimit() - golem.getFluidCarried().getAmount();
             if (free <= 0) { plan.source = null; return; }
             if (plan.source.worldBlock() && free < 1000) { plan.source = null; return; }
+            FluidStack expected = plan.source.worldBlock()
+                ? GolemFluids.pickup(golem.level(), plan.source.pos(), true)
+                : Transfer.extractFluid(golem.level(), plan.source.pos(), plan.source.side(), fluid -> FluidStack.isSameFluidSameComponents(fluid, plan.fluid), free, true);
+            if (expected.isEmpty() || expected.getAmount() > free || !FluidStack.isSameFluidSameComponents(expected, plan.fluid)) {
+                plan.source = null;
+                return;
+            }
             FluidStack gathered = plan.source.worldBlock()
                 ? GolemFluids.pickup(golem.level(), plan.source.pos(), false)
                 : Transfer.extractFluid(golem.level(), plan.source.pos(), plan.source.side(), fluid -> FluidStack.isSameFluidSameComponents(fluid, plan.fluid), free, false);
@@ -806,11 +829,19 @@ public final class LogisticsGoals {
     }
 
     private static void collectConnectedJars(GolemBase golem, JarBlockEntity root, List<JarBlockEntity> jars) {
-        if (jars.stream().anyMatch(jar -> jar.getBlockPos().equals(root.getBlockPos()))) return;
-        jars.add(root);
-        for (Direction direction : Direction.values()) {
-            BlockPos adjacent = root.getBlockPos().relative(direction);
-            if (golem.level().getBlockEntity(adjacent) instanceof JarBlockEntity jar) collectConnectedJars(golem, jar, jars);
+        ArrayDeque<JarBlockEntity> queue = new ArrayDeque<>();
+        HashSet<BlockPos> visited = new HashSet<>();
+        queue.add(root);
+        double radius = golem.getRange() * golem.getRange();
+        while (!queue.isEmpty()) {
+            JarBlockEntity jar = queue.removeFirst();
+            BlockPos pos = jar.getBlockPos();
+            if (!visited.add(pos) || !golem.level().hasChunkAt(pos) || golem.getHomePosition().distSqr(pos) > radius) continue;
+            jars.add(jar);
+            for (Direction direction : Direction.values()) {
+                BlockPos adjacent = pos.relative(direction);
+                if (golem.level().hasChunkAt(adjacent) && golem.level().getBlockEntity(adjacent) instanceof JarBlockEntity next && !visited.contains(adjacent)) queue.addLast(next);
+            }
         }
     }
 
@@ -821,6 +852,7 @@ public final class LogisticsGoals {
     private static boolean hasSortDestination(GolemBase golem, ItemStack stack) {
         for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> true)) {
             if (GolemLogistics.isHomeBlock(golem, marker.pos())) continue;
+            if (golem.distanceToSqr(marker.pos().getX() + 0.5, marker.pos().getY() + 0.5, marker.pos().getZ() + 0.5) > golem.getRange() * golem.getRange()) continue;
             if (Transfer.count(golem.level(), marker.pos(), marker.side(), candidate -> ItemStack.isSameItemSameComponents(stack, candidate)) > 0
                 && Transfer.insert(golem.level(), marker.pos(), marker.side(), stack, true).getCount() < stack.getCount()) return true;
         }
@@ -829,6 +861,7 @@ public final class LogisticsGoals {
 
     private static boolean hasMarkerDestination(GolemBase golem, ItemStack stack) {
         for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> GolemLogistics.matchesColor(golem, candidate, stack))) {
+            if (golem.distanceToSqr(marker.pos().getX() + 0.5, marker.pos().getY() + 0.5, marker.pos().getZ() + 0.5) > golem.getRange() * golem.getRange()) continue;
             if (!GolemLogistics.isHomeBlock(golem, marker.pos())
                 && Transfer.insert(golem.level(), marker.pos(), marker.side(), stack, true).getCount() < stack.getCount()) return true;
         }
