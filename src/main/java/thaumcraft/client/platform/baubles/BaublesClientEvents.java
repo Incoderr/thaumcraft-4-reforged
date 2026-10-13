@@ -5,6 +5,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -51,7 +52,8 @@ public final class BaublesClientEvents {
         } else if (event.getScreen() instanceof BaublesScreen screen) {
             event.addListener(new BaublesButton(screen, Component.translatable("button.thaumcraft.normal"), () -> {
                 Minecraft minecraft = Minecraft.getInstance();
-                minecraft.player.closeContainer();
+                minecraft.player.connection.send(new ServerboundContainerClosePacket(screen.getMenu().containerId));
+                minecraft.player.containerMenu = minecraft.player.inventoryMenu;
                 minecraft.gui.setScreen(new InventoryScreen(minecraft.player));
             }));
         }

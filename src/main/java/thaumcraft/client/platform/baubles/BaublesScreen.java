@@ -17,8 +17,6 @@ public class BaublesScreen extends AbstractContainerScreen<BaublesMenu> {
     public static final Identifier TEXTURE = Thaumcraft.id("textures/gui/baubles/expanded_inventory.png");
 
     private final EffectsInInventory effects;
-    private float mouseXPosition;
-    private float mouseYPosition;
 
     public BaublesScreen(BaublesMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 166);
@@ -34,20 +32,19 @@ public class BaublesScreen extends AbstractContainerScreen<BaublesMenu> {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         effects.extractRenderState(graphics, mouseX, mouseY);
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
-        mouseXPosition = mouseX;
-        mouseYPosition = mouseY;
     }
 
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
         graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
-        for (Slot slot : menu.slots) {
-            if (slot.hasItem() && slot.getMaxStackSize() == 1) {
+        for (int index = BaublesMenu.ARMOR_START; index < BaublesMenu.BAUBLE_END; index++) {
+            Slot slot = menu.slots.get(index);
+            if (index < BaublesMenu.ARMOR_END || slot.hasItem()) {
                 graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + slot.x, topPos + slot.y, 200.0F, 0.0F, 16, 16, 256, 256);
             }
         }
-        InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, leftPos + 26, topPos + 8, leftPos + 75, topPos + 78, 30, 0.0625F, mouseXPosition, mouseYPosition, minecraft.player);
+        InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, leftPos + 26, topPos + 8, leftPos + 75, topPos + 78, 30, 0.0625F, mouseX, mouseY, minecraft.player);
     }
 
     @Override
