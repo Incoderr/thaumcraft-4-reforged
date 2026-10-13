@@ -28,7 +28,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import thaumcraft.registry.EldritchContent;
 
-public final class EldritchBlock extends Block implements EntityBlock {
+public class EldritchBlock extends Block implements EntityBlock {
     public static final EnumProperty<DoubleBlockHalf> PART = EnumProperty.create("part", DoubleBlockHalf.class);
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     private final int kind;

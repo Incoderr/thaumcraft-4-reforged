@@ -156,6 +156,7 @@ public final class BossGameTests {
         helper.assertValueEqual(bosses.size(), 5, "taint encounter entity count");
         for (var boss : bosses) {
             helper.assertTrue(ChampionModifier.get(boss) >= 0, "taint encounter member lacks champion modifier");
+            boss.discard();
         }
         helper.succeed();
     }
@@ -208,7 +209,7 @@ public final class BossGameTests {
     }
 
     private static void lastGiantRewardIsUnique(GameTestHelper helper) {
-        BlockPos pos = helper.absolutePos(new BlockPos(4, 2, 260));
+        BlockPos pos = helper.absolutePos(new BlockPos(4, 2, 4));
         TaintacleGiant first = EldritchEntities.TAINTACLE_GIANT.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         TaintacleGiant last = EldritchEntities.TAINTACLE_GIANT.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(first != null && last != null, "giant factory returned null");

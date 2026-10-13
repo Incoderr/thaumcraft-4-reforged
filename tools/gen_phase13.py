@@ -115,8 +115,8 @@ def generate(ctx):
             ctx.block_model(model_name, {
                 "textures": {"particle": texture_id, "all": texture_id},
                 "elements": [{
-                    "from": [1, 1, 1],
-                    "to": [15, 15, 15],
+                    "from": [2, 2, 2],
+                    "to": [14, 14, 14],
                     "faces": {
                         "down": {"texture": "#all", "cullface": "down"},
                         "up": {"texture": "#all", "cullface": "up"},
@@ -146,7 +146,22 @@ def generate(ctx):
             })
         else:
             ctx.block_model(model_name, {"parent": "minecraft:block/cube_all", "textures": {"all": texture_id}})
-        if name == "ancient_locking_mechanism":
+        if name in {"glowing_crusted_stone", "glyphed_stone"}:
+            variants = {}
+            for mask in range(64):
+                connected = lambda side: bool(mask & (1 << side))
+                lower = [0 if connected(side) else 2 for side in (4, 0, 2)]
+                upper = [16 if connected(side) else 14 for side in (5, 1, 3)]
+                variant_name = f"{model_name}_{mask}"
+                ctx.block_model(variant_name, {
+                    "textures": {"particle": texture_id, "all": texture_id},
+                    "elements": [{"from": lower, "to": upper, "faces": {
+                        side: {"texture": "#all"} for side in ("down", "up", "north", "south", "west", "east")
+                    }}],
+                })
+                variants[f"bounds={mask}"] = {"model": f"{NS}:block/{variant_name}"}
+            ctx.blockstate(name, {"variants": variants})
+        elif name == "ancient_locking_mechanism":
             variants = {}
             for facing, rotation in (("north", 0), ("east", 90), ("south", 180), ("west", 270), ("up", 0), ("down", 0)):
                 for half in ("lower", "upper"):
@@ -182,9 +197,7 @@ def generate(ctx):
             "minecraft:gameplay/can_start_raid": False,
             "minecraft:gameplay/respawn_anchor_works": False,
             "minecraft:visual/ambient_light_color": "#000000",
-            "minecraft:visual/fog_color": "#000000",
-            "minecraft:visual/fog_end_distance": 32.0,
-            "minecraft:visual/fog_start_distance": 0.0,
+            "minecraft:visual/fog_color": "#181318",
             "minecraft:visual/sky_color": "#000000",
             "minecraft:visual/sky_light_color": "#000000",
             "minecraft:visual/sky_light_factor": 0.0,

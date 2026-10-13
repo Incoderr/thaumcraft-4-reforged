@@ -252,15 +252,13 @@ public final class EldritchBlockRenderer implements BlockEntityRenderer<Eldritch
         float phase = state.time * 0.004F;
         for (int layer = 0; layer < 16; layer++) {
             float alpha = layer == 0 ? 0.1F : 1.0F / (17 - layer);
-            float extent = layer == 0 ? 2.6F : 2.5F;
+            float extent = 2.5F;
             float rotation = (layer * layer * 4321.0F + layer * 9.0F) * 2.0F + phase * (layer + 1);
             poseStack.pushPose();
-            poseStack.rotateDegrees(Axis.ZP, rotation);
             float tile = layer == 0 ? 0.125F : 0.5F;
-            poseStack.scale(tile, tile, 1.0F);
             var renderType = layer == 0 ? TcRenderTypes.translucent(TUNNEL) : state.nearby ? TcRenderTypes.additive(FIELD) : TcRenderTypes.translucent(FIELD_FAR);
             int color = layer == 0 ? 0xFFFFFFFF : state.nearby ? colorForLayer(layer, alpha) : 0xFF808080;
-            EldritchSurfaces.submitRectangle(collector, poseStack, renderType, -extent, -extent, 0.0F, extent, extent, 0.0F, 1.0F, 0.0F, color, state.lightCoords);
+            EldritchSurfaces.submitRectangle(collector, poseStack, renderType, -extent, -2.0F, 0.0F, extent, 3.0F, 0.0F, tile, (float) Math.toRadians(rotation), color, state.lightCoords);
             poseStack.popPose();
         }
         poseStack.popPose();

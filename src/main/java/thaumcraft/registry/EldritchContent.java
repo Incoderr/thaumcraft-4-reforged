@@ -77,7 +77,7 @@ public final class EldritchContent {
     private static DeferredBlock<EldritchBlock> block(String id, int kind, float strength) {
         float resistance = kind == 7 || kind == 8 ? Float.MAX_VALUE : (kind == 4 || kind == 5 || kind == 9 || kind == 10 ? 30.0F : Math.max(30.0F, strength * 400.0F));
         int light = kind == 4 || kind == 5 || kind == 7 ? 12 : (kind == 6 || kind == 8 ? 5 : (kind == 9 ? 4 : (kind == 10 ? 0 : 8)));
-        return BLOCKS.registerBlock(id, properties -> new EldritchBlock(kind, properties), properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(strength, resistance).sound(SoundType.STONE).noOcclusion().isValidSpawn((state, level, pos, type) -> false).lightLevel(state -> light));
+        return BLOCKS.registerBlock(id, properties -> kind == 4 || kind == 5 ? new thaumcraft.eldritch.EldritchGlowingBlock(kind, properties) : new EldritchBlock(kind, properties), properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(strength, resistance).sound(SoundType.STONE).noOcclusion().isValidSpawn((state, level, pos, type) -> false).lightLevel(state -> light));
     }
 
     public static void register(IEventBus bus) {
