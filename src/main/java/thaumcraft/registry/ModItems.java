@@ -82,8 +82,8 @@ import thaumcraft.wand.focus.WardingFocus;
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
 
-    public static final DeferredItem<Item> PURIFYING_FLUID_BUCKET = ITEMS.registerItem("purifying_fluid_bucket", properties -> new BucketItem(ModFluids.PURIFYING_FLUID.get(), properties.stacksTo(1)));
-    public static final DeferredItem<Item> LIQUID_DEATH_BUCKET = ITEMS.registerItem("liquid_death_bucket", properties -> new BucketItem(ModFluids.LIQUID_DEATH.get(), properties.stacksTo(1)));
+    public static final DeferredItem<BucketItem> PURIFYING_FLUID_BUCKET = ITEMS.registerItem("purifying_fluid_bucket", properties -> new BucketItem(ModFluids.PURIFYING_FLUID.get(), properties.stacksTo(1)));
+    public static final DeferredItem<BucketItem> LIQUID_DEATH_BUCKET = ITEMS.registerItem("liquid_death_bucket", properties -> new BucketItem(ModFluids.LIQUID_DEATH.get(), properties.stacksTo(1)));
     public static final DeferredItem<BathSaltsItem> BATH_SALTS = ITEMS.registerItem("bath_salts", BathSaltsItem::new);
     public static final DeferredItem<SanitizingSoapItem> SANITIZING_SOAP = ITEMS.registerItem("sanitizing_soap", SanitizingSoapItem::new);
     public static final DeferredItem<BottledTaintItem> BOTTLED_TAINT = ITEMS.registerItem("bottled_taint", BottledTaintItem::new);

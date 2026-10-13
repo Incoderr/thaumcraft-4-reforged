@@ -16,18 +16,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.player.Player;
-<<<<<<< HEAD
-=======
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.pig.Pig;
->>>>>>> 2e9c6a9 (feat: integrate eldritch and cultist encounters)
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.InteractionResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -38,19 +39,40 @@ import thaumcraft.block.LiquidDeathBlock;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModFluids;
+import thaumcraft.registry.ModEffects;
+import thaumcraft.damage.ModDamageTypes;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class FluidGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"liquid_death_horizontal_quanta", "liquid_death_vertical_quanta", "purifying_fluid_no_source_regeneration", "sanitizing_soap_release_threshold"};
+    private static final String[] TESTS = {
+        "liquid_death_horizontal_quanta",
+        "liquid_death_vertical_quanta",
+        "purifying_fluid_no_source_regeneration",
+        "sanitizing_soap_release_threshold",
+        "purifying_fluid_ward_consumes_source",
+        "bath_salts_expire_in_water",
+        "purifying_bucket_round_trip",
+        "liquid_death_bucket_round_trip",
+        "liquid_death_yields_essence",
+        "sanitizing_soap_full_use_once",
+        "sanitizing_soap_full_lifecycle_once"
+    };
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FluidGameTests::liquidDeathHorizontalQuanta);
         FUNCTIONS.register(TESTS[1], () -> FluidGameTests::liquidDeathVerticalQuanta);
         FUNCTIONS.register(TESTS[2], () -> FluidGameTests::purifyingFluidNoSourceRegeneration);
         FUNCTIONS.register(TESTS[3], () -> FluidGameTests::sanitizingSoapReleaseThreshold);
+        FUNCTIONS.register(TESTS[4], () -> FluidGameTests::purifyingFluidWardConsumesSource);
+        FUNCTIONS.register(TESTS[5], () -> FluidGameTests::bathSaltsExpireInWater);
+        FUNCTIONS.register(TESTS[6], () -> FluidGameTests::purifyingBucketRoundTrip);
+        FUNCTIONS.register(TESTS[7], () -> FluidGameTests::liquidDeathBucketRoundTrip);
+        FUNCTIONS.register(TESTS[8], () -> FluidGameTests::liquidDeathYieldsEssence);
+        FUNCTIONS.register(TESTS[9], () -> FluidGameTests::sanitizingSoapFullUseOnce);
+        FUNCTIONS.register(TESTS[10], () -> FluidGameTests::sanitizingSoapFullLifecycleOnce);
     }
 
     private FluidGameTests() {
@@ -67,7 +89,7 @@ public final class FluidGameTests {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(
                 function,
-                new TestData<>(environment, Thaumcraft.id("test/platform"), 200, 0, true)
+                new TestData<>(environment, Thaumcraft.id("test/platform"), 240, 0, true)
             ));
         }
     }
@@ -149,8 +171,6 @@ public final class FluidGameTests {
         helper.succeed();
     }
 
-<<<<<<< HEAD
-=======
     private static void purifyingFluidWardConsumesSource(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
@@ -264,7 +284,6 @@ public final class FluidGameTests {
         });
     }
 
->>>>>>> 2e9c6a9 (feat: integrate eldritch and cultist encounters)
     private static int quanta(BlockState state) {
         if (!(state.getBlock() instanceof LiquidDeathBlock)) {
             return 0;
