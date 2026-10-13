@@ -58,12 +58,22 @@ public class GolemBellItem extends Item {
     }
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
+        if (entity instanceof thaumcraft.entity.golem.TravelingTrunk trunk) {
+            if (trunk.getUpgrade() == 3 && !player.getUUID().equals(trunk.getOwnerUUID())) return true;
+            if (entity.level() instanceof ServerLevel level && entity.isAlive()) {
+                int upgrade = trunk.getUpgrade();
+                if (player.isShiftKeyDown() && upgrade >= 0 && level.getRandom().nextBoolean()) trunk.spawnAtLocation(level, GolemItems.upgrade(upgrade));
+                trunk.spawnAtLocation(level, trunk.toItem(player.isShiftKeyDown()));
+                trunk.discard();
+            }
+            return true;
+        }
         if (!(entity instanceof GolemBase golem)) return false;
         if (entity.level() instanceof ServerLevel level && entity.isAlive()) {
             boolean dismantle = player.isShiftKeyDown();
             if (dismantle) {
                 if (golem.getCore() >= 0) golem.spawnAtLocation(level, GolemItems.core(golem.getCore()));
-                for (int index = 0; index < golem.snapshot().upgrades().size(); index++) if (golem.getUpgrade(index) >= 0) golem.spawnAtLocation(level, GolemItems.upgrade(golem.getUpgrade(index)));
+                for (int index = 0; index < golem.snapshot().upgrades().size(); index++) if (golem.getUpgrade(index) >= 0 && level.getRandom().nextBoolean()) golem.spawnAtLocation(level, GolemItems.upgrade(golem.getUpgrade(index)));
             }
             golem.spawnAtLocation(level, golem.toItem(dismantle));
             golem.dropCarried();

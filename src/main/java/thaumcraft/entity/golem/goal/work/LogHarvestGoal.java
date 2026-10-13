@@ -56,7 +56,7 @@ public final class LogHarvestGoal extends Goal {
     @Override
     public void start() {
         count = 200;
-        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, 1.0);
     }
 
     @Override

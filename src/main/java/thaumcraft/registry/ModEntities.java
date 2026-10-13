@@ -109,6 +109,9 @@ public final class ModEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.GolemBase>> GOLEM = ENTITIES.registerEntityType("golem", thaumcraft.entity.golem.GolemBase::new, MobCategory.MISC, builder -> builder.sized(0.4F, 0.95F).clientTrackingRange(4).updateInterval(3));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.TravelingTrunk>> TRAVELING_TRUNK = ENTITIES.registerEntityType("traveling_trunk", thaumcraft.entity.golem.TravelingTrunk::new, MobCategory.MISC, builder -> builder.sized(0.9F, 0.9F).fireImmune().clientTrackingRange(4).updateInterval(3));
+    public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.GolemBobber>> GOLEM_BOBBER = ENTITIES.registerEntityType("golem_bobber", thaumcraft.entity.golem.GolemBobber::new, MobCategory.MISC, builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(64));
+
     private ModEntities() {
     }
 
@@ -142,6 +145,7 @@ public final class ModEntities {
     }
 
     private static void createAttributes(EntityAttributeCreationEvent event) {
+        event.put(TRAVELING_TRUNK.get(), thaumcraft.entity.golem.TravelingTrunk.createAttributes().build());
         event.put(GOLEM.get(), thaumcraft.entity.golem.GolemBase.createAttributes().build());
         event.put(FIREBAT.get(), FireBat.createAttributes().build());
         event.put(TAINT_SPIDER.get(), TaintSpider.createAttributes().build());

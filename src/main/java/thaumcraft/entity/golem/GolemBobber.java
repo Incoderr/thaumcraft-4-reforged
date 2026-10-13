@@ -28,7 +28,6 @@ public class GolemBobber extends Entity {
 
     public GolemBobber(EntityType<? extends GolemBobber> type, Level level) {
         super(type, level);
-        noCulling = true;
     }
 
     public GolemBobber(Level level, GolemBase fisher) {
@@ -38,7 +37,6 @@ public class GolemBobber extends Entity {
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        super.defineSynchedData(builder);
         builder.define(FISHER_ID, -1);
     }
 
@@ -121,6 +119,9 @@ public class GolemBobber extends Entity {
         if (random.nextFloat() < 0.25F && server.isRainingAt(pos)) effect = 2;
         if (random.nextFloat() < 0.5F && !server.canSeeSky(pos)) effect--;
     }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, float damage) { return false; }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {

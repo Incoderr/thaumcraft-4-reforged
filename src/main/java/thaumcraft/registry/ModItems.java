@@ -86,6 +86,7 @@ import thaumcraft.wand.focus.WardingFocus;
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Thaumcraft.MODID);
 
+    public static final DeferredItem<thaumcraft.item.golem.TravelingTrunkItem> TRAVELING_TRUNK = ITEMS.registerItem("traveling_trunk", thaumcraft.item.golem.TravelingTrunkItem::new);
     private static final java.util.List<DeferredItem<? extends Item>> GOLEM_ITEMS = registerGolemItems();
 
     private static java.util.List<DeferredItem<? extends Item>> registerGolemItems() {

@@ -35,7 +35,7 @@ public final class GolemItemTooltips {
             lines.add(Component.translatable("item.thaumcraft.golem_upgrade_" + GolemItems.UPGRADES[upgrade]).withStyle(ChatFormatting.BLUE));
         }
         var contents = GolemKeys.TRUNK_CONTENTS.get(stack);
-        if (contents != null && !contents.isEmpty()) {
+        if (contents != null && contents.nonEmptyItems().iterator().hasNext()) {
             lines.add(Component.translatable("item.TrunkSpawner.text.1"));
         }
     }

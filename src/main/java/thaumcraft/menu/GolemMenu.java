@@ -20,11 +20,17 @@ public class GolemMenu extends AbstractContainerMenu {
         golem = inventory.player.level().getEntity(entityId) instanceof GolemBase entity ? entity : null;
         filters = golem == null ? new SimpleContainer(1) : golem.inventory();
         if (golem != null && !inventory.player.level().isClientSide()) golem.openConfiguration();
+        boolean client = inventory.player.level().isClientSide();
+        SimpleContainer visibleFilters = new SimpleContainer(6);
+        addDataSlot(new net.minecraft.world.inventory.DataSlot() {
+            @Override public int get() { return scroll; }
+            @Override public void set(int value) { scroll = Math.clamp(value, 0, maxScroll()); }
+        });
         if (golem != null && GolemBase.hasInventory(golem.getCore())) for (int slot = 0; slot < Math.min(6, filters.getContainerSize()); slot++) {
             final int visible = slot;
             addSlot(new Slot(filters, slot, 100 + slot / 2 * 28, 16 + slot % 2 * 31) {
-                @Override public ItemStack getItem() { return filters.getItem(visible + scroll * 6); }
-                @Override public void set(ItemStack stack) { filters.setItem(visible + scroll * 6, stack); }
+                @Override public ItemStack getItem() { return client ? visibleFilters.getItem(visible) : filters.getItem(visible + scroll * 6); }
+                @Override public void set(ItemStack stack) { if (client) visibleFilters.setItem(visible, stack); else filters.setItem(visible + scroll * 6, stack); }
                 @Override public boolean mayPickup(Player player) { return false; }
                 @Override public boolean mayPlace(ItemStack stack) { return false; }
             });
@@ -63,8 +69,17 @@ public class GolemMenu extends AbstractContainerMenu {
         if (!stillValid(player) || golem == null) return false;
         if (button == 66 && scroll > 0) scroll--;
         else if (button == 67 && scroll < maxScroll()) scroll++;
-        else if (button >= 50 && button <= 57) golem.setToggle(button - 50, !golem.getToggles()[button - 50]);
-        else if (button >= 0 && button < filters.getContainerSize() * 2) {
+        else if (button >= 50 && button <= 57) {
+            int toggle = button - 50;
+            int core = golem.getCore();
+            boolean allowed = toggle == 0 && (core == 0 || core == 8)
+                || toggle <= 2 && core == 8
+                || toggle >= 1 && toggle <= 4 && core == 4 && golem.getUpgradeAmount(4) > 0
+                || toggle >= 5 && golem.getUpgradeAmount(5) > 0 && (core == 0 || core == 1 || core == 2 || core == 8 || core == 10);
+            if (!allowed) return false;
+            golem.setToggle(toggle, !golem.getToggles()[toggle]);
+        }
+        else if (button >= 0 && button < filters.getContainerSize() * 2 && GolemBase.hasInventory(golem.getCore()) && golem.getUpgradeAmount(4) > 0) {
             int count = filters.getContainerSize();
             int slot = button % count;
             int color = golem.getColors(slot) + (button < count ? -1 : 1);

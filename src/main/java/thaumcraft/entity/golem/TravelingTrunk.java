@@ -2,6 +2,7 @@ package thaumcraft.entity.golem;
 
 import java.util.UUID;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -26,7 +27,7 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.DataComponents;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.food.FoodProperties;
@@ -46,10 +47,11 @@ import thaumcraft.registry.ModItems;
 public class TravelingTrunk extends Mob implements MenuProvider {
     private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> STAY = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<java.util.Optional<UUID>> OWNER = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<String> OWNER = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> UPGRADE = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ANGER = SynchedEntityData.defineId(TravelingTrunk.class, EntityDataSerializers.INT);
     private SimpleContainer inventory = new SimpleContainer(27);
+    private int viewers;
     private int jumpDelay;
     private int attackDelay;
     private int eatDelay;
@@ -76,7 +78,7 @@ public class TravelingTrunk extends Mob implements MenuProvider {
         super.defineSynchedData(builder);
         builder.define(OPEN, false);
         builder.define(STAY, false);
-        builder.define(OWNER, java.util.Optional.empty());
+        builder.define(OWNER, "");
         builder.define(UPGRADE, -1);
         builder.define(ANGER, 0);
     }
@@ -92,6 +94,12 @@ public class TravelingTrunk extends Mob implements MenuProvider {
     public void setUpgrade(int upgrade) {
         entityData.set(UPGRADE, upgrade);
         setInvSize();
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (accessor == UPGRADE && inventory != null) setInvSize();
     }
 
     public int getRows() {
@@ -115,7 +123,8 @@ public class TravelingTrunk extends Mob implements MenuProvider {
     }
 
     public void setOpen(boolean open) {
-        entityData.set(OPEN, open);
+        viewers = open ? viewers + 1 : Math.max(0, viewers - 1);
+        entityData.set(OPEN, viewers > 0);
     }
 
     public boolean getStay() {
@@ -127,11 +136,11 @@ public class TravelingTrunk extends Mob implements MenuProvider {
     }
 
     public @Nullable UUID getOwnerUUID() {
-        return entityData.get(OWNER).orElse(null);
+        return entityData.get(OWNER).isEmpty() ? null : UUID.fromString(entityData.get(OWNER));
     }
 
     public void setOwnerUUID(@Nullable UUID owner) {
-        entityData.set(OWNER, java.util.Optional.ofNullable(owner));
+        entityData.set(OWNER, owner == null ? "" : owner.toString());
     }
 
     public boolean canOpen(Player player) {
@@ -149,14 +158,14 @@ public class TravelingTrunk extends Mob implements MenuProvider {
 
     public ItemStack toItem(boolean dismantle) {
         ItemStack stack = new ItemStack(ModItems.TRAVELING_TRUNK.get());
-        thaumcraft.entity.golem.GolemKeys.TRUNK_UPGRADE.set(stack, getUpgrade());
+        if (!dismantle) thaumcraft.entity.golem.GolemKeys.TRUNK_UPGRADE.set(stack, getUpgrade());
         if (getUpgrade() == 4 && !dismantle) {
             thaumcraft.entity.golem.GolemKeys.TRUNK_CONTENTS.set(stack, ItemContainerContents.fromItems(inventory.getItems()));
             inventory.clearContent();
         } else {
             dropInventory();
         }
-        if (hasCustomName()) stack.set(DataComponents.CUSTOM_NAME, getCustomName());
+        if (!dismantle && hasCustomName()) stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         return stack;
     }
 
@@ -171,6 +180,7 @@ public class TravelingTrunk extends Mob implements MenuProvider {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (player.isShiftKeyDown()) return InteractionResult.PASS;
         ItemStack stack = player.getItemInHand(hand);
+        if (stack.getItem() instanceof thaumcraft.item.golem.GolemBellItem) return getUpgrade() == 3 && !player.getUUID().equals(getOwnerUUID()) ? InteractionResult.SUCCESS : InteractionResult.PASS;
         if (stack.getItem() instanceof GolemPartItem part && part.kind() == GolemPartItem.Kind.UPGRADE && getUpgrade() == -1) {
             if (!level().isClientSide()) {
                 setUpgrade(part.index());
@@ -214,9 +224,10 @@ public class TravelingTrunk extends Mob implements MenuProvider {
         if (getHealth() < getMaxHealth() && (getUpgrade() == 3 || tickCount % 50 == 0)) heal(1.0F);
         if (eatDelay > 0) eatDelay--;
         if (getAnger() > 0) setAnger(getAnger() - 1);
+        if (getUpgrade() == 5) pullItems((ServerLevel) level());
         Entity owner = resolveOwner();
         if (!(owner instanceof LivingEntity livingOwner)) return;
-        if (getUpgrade() == 2 && getAnger() == 0 && getTarget() == null) {
+        if (!getStay() && getUpgrade() == 2 && getAnger() == 0 && getTarget() == null) {
             LivingEntity recentTarget = livingOwner.getLastHurtByMob();
             if (recentTarget != null && recentTarget.isAlive() && recentTarget != livingOwner && hasLineOfSight(recentTarget)) {
                 setAnger(600);
@@ -227,7 +238,7 @@ public class TravelingTrunk extends Mob implements MenuProvider {
         boolean moving = false;
         if (getAnger() > 0 && target != null && target.isAlive() && target != livingOwner) {
             lookAt(target, 10, 20);
-            getNavigation().moveTo(target, getAttributeValue(Attributes.MOVEMENT_SPEED));
+            getNavigation().moveTo(target, 1);
             moving = true;
             if (attackDelay <= 0
                 && distanceTo(target) < 1.5F
@@ -245,7 +256,7 @@ public class TravelingTrunk extends Mob implements MenuProvider {
         if (attackDelay > 0) attackDelay--;
         if (!getStay() && getAnger() == 0 && distanceTo(livingOwner) > 5.0F) {
             lookAt(livingOwner, 10, 20);
-            getNavigation().moveTo(livingOwner, getAttributeValue(Attributes.MOVEMENT_SPEED) * (getUpgrade() == 0 ? 1.25 : 1));
+            getNavigation().moveTo(livingOwner, (getUpgrade() == 0 ? 1.25 : 1));
             moving = true;
         }
         if (!getStay() && distanceTo(livingOwner) > 20.0F && teleportNear(livingOwner)) return;
@@ -261,7 +272,6 @@ public class TravelingTrunk extends Mob implements MenuProvider {
         } else if (!moving && onGround()) {
             getNavigation().stop();
         }
-        if (getUpgrade() == 5) pullItems((ServerLevel) level());
     }
 
     private void animateLid() {
@@ -410,7 +420,7 @@ public class TravelingTrunk extends Mob implements MenuProvider {
 
     @Override
     protected net.minecraft.sounds.SoundEvent getDeathSound() {
-        return SoundEvents.ITEM_BREAK;
+        return SoundEvents.ITEM_BREAK.value();
     }
 
     @Override

@@ -59,6 +59,7 @@ final class GolemLogistics {
 
     static List<ItemStack> neededAtHome(GolemBase golem) {
         List<ItemStack> result = filters(golem);
+        if (!golem.getToggles()[0] && !Transfer.hasItems(golem.level(), homeContainer(golem), golem.getHomeFacing())) return List.of();
         if (golem.getToggles()[0]) {
             return result;
         }
@@ -68,7 +69,7 @@ final class GolemLogistics {
         List<ItemStack> missing = new ArrayList<>();
         for (ItemStack filter : result) {
             int stored = Transfer.count(level, home, side, matches(golem, filter));
-            int amount = filter.getCount() - stored;
+            int amount = required(golem, filter) - stored;
             if (amount > 0) {
                 missing.add(filter.copyWithCount(amount));
             }
@@ -81,7 +82,15 @@ final class GolemLogistics {
             return filter.getCount();
         }
         int stored = Transfer.count(golem.level(), homeContainer(golem), golem.getHomeFacing(), matches(golem, filter));
-        return Math.max(0, filter.getCount() - stored);
+        return Math.max(0, required(golem, filter) - stored);
+    }
+
+    private static int required(GolemBase golem, ItemStack stack) {
+        int total = 0;
+        for (ItemStack filter : filters(golem)) {
+            if (ItemStack.isSameItemSameComponents(filter, stack) || golem.getUpgradeAmount(5) > 0 && (filter.is(stack.getItem()) && filter.getDamageValue() == stack.getDamageValue() || golem.sharesOreTag(filter, stack))) total += filter.getCount();
+        }
+        return total;
     }
 
     static boolean closeTo(GolemBase golem, BlockPos pos, double distanceSquared) {

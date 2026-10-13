@@ -99,6 +99,7 @@ public class Thaumcraft {
         AlchemyGameTests.register(modEventBus);
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
+        thaumcraft.test.GolemGameTests.register(modEventBus);
         ArmorGameTests.register(modEventBus);
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);

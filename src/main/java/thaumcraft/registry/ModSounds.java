@@ -39,6 +39,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> INFUSERSTART = register("infuserstart");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRAFTSTART = register("craftstart");
     public static final DeferredHolder<SoundEvent, SoundEvent> GORE = register("gore");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GOLEM_IRON_SHOOT = register("golemironshoot");
     public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE = register("upgrade");
     public static final DeferredHolder<SoundEvent, SoundEvent> FIRELOOP = register("fireloop");
     public static final DeferredHolder<SoundEvent, SoundEvent> ICE = register("ice");

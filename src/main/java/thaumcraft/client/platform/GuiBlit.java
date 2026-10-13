@@ -8,6 +8,14 @@ public final class GuiBlit {
     private GuiBlit() {
     }
 
+    public static void blit(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+        blit(graphics, texture, x, y, u, v, width, height, textureWidth, textureHeight, -1);
+    }
+
+    public static void blit(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+    }
+
     public static void blit(
         GuiGraphicsExtractor graphics,
         Identifier texture,

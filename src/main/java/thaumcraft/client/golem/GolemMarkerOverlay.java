@@ -51,11 +51,11 @@ public final class GolemMarkerOverlay {
         }
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         List<Overlay> overlays = new ArrayList<>();
-        if (selection.home().dimension().equals(minecraft.level.dimension()) && camera.distanceToSqr(selection.home().pos().getCenter()) < 4096.0) {
+        if (selection.home().dimension().equals(minecraft.level.dimension()) && camera.distanceToSqr(Vec3.atCenterOf(selection.home().pos())) < 4096.0) {
             overlays.add(new Overlay(selection.home().pos(), Direction.UP, -1, true));
         }
         for (Marker marker : selection.markers()) {
-            if (marker.inLevel(minecraft.level) && camera.distanceToSqr(marker.pos().getCenter()) < 4096.0) {
+            if (marker.inLevel(minecraft.level) && camera.distanceToSqr(Vec3.atCenterOf(marker.pos())) < 4096.0) {
                 overlays.add(new Overlay(marker.pos(), marker.side(), marker.color(), false));
             }
         }

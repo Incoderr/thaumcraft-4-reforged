@@ -3,7 +3,7 @@ package thaumcraft.client.render.entity.golem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import thaumcraft.client.platform.TcRenderTypes;
 
 public final class TravelingTrunkModel extends EntityModel<TravelingTrunkRenderState> {
     private final ModelPart root;
@@ -11,7 +11,7 @@ public final class TravelingTrunkModel extends EntityModel<TravelingTrunkRenderS
     private final ModelPart knob;
 
     public TravelingTrunkModel(ModelPart root) {
-        super(root, RenderTypes::entityCutoutNoCull);
+        super(root, TcRenderTypes::entityCutoutNoCull);
         this.root = root;
         lid = root.getChild("lid");
         knob = root.getChild("knob");

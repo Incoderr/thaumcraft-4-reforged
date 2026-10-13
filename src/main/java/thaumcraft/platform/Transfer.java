@@ -147,6 +147,17 @@ public final class Transfer {
         return fluids(level, pos, side) != null;
     }
 
+    public static List<ItemStack> contents(Level level, BlockPos pos, @Nullable Direction side) {
+        ResourceHandler<ItemResource> handler = items(level, pos, side);
+        if (handler == null) return List.of();
+        List<ItemStack> result = new ArrayList<>();
+        for (int index = 0; index < handler.size(); index++) {
+            ItemResource resource = handler.getResource(index);
+            if (!resource.isEmpty()) result.add(resource.toStack(handler.getAmountAsInt(index)));
+        }
+        return List.copyOf(result);
+    }
+
     public static int count(Level level, BlockPos pos, @Nullable Direction side, Predicate<ItemStack> filter) {
         ResourceHandler<ItemResource> handler = items(level, pos, side);
         if (handler == null) {
@@ -187,7 +198,7 @@ public final class Transfer {
                 continue;
             }
             try (Transaction transaction = Transaction.openRoot()) {
-                int extracted = handler.extract(resource, maxAmount, transaction);
+                int extracted = handler.extract(index, resource, maxAmount, transaction);
                 if (extracted <= 0) {
                     continue;
                 }
@@ -240,7 +251,7 @@ public final class Transfer {
                 continue;
             }
             try (Transaction transaction = Transaction.openRoot()) {
-                int extracted = handler.extract(resource, maxAmount, transaction);
+                int extracted = handler.extract(index, resource, maxAmount, transaction);
                 if (extracted <= 0) {
                     continue;
                 }

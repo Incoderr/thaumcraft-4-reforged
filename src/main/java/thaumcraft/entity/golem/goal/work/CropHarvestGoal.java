@@ -66,7 +66,7 @@ public final class CropHarvestGoal extends Goal {
     @Override
     public void start() {
         count = 200;
-        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, 1.0);
     }
 
     @Override
@@ -147,7 +147,7 @@ public final class CropHarvestGoal extends Goal {
         if (golem.level() instanceof ServerLevel server) {
             if (CropUtils.isClickableCrop(targetState)) GolemActions.activate(golem, target, Direction.DOWN);
             else GolemActions.harvest(golem, target);
-            if (golem.getUpgradeAmount(4) > 0) replant(server);
+            if (!CropUtils.isClickableCrop(targetState) && golem.getUpgradeAmount(4) > 0) replant(server);
         }
         golem.startActionTimer();
     }
@@ -158,7 +158,9 @@ public final class CropHarvestGoal extends Goal {
             new AABB(golem.getX() - 6, golem.getY() - 6, golem.getZ() - 6, golem.getX() + 6, golem.getY() + 6, golem.getZ() + 6)
         );
         for (ItemEntity entity : drops) {
-            if (entity.tickCount >= 2) continue;
+            if (entity.tickCount >= 2 || entity.distanceToSqr(golem) > 36) continue;
+            var toward = golem.position().subtract(entity.position()).normalize().scale(0.25);
+            entity.setDeltaMovement(toward.x, 0.075, toward.z);
             ItemStack stack = entity.getItem();
             boolean done = false;
             if (stack.is(Items.COCOA_BEANS)) {

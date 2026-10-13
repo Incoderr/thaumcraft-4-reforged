@@ -73,7 +73,7 @@ public final class FishingGoal extends Goal {
         if (water == null) return false;
         target = new Vec3(water.getX(), water.getY(), water.getZ());
         quality = calculateQuality(water);
-        golem.level().playSound(null, golem.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.NEUTRAL, 0.5F, 0.8F + golem.getRandom().nextFloat() * 0.32F);
+        golem.level().playSound(null, golem.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.NEUTRAL, 0.5F, 0.4F / (golem.getRandom().nextFloat() * 0.4F + 0.8F));
         bobber = new GolemBobber(golem.level(), golem);
         bobber.setPos(golem.getX(), golem.getY(), golem.getZ());
         double dx = water.getX() + 0.5 - golem.getX();
@@ -112,7 +112,7 @@ public final class FishingGoal extends Goal {
                 if (recipe.isPresent()) stack = recipe.get().value().assemble(input);
             }
             ItemEntity item = new ItemEntity(server, target.x + 0.5, target.y + 1.0, target.z + 0.5, stack);
-            if (golem.getUpgradeAmount(2) > 0) item.setSecondsOnFire(2);
+            if (golem.getUpgradeAmount(2) > 0) item.igniteForSeconds(2);
             item.setPickUpDelay(20);
             double dx = golem.getX() + golem.getRandom().nextFloat() - golem.getRandom().nextFloat() - target.x + 0.5;
             double dy = golem.getY() - target.y + 1.0;

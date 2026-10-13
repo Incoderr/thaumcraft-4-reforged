@@ -27,8 +27,8 @@ public final class CreeperSwellAvoidGoal extends Goal {
     public boolean canUse() {
         if (!golem.isWorking()) return false;
         if (farSpeed == 0) {
-            farSpeed = golem.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.125;
-            nearSpeed = golem.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.25;
+            farSpeed = 1.125;
+            nearSpeed = 1.25;
         }
         List<Creeper> candidates = golem.level().getEntitiesOfClass(Creeper.class, golem.getBoundingBox().inflate(5, 3, 5));
         if (candidates.isEmpty()) return false;
@@ -69,7 +69,7 @@ public final class CreeperSwellAvoidGoal extends Goal {
     @Override
     public void tick() {
         if (creeper != null) {
-            golem.getNavigation().setSpeed(golem.distanceToSqr(creeper) < 49 ? nearSpeed : farSpeed);
+            golem.getNavigation().setSpeedModifier(golem.distanceToSqr(creeper) < 49 ? nearSpeed : farSpeed);
         }
     }
 

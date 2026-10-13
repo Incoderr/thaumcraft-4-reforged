@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import thaumcraft.client.platform.GuiBlit;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -27,13 +27,13 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
         "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"
     };
-    private static final int[] TARGET_TOGGLES = {0, 1, 2, 3};
+    private static final int[] TARGET_TOGGLES = {1, 2, 3, 4};
     private static final String[] TARGET_NAMES = {"Monsters", "Animals", "Players", "Creepers"};
     private final GolemBase golem;
     private final int threat;
 
     public GolemScreen(GolemMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 256, 166);
+        super(menu, inventory, title, 176, 166);
         golem = menu.golem();
         threat = golem != null && golem.isAdvanced() && inventory.player.getRandom().nextInt(4) == 0
             ? inventory.player.getRandom().nextInt(9)
@@ -41,7 +41,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
     }
 
     private void blit(GuiGraphicsExtractor graphics, int x, int y, int u, int v, int width, int height) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + x, topPos + y, u, v, width, height, 256, 256);
+        GuiBlit.blit(graphics, TEXTURE, leftPos + x, topPos + y, u, v, width, height, 256, 256);
     }
 
     private void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
@@ -59,7 +59,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
 
     private void swatch(GuiGraphicsExtractor graphics, int x, int y, int color) {
         if (color >= 0 && color < COLORS.length) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + x, topPos + y, 0.0F, 176.0F, 6, 6, 256, 256, ARGB.opaque(COLORS[color]));
+            GuiBlit.blit(graphics, TEXTURE, leftPos + x, topPos + y, 0.0F, 176.0F, 6, 6, 256, 256, ARGB.opaque(COLORS[color]));
         }
     }
 
@@ -102,7 +102,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
             return;
         }
         int core = golem.getCore();
-        int slots = menu.filterSlots();
+        int slots = menu.filterSlots() == 0 ? 0 : golem.inventory().getContainerSize();
         if (slots > 0) {
             for (int index = 0; index < Math.min(6, slots); index++) {
                 int slot = index + menu.currentScroll() * 6;
@@ -119,7 +119,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         }
         if (core == 4 && golem.getUpgradeAmount(4) > 0) {
             for (int index = 0; index < TARGET_TOGGLES.length; index++) {
-                toggle(graphics, 104, 5 + index * 16, TARGET_TOGGLES[index]);
+                blit(graphics, 104, 5 + index * 16, 8, toggled(TARGET_TOGGLES[index]) ? 168 : 176, 8, 8);
                 text(graphics, TARGET_NAMES[index], 122, 6 + index * 16, 0xFFFFCCCC);
             }
         }
@@ -167,13 +167,13 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         if (golem != null) {
             double x = event.x() - leftPos;
             double y = event.y() - topPos;
-            int slots = menu.filterSlots();
+            int slots = menu.filterSlots() == 0 ? 0 : golem.inventory().getContainerSize();
             if (slots > 0 && slots > 6) {
                 if (inside(x, y, 111, 68, 24, 8)) return sendButton(66);
                 if (inside(x, y, 135, 68, 24, 8)) return sendButton(67);
             }
             if (golem.getUpgradeAmount(4) > 0 && golem.getCore() == 4) {
-                for (int index = 0; index < 4; index++) if (inside(x, y, 102, 3 + index * 16, 12, 12)) return sendButton(50 + index);
+                for (int index = 0; index < 4; index++) if (inside(x, y, 102, 3 + index * 16, 12, 12)) return sendButton(51 + index);
             }
             if (golem.getCore() == 0 && inside(x, y, 62, 54, 8, 8)) return sendButton(50);
             if (golem.getCore() == 8) {

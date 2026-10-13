@@ -10,8 +10,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -84,7 +84,7 @@ public final class GolemCombatGoals {
 
         @Override
         public void start() {
-            if (target != null) golem.getNavigation().moveTo(target, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            if (target != null) golem.getNavigation().moveTo(target, 1.0);
             repath = 0;
         }
 
@@ -100,7 +100,7 @@ public final class GolemCombatGoals {
             golem.getLookControl().setLookAt(target, 30, 30);
             if (golem.getSensing().hasLineOfSight(target) && --repath <= 0) {
                 repath = 4 + golem.getRandom().nextInt(7);
-                golem.getNavigation().moveTo(target, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+                golem.getNavigation().moveTo(target, 1.0);
             }
             attackTick = Math.max(attackTick - 1, 0);
             double reach = target.getBbWidth() * 2.0F;
@@ -154,7 +154,7 @@ public final class GolemCombatGoals {
         @Override
         public void tick() {
             if (target == null) return;
-            golem.getNavigation().moveTo(target, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            golem.getNavigation().moveTo(target, 1.0);
             if (!golem.getSensing().hasLineOfSight(target)) return;
             golem.getLookControl().setLookAt(target, 30, 30);
             attackTime = Math.max(attackTime - 1, 0);
@@ -189,6 +189,11 @@ public final class GolemCombatGoals {
         }
 
         @Override
+        public boolean canContinueToUse() {
+            return golem.isWorking() && target != null && isValidTarget(golem, target, golem.getCore() == 9);
+        }
+
+        @Override
         public void start() {
             if (target != null) golem.setTarget(target);
             lastTimestamp = golem.getLastHurtByMobTimestamp();
@@ -220,7 +225,7 @@ public final class GolemCombatGoals {
             if (current != null && current.isAlive() && isValidTarget(golem, current, butcher)) return false;
             List<LivingEntity> candidates = golem.level().getEntitiesOfClass(LivingEntity.class, targetBox(golem), entity -> isValidTarget(golem, entity, butcher));
             if (butcher) {
-                candidates.sort(Comparator.comparingInt(Entity::tickCount).reversed());
+                candidates.sort(Comparator.comparingInt((LivingEntity entity) -> entity.tickCount).reversed());
                 for (LivingEntity candidate : candidates) {
                     long sameKind = candidates.stream().filter(other -> other.getType() == candidate.getType()).count();
                     if (sameKind > 2) {
@@ -236,6 +241,11 @@ public final class GolemCombatGoals {
                 }
             }
             return false;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return golem.isWorking() && target != null && isValidTarget(golem, target, golem.getCore() == 9);
         }
 
         @Override

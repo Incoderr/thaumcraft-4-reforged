@@ -23,6 +23,8 @@ public class GolemPlacerItem extends Item {
             golem.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
             golem.setYRot(context.getLevel().getRandom().nextFloat() * 360);
             golem.configure(type, GolemKeys.snapshot(context.getItemInHand()));
+            GolemKeys.FLUID.getOrDefault(context.getItemInHand(), java.util.Optional.empty()).ifPresent(fluid -> golem.setFluidCarried(fluid.create()));
+            golem.setEssentia(thaumcraft.aspect.Aspect.getAspect(GolemKeys.ESSENTIA.getOrDefault(context.getItemInHand(), "")), GolemKeys.ESSENTIA_AMOUNT.getOrDefault(context.getItemInHand(), 0));
             golem.setHealth(golem.getMaxHealth());
             golem.setHome(pos, context.getClickedFace());
             golem.setOwnerUUID(context.getPlayer().getUUID());

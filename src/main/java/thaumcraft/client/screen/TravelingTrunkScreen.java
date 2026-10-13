@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import thaumcraft.client.platform.GuiBlit;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -41,19 +41,19 @@ public final class TravelingTrunkScreen extends AbstractContainerScreen<Travelin
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        GuiBlit.blit(graphics, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
         if (trunk == null) {
             return;
         }
         int health = Math.clamp(Math.round(trunk.getHealth() / trunk.getMaxHealth() * 39.0F), 0, 39);
         if (health > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 134, topPos + 2, 176, 16, health, 6, 256, 256);
+            GuiBlit.blit(graphics, TEXTURE, leftPos + 134, topPos + 2, 176, 16, health, 6, 256, 256);
         }
         if (trunk.getUpgrade() == 1) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos + 80, 0, 206, imageWidth, 27, 256, 256);
+            GuiBlit.blit(graphics, TEXTURE, leftPos, topPos + 80, 0, 206, imageWidth, 27, 256, 256);
         }
         if (trunk.getStay()) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 112, topPos, 176, 0, 10, 10, 256, 256);
+            GuiBlit.blit(graphics, TEXTURE, leftPos + 112, topPos, 176, 0, 10, 10, 256, 256);
         }
     }
 
@@ -65,7 +65,7 @@ public final class TravelingTrunkScreen extends AbstractContainerScreen<Travelin
         if (trunk != null && inside(event.x() - leftPos, event.y() - topPos, 112, 0, 10, 10)) {
             if (minecraft.gameMode != null) {
                 if (minecraft.player != null) {
-                    minecraft.player.displayClientMessage(Component.translatable(trunk.getStay() ? "entity.trunk.move" : "entity.trunk.stay"), false);
+                    minecraft.player.sendSystemMessage(Component.translatable(trunk.getStay() ? "entity.trunk.move" : "entity.trunk.stay"));
                 }
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
             }
@@ -91,8 +91,8 @@ public final class TravelingTrunkScreen extends AbstractContainerScreen<Travelin
         @SubscribeEvent
         static void tick(ClientTickEvent.Post event) {
             var minecraft = net.minecraft.client.Minecraft.getInstance();
-            if (minecraft.screen instanceof TravelingTrunkScreen screen && screen.trunk != null && !screen.trunk.isAlive()) {
-                minecraft.player.closeContainer();
+            if (minecraft.gui.screen() instanceof TravelingTrunkScreen screen && screen.trunk != null && !screen.trunk.isAlive()) {
+                if (minecraft.player != null) minecraft.player.closeContainer();
             }
         }
     }

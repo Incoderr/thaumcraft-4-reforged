@@ -27,7 +27,7 @@ public final class UseItemGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        boolean ignoreItem = !GolemBase.hasInventory(golem.getCore());
+        boolean ignoreItem = !thaumcraft.platform.Transfer.hasItems(golem.level(), golem.getHomePosition().relative(golem.getHomeFacing().getOpposite()), golem.getHomeFacing());
         if (!golem.isWorking()
             || golem.getCarried().isEmpty() && !ignoreItem
             || golem.tickCount < nextTick
@@ -45,7 +45,7 @@ public final class UseItemGoal extends Goal {
     @Override
     public void start() {
         count = 200;
-        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, golem.getAttributeValue(Attributes.MOVEMENT_SPEED));
+        golem.getNavigation().moveTo(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, 1.0);
     }
 
     @Override

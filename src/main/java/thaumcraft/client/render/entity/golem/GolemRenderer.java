@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+import thaumcraft.client.platform.TcRenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -49,8 +49,8 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
         state.healthPercent = entity.getHealth() / entity.getMaxHealth();
         state.bootup = entity.bootup;
         state.inactive = entity.inactive;
-        state.actionActive = entity.action > 0;
-        state.actionTimer = entity.action - partialTicks;
+        state.actionActive = entity.getActionTimer() > 0;
+        state.actionTimer = entity.getActionTimer() - partialTicks;
         state.leftArmActive = entity.leftArm > 0;
         state.leftArm = entity.leftArm - partialTicks;
         state.rightArmActive = entity.rightArm > 0;
@@ -132,7 +132,7 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
                 return;
             }
             model.setupAnim(state);
-            collector.submitModel(model, state, poseStack, RenderTypes.entityTranslucent(DECORATION), light, LivingEntityRenderer.getOverlayCoords(state, 0.0F), -1, null, state.outlineColor);
+            collector.submitModel(model, state, poseStack, TcRenderTypes.entityTranslucent(DECORATION), light, LivingEntityRenderer.getOverlayCoords(state, 0.0F), -1, null, state.outlineColor);
         }
     }
 
@@ -151,7 +151,7 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
             }
             model.setupAnim(state);
             int alpha = (int) ((1.0F - Math.max(0.0F, state.healthPercent)) * 255.0F);
-            collector.submitModel(model, state, poseStack, RenderTypes.entityTranslucent(DAMAGE), light, OverlayTexture.NO_OVERLAY, ARGB.color(alpha, 255, 255, 255), null, state.outlineColor);
+            collector.submitModel(model, state, poseStack, TcRenderTypes.entityTranslucent(DAMAGE), light, OverlayTexture.NO_OVERLAY, ARGB.color(alpha, 255, 255, 255), null, state.outlineColor);
         }
     }
 

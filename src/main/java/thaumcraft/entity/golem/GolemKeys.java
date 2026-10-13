@@ -10,6 +10,11 @@ import thaumcraft.infusion.InfusionKeys;
 import thaumcraft.platform.StackKey;
 
 public final class GolemKeys {
+    public static final StackKey<Optional<net.neoforged.neoforge.fluids.FluidStackTemplate>> FLUID = StackKey.register("golem_fluid", net.neoforged.neoforge.fluids.FluidStackTemplate.CODEC.optionalFieldOf("fluid").codec(), ByteBufCodecs.optional(net.neoforged.neoforge.fluids.FluidStackTemplate.STREAM_CODEC));
+    public static final StackKey<String> ESSENTIA = StackKey.register("golem_essentia", Codec.STRING, ByteBufCodecs.STRING_UTF8);
+    public static final StackKey<Integer> ESSENTIA_AMOUNT = StackKey.register("golem_essentia_amount", Codec.INT, ByteBufCodecs.VAR_INT);
+    public static final StackKey<Integer> TRUNK_UPGRADE = StackKey.register("trunk_upgrade", Codec.intRange(-1, 5), ByteBufCodecs.VAR_INT);
+    public static final StackKey<net.minecraft.world.item.component.ItemContainerContents> TRUNK_CONTENTS = StackKey.register("trunk_contents", net.minecraft.world.item.component.ItemContainerContents.CODEC, net.minecraft.world.item.component.ItemContainerContents.STREAM_CODEC);
     public static final StackKey<GolemSnapshot> STATE = StackKey.register("golem_state", GolemSnapshot.CODEC, ByteBufCodecs.fromCodecWithRegistries(GolemSnapshot.CODEC));
     public static final Codec<BellSelection> BELL_CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.create(instance -> instance.group(
         net.minecraft.core.UUIDUtil.CODEC.fieldOf("entity").forGetter(BellSelection::entity),

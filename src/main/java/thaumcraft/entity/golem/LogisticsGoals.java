@@ -293,7 +293,7 @@ public final class LogisticsGoals {
         @Override
         protected boolean interact(BlockPos pos) {
             if (source == null || selected.isEmpty()) return true;
-            ItemStack taken = Transfer.extract(golem.level(), pos, source.side(), stack -> golem.matchesFilter(selected, stack), Math.min(golem.getCarrySpace(), selected.getCount()), false);
+            ItemStack taken = Transfer.extract(golem.level(), pos, source.side(), stack -> golem.matchesFilter(selected, stack), Math.min(golem.getCarrySpace(), GolemLogistics.missingAtHome(golem, selected)), false);
             if (!taken.isEmpty()) golem.setCarried(taken);
             return true;
         }
@@ -395,7 +395,7 @@ public final class LogisticsGoals {
             double range = golem.getRange();
             target = golem.level().getEntitiesOfClass(ItemEntity.class, new AABB(golem.getHomePosition()).inflate(range), item ->
                 item.isAlive() && !item.hasPickUpDelay() && (golem.inventory().isEmpty() || GolemLogistics.filters(golem).stream().anyMatch(filter -> golem.matchesFilter(filter, item.getItem())))
-                    && (golem.getCarried().isEmpty() || ItemStack.isSameItemSameComponents(golem.getCarried(), item.getItem()) && item.getItem().getCount() <= golem.getCarrySpace())
+                    && (golem.getCarried().isEmpty() || ItemStack.isSameItemSameComponents(golem.getCarried(), item.getItem()) && golem.getCarrySpace() > 0)
             ).stream().min(Comparator.comparingDouble(golem::distanceToSqr)).orElse(null);
             return target != null;
         }
@@ -412,6 +412,8 @@ public final class LogisticsGoals {
             golem.getLookControl().setLookAt(target, 30, 30);
             if (golem.distanceToSqr(target) <= 2.0) {
                 ItemStack stack = target.getItem();
+                if (!golem.inventory().isEmpty() && GolemLogistics.filters(golem).stream().noneMatch(filter -> golem.matchesFilter(filter, stack))
+                    || !golem.getCarried().isEmpty() && !ItemStack.isSameItemSameComponents(golem.getCarried(), stack)) { target = null; return; }
                 int amount = Math.min(stack.getCount(), golem.getCarrySpace());
                 if (amount > 0) {
                     ItemStack taken = stack.copyWithCount(amount);

@@ -55,6 +55,7 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
     private static final EntityDataAccessor<String> COLORS = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Integer> TOGGLES = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<ItemStack> CARRIED = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<ItemStack> DISPLAY = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<BlockPos> HOME = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.BLOCK_POS);
     private static final EntityDataAccessor<Integer> FACING = SynchedEntityData.defineId(GolemBase.class, EntityDataSerializers.INT);
     private SimpleContainer filters = new SimpleContainer(1);
@@ -97,6 +98,7 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
         builder.define(COLORS, "h");
         builder.define(TOGGLES, 0);
         builder.define(CARRIED, ItemStack.EMPTY);
+        builder.define(DISPLAY, ItemStack.EMPTY);
         builder.define(HOME, BlockPos.ZERO);
         builder.define(FACING, Direction.UP.ordinal());
     }
@@ -167,27 +169,49 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
 
     public boolean isWithinHome(BlockPos pos) { return getHomePosition().distSqr(pos) < getRange() * getRange(); }
     public ItemStack getCarried() { return entityData.get(CARRIED); }
-    public ItemStack getCarriedForDisplay() { return getCarried(); }
-    public void setCarried(ItemStack stack) { entityData.set(CARRIED, stack.isEmpty() ? ItemStack.EMPTY : stack.copy()); }
+    public ItemStack getCarriedForDisplay() { return entityData.get(DISPLAY); }
+    public void setCarried(ItemStack stack) { entityData.set(CARRIED, stack.isEmpty() ? ItemStack.EMPTY : stack.copy()); updateCarried(); }
     public int getCarrySpace() { return getCarried().isEmpty() ? getCarryLimit() : Math.max(0, Math.min(getCarryLimit(), getCarried().getMaxStackSize()) - getCarried().getCount()); }
     public FluidStack getFluidCarried() { return fluidCarried; }
-    public void setFluidCarried(FluidStack fluid) { fluidCarried = fluid.copy(); }
+    public void setFluidCarried(FluidStack fluid) { fluidCarried = fluid.copy(); updateCarried(); }
     public @Nullable Aspect getEssentia() { return essentia; }
     public int getEssentiaAmount() { return essentiaAmount; }
-    public void setEssentia(@Nullable Aspect aspect, int amount) { essentia = amount > 0 ? aspect : null; essentiaAmount = Math.max(0, amount); }
+    public void setEssentia(@Nullable Aspect aspect, int amount) { essentia = amount > 0 ? aspect : null; essentiaAmount = Math.max(0, amount); updateCarried(); }
+
+    public void updateCarried() {
+        ItemStack display = getCarried().copy();
+        if (display.isEmpty() && getCore() == 5 && !fluidCarried.isEmpty()) display = new ItemStack(fluidCarried.getFluid().getBucket());
+        if (display.isEmpty() && getCore() == 6) {
+            display = new ItemStack(ModBlocks.WARDED_JAR.get());
+            if (essentia != null && essentiaAmount > 0) thaumcraft.aspect.AspectKeys.ASPECTS.set(display, new thaumcraft.aspect.AspectList().add(essentia, (int) (64.0F * essentiaAmount / getCarryLimit())));
+        }
+        entityData.set(DISPLAY, display);
+    }
 
     public boolean matchesFilter(ItemStack filter, ItemStack stack) {
         if (filter.isEmpty() || stack.isEmpty()) return false;
         boolean same = filter.is(stack.getItem());
-        if (!same && checkOreDict()) same = filter.getItem().builtInRegistryHolder().tags().anyMatch(tag -> (tag.location().getNamespace().equals("c") || tag.location().getNamespace().equals("forge")) && stack.is(tag));
+        if (!same && checkOreDict()) same = sharesOreTag(filter, stack);
         if (!same || !ignoreDamage() && filter.getDamageValue() != stack.getDamageValue()) return false;
         if (ignoreNBT()) return true;
-        if (!ignoreDamage()) return ItemStack.isSameItemSameComponents(filter, stack);
         ItemStack first = filter.copy();
         ItemStack second = stack.copy();
-        first.setDamageValue(0);
-        second.setDamageValue(0);
-        return first.getComponents().equals(second.getComponents());
+        if (ignoreDamage()) {
+            first.remove(net.minecraft.core.component.DataComponents.DAMAGE);
+            second.remove(net.minecraft.core.component.DataComponents.DAMAGE);
+        }
+        return first.getComponentsPatch().equals(second.getComponentsPatch());
+    }
+
+    public boolean sharesOreTag(ItemStack first, ItemStack second) {
+        return first.getItem().builtInRegistryHolder().tags().anyMatch(tag -> {
+            String namespace = tag.location().getNamespace();
+            String path = tag.location().getPath();
+            boolean common = namespace.equals("c") || namespace.equals("forge");
+            boolean umbrella = java.util.Set.of("ingots", "nuggets", "ores", "gems", "dusts", "storage_blocks", "foods", "crops", "tools", "armors").contains(path);
+            boolean legacyWood = namespace.equals("minecraft") && java.util.Set.of("planks", "logs", "wool").contains(path);
+            return (common && !umbrella || legacyWood) && second.is(tag);
+        });
     }
 
     public List<Integer> getColorsMatching(ItemStack stack) {
@@ -238,6 +262,8 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
         goalSelector.removeAllGoals(goal -> true);
         targetSelector.removeAllGoals(goal -> true);
         if (getCore() < 0) return;
+        LogisticsGoals.install(this, goalSelector);
+        WorkGoals.install(this, goalSelector, targetSelector);
         goalSelector.addGoal(5, new OpenDoorGoal(this, true));
         goalSelector.addGoal(6, new ReturnHomeGoal());
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6));
@@ -245,8 +271,39 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
     }
 
     @Override
+    public boolean isEffectiveAi() {
+        return super.isEffectiveAi() && isWorking();
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+        if (level().isClientSide() && filters != null && (accessor == CORE || accessor == UPGRADES || accessor == ADVANCED)) {
+            int size = hasInventory(getCore()) ? (getCore() == 5 ? 1 + getUpgradeAmount(2) : 6 + getUpgradeAmount(2) * 6) : 1;
+            if (filters.getContainerSize() != size) filters = new SimpleContainer(size);
+        }
+    }
+
+    @Override
+    public boolean doHurtTarget(ServerLevel level, net.minecraft.world.entity.Entity target) {
+        boolean hit = super.doHurtTarget(level, target);
+        if (hit) {
+            if (getUpgradeAmount(2) > 0) target.igniteForSeconds(getUpgradeAmount(2) * 4);
+            if (getGolemDecoration().contains("V") && target instanceof net.minecraft.world.entity.LivingEntity living && owner != null) living.setLastHurtByPlayer(owner, 100);
+            startRightArmTimer();
+        }
+        return hit;
+    }
+
+    @Override
     protected void customServerAiStep(ServerLevel level) {
-        if (isWorking()) super.customServerAiStep(level);
+        if (isWorking()) {
+            if (tickCount > 1 && (tickCount + getId()) % 2 != 0) {
+                targetSelector.tick();
+                goalSelector.tick();
+            }
+            super.customServerAiStep(level);
+        }
         else { getNavigation().stop(); setTarget(null); }
     }
 
@@ -299,7 +356,7 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
                 configure(getGolemType(), new GolemSnapshot(old.core(), old.advanced(), old.upgrades(), old.decoration() + part.decoration(), old.markers(), old.filters(), old.colors(), old.toggles()));
             } else return InteractionResult.PASS;
             stack.shrink(1);
-            playSound(net.minecraft.sounds.SoundEvent.createVariableRangeEvent(Thaumcraft.id("upgrade")), 0.5F, 1);
+            playSound(thaumcraft.registry.ModSounds.UPGRADE.get(), 0.5F, 1);
             return InteractionResult.SUCCESS;
         }
         if (stack.is(Items.COOKIE)) {
@@ -322,8 +379,13 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
 
     public ItemStack toItem(boolean dismantle) {
         ItemStack stack = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(Thaumcraft.id(getGolemType().itemId())));
-        GolemKeys.STATE.set(stack, dismantle ? new GolemSnapshot(-1, isAdvanced(), List.of(), getGolemDecoration(), List.of(), ItemContainerContents.EMPTY, List.of(), 0) : snapshot());
-        if (hasCustomName()) stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, getCustomName());
+        GolemKeys.STATE.set(stack, dismantle ? new GolemSnapshot(-1, isAdvanced(), List.of(), "", List.of(), ItemContainerContents.EMPTY, List.of(), 0) : snapshot());
+        if (!fluidCarried.isEmpty()) GolemKeys.FLUID.set(stack, java.util.Optional.of(net.neoforged.neoforge.fluids.FluidStackTemplate.fromNonEmptyStack(fluidCarried)));
+        if (essentia != null && essentiaAmount > 0) {
+            GolemKeys.ESSENTIA.set(stack, essentia.getTag());
+            GolemKeys.ESSENTIA_AMOUNT.set(stack, essentiaAmount);
+        }
+        if (!dismantle && hasCustomName()) stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, getCustomName());
         return stack;
     }
 
@@ -336,6 +398,20 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
     public void startRightArmTimer() { if (rightArm == 0) { rightArm = 5; level().broadcastEntityEvent(this, (byte) 8); } }
     public int getActionTimer() { return 3 - Math.abs(action - 3); }
     @Override public void handleEntityEvent(byte event) { switch (event) { case 4 -> action = 6; case 5 -> healing = 5; case 6 -> leftArm = 5; case 7 -> bootup = 33; case 8 -> rightArm = 5; default -> super.handleEntityEvent(event); } }
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (source.is(net.minecraft.world.damagesource.DamageTypes.CACTUS)) return false;
+        if (getGolemType() == GolemType.THAUMIUM && source.is(net.minecraft.world.damagesource.DamageTypes.MAGIC)) amount *= 0.5F;
+        var attacker = source.getDirectEntity();
+        int entropy = getUpgradeAmount(5);
+        if (attacker != null && attacker != this && entropy > 0 && !source.is(net.minecraft.world.damagesource.DamageTypes.THORNS)) attacker.hurtServer(level, damageSources().thorns(this), entropy * 2 + random.nextInt(entropy * 2));
+        return super.hurtServer(level, source, amount);
+    }
+
+    @Override protected net.minecraft.sounds.SoundEvent getAmbientSound() { return thaumcraft.registry.ModSounds.CAMERACLACK.get(); }
+    @Override protected net.minecraft.sounds.SoundEvent getHurtSound(DamageSource source) { return thaumcraft.registry.ModSounds.CAMERACLACK.get(); }
+    @Override protected net.minecraft.sounds.SoundEvent getDeathSound() { return thaumcraft.registry.ModSounds.CAMERACLACK.get(); }
+    @Override protected float getSoundVolume() { return 0.1F; }
     @Override public boolean removeWhenFarAway(double distance) { return false; }
     @Override public boolean fireImmune() { return getGolemType().fireResist; }
     @Override public boolean canBreatheUnderwater() { return true; }
@@ -364,7 +440,7 @@ public class GolemBase extends PathfinderMob implements MenuProvider {
         setHome(input.read("Home", BlockPos.CODEC).orElse(blockPosition()), Direction.values()[Math.clamp(input.getIntOr("HomeFacing", 1), 0, 5)]);
         owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
         setCarried(input.read("Carried", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY));
-        fluidCarried = input.read("Fluid", FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY);
+        setFluidCarried(input.read("Fluid", FluidStack.OPTIONAL_CODEC).orElse(FluidStack.EMPTY));
         setEssentia(Aspect.getAspect(input.getStringOr("Essentia", "")), input.getIntOr("EssentiaAmount", 0));
     }
 
