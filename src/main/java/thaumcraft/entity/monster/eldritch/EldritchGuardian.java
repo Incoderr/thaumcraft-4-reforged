@@ -46,7 +46,7 @@ import thaumcraft.item.AspectTooltips;
 import thaumcraft.platform.ModNetwork;
 import thaumcraft.network.WarpEventPayload;
 
-public class EldritchGuardian extends Monster implements RangedAttackMob {
+public class EldritchGuardian extends Monster implements RangedAttackMob, thaumcraft.entity.EldritchMob {
     public float armLiftLeft;
     public float armLiftRight;
     private boolean lastBlast;
@@ -102,6 +102,11 @@ public class EldritchGuardian extends Monster implements RangedAttackMob {
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         return !this.hasHome();
+    }
+
+    @Override
+    protected boolean considersEntityAsAlly(Entity entity) {
+        return entity instanceof thaumcraft.entity.EldritchMob || super.considersEntityAsAlly(entity);
     }
 
     @Override

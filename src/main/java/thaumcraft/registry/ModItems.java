@@ -133,7 +133,7 @@ public final class ModItems {
     public static final DeferredItem<Item> VOID_METAL_INGOT = ITEMS.registerSimpleItem("void_metal_ingot");
     public static final DeferredItem<Item> VOID_SEED = ITEMS.registerSimpleItem("void_seed");
     public static final DeferredItem<Item> GOLD_COIN = ITEMS.registerSimpleItem("gold_coin");
-    public static final DeferredItem<Item> CRIMSON_RITES = ITEMS.registerSimpleItem("crimson_rites", properties -> properties.rarity(Rarity.RARE));
+    public static final DeferredItem<thaumcraft.eldritch.EldritchObjectItem> CRIMSON_RITES = thaumcraft.registry.EldritchContent.CRIMSON_RITES;
 
     public static final DeferredItem<SpawnEggItem> BRAINY_ZOMBIE_SPAWN_EGG = spawnEgg("brainy_zombie_spawn_egg", ModEntities.BRAINY_ZOMBIE);
     public static final DeferredItem<SpawnEggItem> GIANT_BRAINY_ZOMBIE_SPAWN_EGG = spawnEgg("giant_brainy_zombie_spawn_egg", ModEntities.GIANT_BRAINY_ZOMBIE);
@@ -145,6 +145,11 @@ public final class ModItems {
     public static final DeferredItem<SpawnEggItem> CULTIST_KNIGHT_SPAWN_EGG = spawnEgg("cultist_knight_spawn_egg", ModEntities.CULTIST_KNIGHT);
     public static final DeferredItem<SpawnEggItem> CULTIST_CLERIC_SPAWN_EGG = spawnEgg("cultist_cleric_spawn_egg", ModEntities.CULTIST_CLERIC);
     public static final DeferredItem<SpawnEggItem> ELDRITCH_CRAB_SPAWN_EGG = spawnEgg("eldritch_crab_spawn_egg", ModEntities.ELDRITCH_CRAB);
+    public static final DeferredItem<SpawnEggItem> ELDRITCH_WARDEN_SPAWN_EGG = spawnEgg("eldritch_warden_spawn_egg", EldritchEntities.ELDRITCH_WARDEN);
+    public static final DeferredItem<SpawnEggItem> ELDRITCH_GOLEM_SPAWN_EGG = spawnEgg("eldritch_golem_spawn_egg", EldritchEntities.ELDRITCH_GOLEM);
+    public static final DeferredItem<SpawnEggItem> CULTIST_LEADER_SPAWN_EGG = spawnEgg("cultist_leader_spawn_egg", EldritchEntities.CULTIST_LEADER);
+    public static final DeferredItem<SpawnEggItem> CULTIST_PORTAL_SPAWN_EGG = spawnEgg("cultist_portal_spawn_egg", EldritchEntities.CULTIST_PORTAL);
+    public static final DeferredItem<SpawnEggItem> TAINTACLE_GIANT_SPAWN_EGG = spawnEgg("taintacle_giant_spawn_egg", EldritchEntities.TAINTACLE_GIANT);
     public static final DeferredItem<SpawnEggItem> INHABITED_ZOMBIE_SPAWN_EGG = spawnEgg("inhabited_zombie_spawn_egg", ModEntities.INHABITED_ZOMBIE);
     public static final DeferredItem<SpawnEggItem> THAUMIC_SLIME_SPAWN_EGG = spawnEgg("thaumic_slime_spawn_egg", ModEntities.THAUMIC_SLIME);
     public static final DeferredItem<SpawnEggItem> TAINT_SPIDER_SPAWN_EGG = spawnEgg("taint_spider_spawn_egg", ModEntities.TAINT_SPIDER);

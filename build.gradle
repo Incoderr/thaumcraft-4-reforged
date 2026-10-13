@@ -58,6 +58,8 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
+            programArgument '--packs'
+            programArgument file('src/gametest/packs').absolutePath
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {

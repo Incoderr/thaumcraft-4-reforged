@@ -72,6 +72,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ELDRITCH_GUARDIAN_DEATH = register("egdeath");
     public static final DeferredHolder<SoundEvent, SoundEvent> ELDRITCH_GUARDIAN_SCREECH = register("egscreech");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHANT = register("chant");
+    public static final DeferredHolder<SoundEvent, SoundEvent> EVIL_PORTAL = register("evilportal");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLY = register("fly");
 
     private ModSounds() {

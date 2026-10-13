@@ -348,6 +348,8 @@ class Validator:
             if key in ("target", "output") and value == "minecraft:main":
                 return "skip"
         if value.startswith("#"):
+            if key == "infiniburn":
+                return "tag:block"
             if "matching_block_tag" in keys:
                 return "tag:block"
             if file_kind == "block_tag" or key in ("blocks", "block"):

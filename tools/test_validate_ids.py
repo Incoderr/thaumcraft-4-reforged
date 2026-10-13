@@ -50,6 +50,12 @@ class BlockStateValidatorTests(unittest.TestCase):
             self.validator.problems,
         )
 
+    def test_dimension_infiniburn_is_a_block_tag(self):
+        self.assertEqual(
+            "tag:block",
+            self.validator.classify("#minecraft:infiniburn_overworld", ["infiniburn"], "other"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

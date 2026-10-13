@@ -1,0 +1,248 @@
+import json
+import shutil
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+NS = "thaumcraft"
+
+BLOCKS = {
+    "eldritch_altar": ("obsidiantile", "tile.blockEldritch.0.name"),
+    "eldritch_obelisk": ("obsidiantile", "tile.blockEldritch.1.name"),
+    "eldritch_capstone": ("obsidiantile", "tile.blockEldritch.3.name"),
+    "glowing_crusted_stone": ("es_i_1", "tile.blockEldritch.4.name"),
+    "glyphed_stone": ("es_i_2", "tile.blockEldritch.5.name"),
+    "ancient_doorway": ("deco_3", "tile.blockEldritch.7.name"),
+    "ancient_locking_mechanism": ("deco_2", "tile.blockEldritch.8.name"),
+    "crusted_opening": ("crust", "tile.blockEldritch.9.name"),
+    "runed_stone": ("es_5", "tile.blockEldritch.10.name"),
+    "eldritch_portal": ("item/blank", "tile.blockPortalEldritch.name"),
+    "eldritch_nothing": ("item/blank", None),
+}
+
+ITEMS = {
+    "eldritch_eye": ("eldritch_object", "item.ItemEldritchObject.0.name"),
+    "crimson_rites": ("crimson_rites", "item.ItemEldritchObject.1.name"),
+    "runed_tablet": ("eldritch_object_2", "item.ItemEldritchObject.2.name"),
+    "primordial_pearl": ("eldritch_object_3", "item.ItemEldritchObject.3.name"),
+    "eldritch_obelisk_placer": ("ob_placer", "item.ItemEldritchObject.4.name"),
+}
+
+SPAWN_EGGS = {
+    "eldritch_warden_spawn_egg": ("EldritchWarden", 0x222222, 0x404040, "Eldritch Warden Spawn Egg"),
+    "eldritch_golem_spawn_egg": ("EldritchGolem", 0x555555, 0x888888, "Eldritch Golem Spawn Egg"),
+    "cultist_leader_spawn_egg": ("CultistLeader", 0x8B0000, 0xFF5055, "Cultist Leader Spawn Egg"),
+    "cultist_portal_spawn_egg": ("CultistPortal", 0x550000, 0xFF5055, "Cultist Portal Spawn Egg"),
+    "taintacle_giant_spawn_egg": ("TaintacleGiant", 0x550050, 0x800080, "Giant Taintacle Spawn Egg"),
+}
+
+RUSSIAN_SPAWN_EGGS = {
+    "eldritch_warden_spawn_egg": "Яйцо призыва эльдрич-стража",
+    "eldritch_golem_spawn_egg": "Яйцо призыва древнего голема",
+    "cultist_leader_spawn_egg": "Яйцо призыва претора",
+    "cultist_portal_spawn_egg": "Яйцо призыва багрового портала",
+    "taintacle_giant_spawn_egg": "Яйцо призыва гигантского заражённого щупальца",
+}
+
+
+def read_legacy_language(path):
+    values = {}
+    if not path.exists():
+        return values
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip()
+    return values
+
+
+def modern_key(kind, name):
+    return f"{kind}.{NS}.{name}"
+
+
+def copy_legacy_texture(ctx, name, folder):
+    source = ROOT / "reference" / "decompiled" / "assets" / NS / "textures" / folder / f"{name}.png"
+    target = ctx.ASSETS / "textures" / ("block" if folder == "blocks" else "item") / f"{name}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+
+
+def generate_spawn_egg_texture(ctx, name, base_color, spot_color):
+    from PIL import Image
+
+    egg_shape = [
+        "................", "......####......", ".....######.....", "....########....",
+        "....########....", "...##########...", "...##########...", "..############..",
+        "..############..", "..############..", "..############..", "..############..",
+        "...##########...", "...##########...", "....########....", "......####......",
+    ]
+    spots = {(6, 3), (9, 5), (5, 7), (10, 9), (7, 11), (4, 10), (11, 6), (8, 8), (6, 13)}
+    highlights = {(5, 4), (6, 4), (5, 5)}
+    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for y in range(16):
+        for x in range(16):
+            if egg_shape[y][x] != "#":
+                continue
+            color = spot_color if (x, y) in spots else base_color
+            if (x, y) in highlights:
+                factor = 1.3
+            elif x == 0 or y == 0 or egg_shape[y][x - 1] != "#" or egg_shape[y - 1][x] != "#":
+                factor = 0.6
+            elif x == 15 or y == 15 or egg_shape[y][x + 1] != "#" or egg_shape[y + 1][x] != "#":
+                factor = 0.85
+            else:
+                factor = 1.0
+            channels = [min(255, int(((color >> shift) & 0xFF) * factor)) for shift in (16, 8, 0)]
+            image.putpixel((x, y), (*channels, 255))
+    target = ctx.ASSETS / "textures" / "item" / f"{name}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    image.save(target)
+
+
+def generate(ctx):
+    assets = ctx.ASSETS
+    data = ctx.DATA
+    for texture in {texture.removeprefix("item/") for texture, _ in BLOCKS.values()}:
+        if texture != "blank" and not (ctx.SOURCE_TEXTURES / "block" / f"{texture}.png").exists():
+            copy_legacy_texture(ctx, texture, "blocks")
+    for texture in {texture for texture, _ in ITEMS.values()}:
+        if not (ctx.SOURCE_TEXTURES / "item" / f"{texture}.png").exists():
+            copy_legacy_texture(ctx, texture, "items")
+    for name, (texture, _) in BLOCKS.items():
+        model_name = f"{name}_block"
+        texture_id = f"{NS}:{texture if "/" in texture else "block/" + texture}"
+        if name in {"glowing_crusted_stone", "glyphed_stone"}:
+            ctx.block_model(model_name, {
+                "textures": {"particle": texture_id, "all": texture_id},
+                "elements": [{
+                    "from": [1, 1, 1],
+                    "to": [15, 15, 15],
+                    "faces": {
+                        "down": {"texture": "#all", "cullface": "down"},
+                        "up": {"texture": "#all", "cullface": "up"},
+                        "north": {"texture": "#all", "cullface": "north"},
+                        "south": {"texture": "#all", "cullface": "south"},
+                        "west": {"texture": "#all", "cullface": "west"},
+                        "east": {"texture": "#all", "cullface": "east"},
+                    },
+                }],
+            })
+        elif name == "ancient_locking_mechanism":
+            ctx.block_model(model_name, {
+                "textures": {
+                    "particle": texture_id,
+                    "up": f"{NS}:block/deco_3",
+                    "down": f"{NS}:block/deco_3",
+                    "north": f"{NS}:block/deco_2",
+                    "south": f"{NS}:block/deco_3",
+                    "west": f"{NS}:block/deco_3",
+                    "east": f"{NS}:block/deco_3",
+                },
+                "elements": [{"from": [0, 0, 0], "to": [16, 16, 16], "faces": {
+                    "down": {"texture": "#down"}, "up": {"texture": "#up"},
+                    "north": {"texture": "#north"}, "south": {"texture": "#south"},
+                    "west": {"texture": "#west"}, "east": {"texture": "#east"},
+                }}],
+            })
+        else:
+            ctx.block_model(model_name, {"parent": "minecraft:block/cube_all", "textures": {"all": texture_id}})
+        if name == "ancient_locking_mechanism":
+            variants = {}
+            for facing, rotation in (("north", 0), ("east", 90), ("south", 180), ("west", 270), ("up", 0), ("down", 0)):
+                for half in ("lower", "upper"):
+                    variant = {"model": f"{NS}:block/{model_name}"}
+                    if rotation:
+                        variant["y"] = rotation
+                    variants[f"facing={facing},part={half}"] = variant
+            ctx.blockstate(name, {"variants": variants})
+        else:
+            ctx.blockstate(name, {"multipart": [{"apply": {"model": f"{NS}:block/{model_name}"}}]})
+        if name == "glowing_crusted_stone":
+            ctx.block_item(name, model=f"{NS}:block/{model_name}")
+        if name == "glowing_crusted_stone":
+            ctx.self_drop(name)
+        elif name == "glyphed_stone":
+            ctx.write_loot(name, [{"rolls": 1, "entries": [{"type": "minecraft:item", "name": f"{NS}:knowledge_fragment"}]}])
+    for name, texture in {
+        "eldritch_eye": "eldritch_object",
+        "crimson_rites": "crimson_rites",
+        "runed_tablet": "eldritch_object_2",
+        "primordial_pearl": "eldritch_object_3",
+        "eldritch_obelisk_placer": "ob_placer",
+    }.items():
+        ctx.generated_item(name, texture)
+    for name, (_, base_color, spot_color, _) in SPAWN_EGGS.items():
+        generate_spawn_egg_texture(ctx, name, base_color, spot_color)
+        ctx.generated_item(name, name)
+
+    dimension_type = {
+        "ambient_light": 0.0,
+        "attributes": {
+            "minecraft:gameplay/bed_rule": {"can_set_spawn": "never", "can_sleep": "never", "destroy_on_use": True},
+            "minecraft:gameplay/can_start_raid": False,
+            "minecraft:gameplay/respawn_anchor_works": False,
+            "minecraft:visual/ambient_light_color": "#000000",
+            "minecraft:visual/fog_color": "#000000",
+            "minecraft:visual/fog_end_distance": 32.0,
+            "minecraft:visual/fog_start_distance": 0.0,
+            "minecraft:visual/sky_color": "#000000",
+            "minecraft:visual/sky_light_color": "#000000",
+            "minecraft:visual/sky_light_factor": 0.0,
+        },
+        "cardinal_light": "default",
+        "coordinate_scale": 1.0,
+        "has_ceiling": True,
+        "has_ender_dragon_fight": False,
+        "has_fixed_time": True,
+        "has_skylight": False,
+        "height": 256,
+        "infiniburn": "#minecraft:infiniburn_overworld",
+        "logical_height": 256,
+        "min_y": 0,
+        "monster_spawn_block_light_limit": 0,
+        "monster_spawn_light_level": 0,
+        "skybox": "none",
+    }
+    ctx.write(data / NS / "dimension_type" / "outer_lands.json", dimension_type)
+    ctx.write(data / NS / "dimension" / "outer_lands.json", {
+        "type": f"{NS}:outer_lands",
+        "generator": {
+            "type": f"{NS}:outer_lands",
+            "biome_source": {"type": "minecraft:fixed", "biome": f"{NS}:eldritch"},
+        },
+    })
+
+    biome_path = data / NS / "worldgen" / "biome" / "eldritch.json"
+    biome = json.loads(biome_path.read_text(encoding="utf-8"))
+    spawns = biome["attributes"]["minecraft:gameplay/natural_mob_spawns"]["argument"]["spawns_by_category"]["monster"]
+    spawns[:] = [
+        {"type": f"{NS}:inhabited_zombie", "count": 1, "weight": 1},
+        {"type": f"{NS}:eldritch_guardian", "count": 1, "weight": 1},
+    ]
+    ctx.write(biome_path, biome)
+
+    locale_files = sorted((ctx.SOURCE_TEXTURES.parent / "lang").glob("*.json"))
+    legacy_lang_root = ROOT / "reference" / "decompiled" / "assets" / NS / "lang"
+    for locale_path in locale_files:
+        locale = locale_path.stem
+        legacy_locale = locale.split("_")[0] + "_" + locale.split("_")[1].upper()
+        legacy = read_legacy_language(legacy_lang_root / f"{legacy_locale}.lang")
+        translations = json.loads(locale_path.read_text(encoding="utf-8"))
+        for name, (_, old_key) in BLOCKS.items():
+            if old_key and old_key in legacy:
+                translations[modern_key("block", name)] = legacy[old_key]
+        for name, (_, old_key) in ITEMS.items():
+            if old_key in legacy:
+                translations[modern_key("item", name)] = legacy[old_key]
+        for name, (entity_name, _, _, english) in SPAWN_EGGS.items():
+            if locale == "en_us":
+                translations[modern_key("item", name)] = english
+            elif locale == "ru_ru":
+                translations[modern_key("item", name)] = RUSSIAN_SPAWN_EGGS[name]
+            else:
+                entity_text = legacy.get(f"entity.Thaumcraft.{entity_name}.name", "")
+                entity_text = entity_text.replace("%s", "").replace("%d", "").strip(" .,-_:")
+                if not entity_text:
+                    entity_text = legacy.get("entity.Thaumcraft.EldritchGuardian.name", "").strip()
+                translations[modern_key("item", name)] = f"{entity_text} Spawn Egg" if entity_text else english
+        locale_path.write_text(json.dumps(translations, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

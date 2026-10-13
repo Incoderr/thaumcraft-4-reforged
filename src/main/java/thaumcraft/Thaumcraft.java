@@ -80,6 +80,9 @@ public class Thaumcraft {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModEntities.register(modEventBus);
+        thaumcraft.registry.EldritchContent.register(modEventBus);
+        thaumcraft.registry.EldritchEntities.register(modEventBus);
+        thaumcraft.registry.EldritchWorld.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         ModSounds.register(modEventBus);
         ModFeatures.register(modEventBus);
@@ -100,6 +103,10 @@ public class Thaumcraft {
         ArcaneGameTests.register(modEventBus);
         InfusionGameTests.register(modEventBus);
         thaumcraft.test.GolemGameTests.register(modEventBus);
+        thaumcraft.test.MazeGameTests.register(modEventBus);
+        thaumcraft.test.EldritchGameTests.register(modEventBus);
+        thaumcraft.test.BossGameTests.register(modEventBus);
+        thaumcraft.test.EldritchFieldGameTests.register(modEventBus);
         ArmorGameTests.register(modEventBus);
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);
