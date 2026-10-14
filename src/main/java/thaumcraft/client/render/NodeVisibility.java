@@ -21,7 +21,8 @@ public final class NodeVisibility {
     }
 
     public static boolean holdsThaumometer(Player viewer) {
-        return viewer.getMainHandItem().is(ModItems.THAUMOMETER.get()) || viewer.getOffhandItem().is(ModItems.THAUMOMETER.get());
+        // Only the main-hand scanner has a first-person glass/readout renderer.
+        return viewer.getMainHandItem().is(ModItems.THAUMOMETER.get());
     }
 
     public static boolean isVisibleTo(float fov, Entity entity, double x, double y, double z) {
@@ -55,7 +56,7 @@ public final class NodeVisibility {
             if (wearsRevealer(player)) {
                 return 64.0;
             }
-            if (holdsThaumometer(player) && isVisibleTo(0.44F, viewer, blockX, blockY, blockZ)) {
+            if (holdsThaumometer(player) && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
                 return 48.0;
             }
         }

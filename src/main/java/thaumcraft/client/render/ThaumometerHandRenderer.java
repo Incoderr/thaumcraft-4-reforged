@@ -56,36 +56,17 @@ public final class ThaumometerHandRenderer {
         PoseStack poseStack = event.getPoseStack();
         SubmitNodeCollector collector = event.getSubmitNodeCollector();
         int light = event.getPackedLight();
-        float partialTick = event.getPartialTick();
         float swing = event.getSwingProgress();
         float hidden = event.getEquipProgress();
-
-        poseStack.pushPose();
-        float swingSqrt = Mth.sin(Mth.sqrt(swing) * Mth.PI);
-        if (!player.isUsingItem()) {
-            poseStack.translate(-swingSqrt * 0.4F, Mth.sin(Mth.sqrt(swing) * Mth.PI * 2.0F) * 0.2F, -Mth.sin(swing * Mth.PI) * 0.2F);
-        }
-        poseStack.translate(0.7F * 0.8F, -0.65F * 0.8F - hidden * 0.6F, -0.9F * 0.8F);
-        poseStack.rotateDegrees(Axis.YP, 45.0F);
-        poseStack.rotateDegrees(Axis.YP, -Mth.sin(swing * swing * Mth.PI) * 20.0F);
-        poseStack.rotateDegrees(Axis.ZP, -swingSqrt * 20.0F);
-        poseStack.rotateDegrees(Axis.XP, -swingSqrt * 80.0F);
-        poseStack.scale(0.4F, 0.4F, 0.4F);
-        poseStack.translate(-0.5F, -0.5F, -0.5F);
-
-        poseStack.pushPose();
-        poseStack.translate(1.0F, 0.75F, -1.0F);
-        poseStack.rotateDegrees(Axis.YN, 135.0F);
-        float xBob = Mth.lerp(partialTick, player.xBobO, player.xBob);
-        float yBob = Mth.lerp(partialTick, player.yBobO, player.yBob);
-        poseStack.rotateDegrees(Axis.XP, (player.getViewXRot(partialTick) - xBob) * 0.1F);
-        poseStack.rotateDegrees(Axis.YP, (player.getViewYRot(partialTick) - yBob) * 0.1F);
-        poseStack.translate(-0.7F * 0.8F, 0.65F * 0.8F + hidden * 1.5F, 0.9F * 0.8F);
-        poseStack.rotateDegrees(Axis.YP, 90.0F);
-        poseStack.translate(0.0F, 0.0F, -0.9F * 0.8F);
-        poseStack.rotateDegrees(Axis.YP, 90.0F);
-
         AvatarRenderState avatar = event.getPlayerState().avatarRenderState;
+
+        poseStack.pushPose();
+        applyEquipTransform(poseStack, swing, hidden, avatar != null && avatar.isUsingItem);
+
+        poseStack.pushPose();
+        var hands = event.getPlayerState().firstPersonHandsAndItems;
+        applyGripTransform(poseStack, hands.viewXRot - hands.xBob, hands.viewYRot - hands.yBob);
+
         if (avatar != null) {
             poseStack.pushPose();
             poseStack.scale(5.0F, 5.0F, 5.0F);
@@ -105,10 +86,7 @@ public final class ThaumometerHandRenderer {
             poseStack.popPose();
         }
 
-        poseStack.rotateDegrees(Axis.ZP, 90.0F);
-        poseStack.translate(0.4F, -0.4F, 0.0F);
-        poseStack.scale(2.0F, 2.0F, 2.0F);
-
+        applyModelTransform(poseStack);
         ThaumometerItemRenderer.submitModel(collector, poseStack, light);
         ThaumometerItemRenderer.beginScreen(collector, poseStack);
         renderReadout(minecraft, player, poseStack, collector);
@@ -116,6 +94,39 @@ public final class ThaumometerHandRenderer {
 
         poseStack.popPose();
         poseStack.popPose();
+    }
+
+    static void applyEquipTransform(PoseStack poseStack, float swing, float hidden, boolean usingItem) {
+        float swingSqrt = Mth.sin(Mth.sqrt(swing) * Mth.PI);
+        if (!usingItem) {
+            poseStack.translate(-swingSqrt * 0.4F, Mth.sin(Mth.sqrt(swing) * Mth.PI * 2.0F) * 0.2F, -Mth.sin(swing * Mth.PI) * 0.2F);
+        }
+        poseStack.translate(0.7F * 0.8F, -0.65F * 0.8F - hidden * 1.5F, -0.9F * 0.8F);
+        poseStack.rotateDegrees(Axis.YP, 45.0F);
+        poseStack.rotateDegrees(Axis.YP, -Mth.sin(swing * swing * Mth.PI) * 20.0F);
+        poseStack.rotateDegrees(Axis.ZP, -swingSqrt * 20.0F);
+        poseStack.rotateDegrees(Axis.XP, -swingSqrt * 80.0F);
+        poseStack.scale(0.4F, 0.4F, 0.4F);
+        poseStack.translate(-0.5F, -0.5F, -0.5F);
+    }
+
+    static void applyGripTransform(PoseStack poseStack, float pitchBob, float yawBob) {
+        poseStack.translate(1.0F, 0.75F, -1.0F);
+        poseStack.rotateDegrees(Axis.YN, 135.0F);
+        poseStack.rotateDegrees(Axis.XP, pitchBob * 0.1F);
+        poseStack.rotateDegrees(Axis.YP, yawBob * 0.1F);
+        // The outer transform already lowers the instrument during a slot change.
+        // An equip offset here used to cancel that movement after the 0.4 scale.
+        poseStack.translate(-0.7F * 0.8F, 0.65F * 0.8F, 0.9F * 0.8F);
+        poseStack.rotateDegrees(Axis.YP, 90.0F);
+        poseStack.translate(0.0F, 0.0F, -0.9F * 0.8F);
+        poseStack.rotateDegrees(Axis.YP, 90.0F);
+    }
+
+    static void applyModelTransform(PoseStack poseStack) {
+        poseStack.rotateDegrees(Axis.ZP, 90.0F);
+        poseStack.translate(0.4F, -0.4F, 0.0F);
+        poseStack.scale(2.0F, 2.0F, 2.0F);
     }
 
     private static void renderReadout(Minecraft minecraft, LocalPlayer player, PoseStack poseStack, SubmitNodeCollector collector) {

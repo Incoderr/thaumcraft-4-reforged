@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
@@ -40,6 +41,7 @@ import thaumcraft.node.NodeBlockEntity;
 import thaumcraft.node.NodeGenerator;
 import thaumcraft.node.NodeType;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.registry.ModItems;
 import thaumcraft.network.PlayerCompletePayload;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.PlayerKnowledge;
@@ -50,13 +52,14 @@ import thaumcraft.research.ScanManager;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
 import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.WandTriggers;
 import thaumcraft.wand.Wands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets"};
+    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ThaumcraftGameTests::wandTapsNode);
@@ -66,6 +69,7 @@ public final class ThaumcraftGameTests {
         FUNCTIONS.register(TESTS[4], () -> ThaumcraftGameTests::researchPurchase);
         FUNCTIONS.register(TESTS[5], () -> ThaumcraftGameTests::scanAwardCaps);
         FUNCTIONS.register(TESTS[6], () -> ThaumcraftGameTests::modernScanTargets);
+        FUNCTIONS.register(TESTS[7], () -> ThaumcraftGameTests::wandCastingVisualState);
     }
 
     private ThaumcraftGameTests() {
@@ -182,6 +186,24 @@ public final class ThaumcraftGameTests {
 
     private static int totalVis(ItemStack wand) {
         return Wands.getAllVis(wand).visSize();
+    }
+
+    private static void wandCastingVisualState(GameTestHelper helper) {
+        ItemStack wand = Wands.create(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false);
+        Wands.setFocus(wand, new ItemStack(ModItems.FOCUS_FIRE.get()));
+        Wands.storeVis(wand, Aspect.FIRE, 1000);
+        ItemStack update = wand.copy();
+        Wands.storeVis(update, Aspect.FIRE, 900);
+        helper.assertTrue(wand.getUseAnimation() == ItemUseAnimation.NONE, "casting must not apply the vanilla bow transform");
+        helper.assertTrue(!wand.getItem().shouldCauseReequipAnimation(wand, update, false), "spending vis must not lower the wand");
+        helper.assertValueEqual(1000, Wands.getVis(wand, Aspect.FIRE), "appearance comparison must not modify vis");
+        helper.assertValueEqual(900, Wands.getVis(update, Aspect.FIRE), "appearance comparison must not modify the update");
+        WandKeys.TARGET.set(update, BlockPos.ZERO);
+        helper.assertTrue(!wand.getItem().shouldCauseReequipAnimation(wand, update, false), "node target updates must not lower the wand");
+        helper.assertTrue(wand.getItem().shouldCauseReequipAnimation(wand, update, true), "changing slots must keep equip animation");
+        Wands.setFocus(update, new ItemStack(ModItems.FOCUS_FROST.get()));
+        helper.assertTrue(wand.getItem().shouldCauseReequipAnimation(wand, update, false), "changing focus must update the visible wand");
+        helper.succeed();
     }
 
     private static void wandTapsNode(GameTestHelper helper) {

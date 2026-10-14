@@ -66,10 +66,7 @@ public class ThaumometerItemRenderer implements NoDataSpecialModelRenderer {
 
     public static void beginScreen(SubmitNodeCollector collector, PoseStack poseStack) {
         poseStack.pushPose();
-        poseStack.translate(0.0F, 0.11F, 0.0F);
-        poseStack.rotateDegrees(Axis.XP, 90.0F);
-        poseStack.rotateDegrees(Axis.ZP, 90.0F);
-        poseStack.scale(2.5F, 2.5F, 2.5F);
+        applyScreenTransform(poseStack);
         int light = screenLight(0);
         collector.submitCustomGeometry(poseStack, TcRenderTypes.translucent(SCREEN), (pose, buffer) -> {
             screenVertex(buffer, pose, -0.5F, 0.5F, 0.0F, 1.0F, light);
@@ -77,6 +74,13 @@ public class ThaumometerItemRenderer implements NoDataSpecialModelRenderer {
             screenVertex(buffer, pose, 0.5F, -0.5F, 1.0F, 0.0F, light);
             screenVertex(buffer, pose, -0.5F, -0.5F, 0.0F, 0.0F, light);
         });
+    }
+
+    static void applyScreenTransform(PoseStack poseStack) {
+        poseStack.translate(0.0F, 0.11F, 0.0F);
+        poseStack.rotateDegrees(Axis.XP, 90.0F);
+        poseStack.rotateDegrees(Axis.ZP, 90.0F);
+        poseStack.scale(2.5F, 2.5F, 2.5F);
     }
 
     private static void screenVertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float u, float v, int light) {
