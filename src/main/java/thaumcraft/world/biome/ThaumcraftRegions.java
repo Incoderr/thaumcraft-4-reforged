@@ -15,6 +15,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import terrablender.api.Region;
 import terrablender.api.RegionType;
 import terrablender.api.Regions;
+import thaumcraft.StartupConfig;
 import thaumcraft.Thaumcraft;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
@@ -53,8 +54,10 @@ public final class ThaumcraftRegions {
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            Regions.register(new ReplacingRegion("magical_forest", 3, MAGICAL_FOREST, Biomes.FOREST, Biomes.BIRCH_FOREST));
-            Regions.register(new ReplacingRegion("tainted_land", 1, TAINTED_LAND, Biomes.PLAINS));
+            Regions.register(new ReplacingRegion("magical_forest", StartupConfig.magicalForestWeight(), MAGICAL_FOREST, Biomes.FOREST, Biomes.BIRCH_FOREST));
+            if (StartupConfig.genTaint()) {
+                Regions.register(new ReplacingRegion("tainted_land", StartupConfig.taintWeight(), TAINTED_LAND, Biomes.PLAINS));
+            }
         });
     }
 }

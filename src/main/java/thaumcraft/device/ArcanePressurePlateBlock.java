@@ -34,6 +34,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.wand.WandInteractable;
 import thaumcraft.wand.WandItem;
 
@@ -217,7 +218,7 @@ public class ArcanePressurePlateBlock extends Block implements EntityBlock, Wand
             return InteractionResult.PASS;
         }
         OwnedBlockEntity owned = OwnedBlockEntity.at(level, pos);
-        if (WardedConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
+        if (Config.wardedStone() && (owned == null || !owned.isOwner(player.getUUID()))) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {

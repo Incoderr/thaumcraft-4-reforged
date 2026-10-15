@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.wand.WandInteractable;
 
 public class WardedGlassBlock extends TransparentBlock implements EntityBlock, WandInteractable {
@@ -51,7 +52,7 @@ public class WardedGlassBlock extends TransparentBlock implements EntityBlock, W
     @Override
     public InteractionResult onWandUseOn(Level level, BlockPos pos, Player player, ItemStack wand, Direction side) {
         OwnedBlockEntity owned = OwnedBlockEntity.at(level, pos);
-        if (WardedConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
+        if (Config.wardedStone() && (owned == null || !owned.isOwner(player.getUUID()))) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {

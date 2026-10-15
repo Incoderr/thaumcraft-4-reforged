@@ -20,7 +20,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.registry.ModBlocks;
-import thaumcraft.world.WorldGenConfig;
+import thaumcraft.Config;
 import thaumcraft.world.gen.BiomeHandler;
 
 public final class NodeGenerator {
@@ -54,7 +54,7 @@ public final class NodeGenerator {
             type = NodeType.PURE;
         } else if (eerie) {
             type = NodeType.DARK;
-        } else if (random.nextInt(WorldGenConfig.specialNodeRarity) == 0) {
+        } else if (random.nextInt(Config.specialNodeRarity()) == 0) {
             switch (random.nextInt(10)) {
                 case 0, 1, 2 -> type = NodeType.DARK;
                 case 3, 4, 5 -> type = NodeType.UNSTABLE;
@@ -63,7 +63,7 @@ public final class NodeGenerator {
             }
         }
         NodeModifier modifier = null;
-        if (random.nextInt(WorldGenConfig.specialNodeRarity / 2) == 0) {
+        if (random.nextInt(Config.specialNodeRarity() / 2) == 0) {
             modifier = switch (random.nextInt(3)) {
                 case 0 -> NodeModifier.BRIGHT;
                 case 1 -> NodeModifier.PALE;
@@ -93,7 +93,7 @@ public final class NodeGenerator {
         }
         for (int index = 0; index < 3; index++) {
             if (random.nextBoolean()) {
-                if (random.nextInt(WorldGenConfig.specialNodeRarity) == 0) {
+                if (random.nextInt(Config.specialNodeRarity()) == 0) {
                     aspects.merge(COMPLEX_ASPECTS.get(random.nextInt(COMPLEX_ASPECTS.size())), 1);
                 } else {
                     aspects.merge(BASIC_ASPECTS.get(random.nextInt(BASIC_ASPECTS.size())), 1);

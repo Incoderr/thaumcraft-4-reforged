@@ -16,6 +16,7 @@ import net.minecraft.util.RandomSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import thaumcraft.Config;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.effect.WarpEffectEvents;
@@ -47,7 +48,7 @@ public final class WarpEvents {
     }
 
     static void checkWarpEvent(ServerPlayer player, RandomSource random) {
-        if (shouldSkipWarpEvents(player, ResearchConfig.WUSS_MODE)) {
+        if (shouldSkipWarpEvents(player, Config.wuss())) {
             return;
         }
         ServerLevel level = player.level();

@@ -382,6 +382,8 @@ def convert_lang(id_map):
             result[key] = value
             if language == "en_us":
                 prefixes[".".join(key.split(".")[:2])] += 1
+        for extra_dir_path in sorted(LANG_EXTRA.glob(f"*/{language}.json")):
+            result.update(json.loads(extra_dir_path.read_text(encoding="utf-8")))
         extra_path = LANG_EXTRA / f"{language}.json"
         if extra_path.exists():
             result.update(json.loads(extra_path.read_text(encoding="utf-8")))

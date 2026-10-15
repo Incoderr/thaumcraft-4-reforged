@@ -31,6 +31,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.wand.WandInteractable;
@@ -172,7 +173,7 @@ public class ArcaneDoorBlock extends DoorBlock implements EntityBlock, WandInter
     @Override
     public InteractionResult onWandUseOn(Level level, BlockPos pos, Player player, ItemStack wand, Direction side) {
         OwnedBlockEntity owned = OwnedBlockEntity.at(level, pos);
-        if (WardedConfig.WARDED_STONE && (owned == null || !owned.isOwner(player.getUUID()))) {
+        if (Config.wardedStone() && (owned == null || !owned.isOwner(player.getUUID()))) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide()) {

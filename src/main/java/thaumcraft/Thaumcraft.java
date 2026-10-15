@@ -5,6 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.crafting.ConfigRecipes;
@@ -59,6 +60,8 @@ public class Thaumcraft {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.SYNCED, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.STARTUP, StartupConfig.SPEC);
         thaumcraft.entity.golem.GolemKeys.init();
         AspectKeys.init();
         WandKeys.init();
@@ -118,6 +121,7 @@ public class Thaumcraft {
         MachineGameTests.register(modEventBus);
         thaumcraft.test.MirrorGameTests.register(modEventBus);
         thaumcraft.entity.projectile.ProjectileGameTests.register(modEventBus);
+        thaumcraft.test.ConfigGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {

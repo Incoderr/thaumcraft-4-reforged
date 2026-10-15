@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.client.platform.GuiBlit;
 import thaumcraft.wand.WandVis;
 import thaumcraft.wand.Wands;
@@ -58,7 +59,9 @@ public final class WandHud {
         FocusItem focus = Wands.getFocus(stack);
         ItemStack focusStack = Wands.getFocusItem(stack);
         AspectList focusCost = focus == null ? null : focus.getVisCost(focusStack);
+        boolean dialBottom = ClientConfig.dialBottom();
         graphics.pose().pushMatrix();
+        graphics.pose().translate(0.0F, dialBottom ? graphics.guiHeight() - 32 : 0);
         graphics.pose().pushMatrix();
         graphics.pose().scale(0.5F, 0.5F);
         blit(graphics, 0, 0, 0, 0, 64, 64, 0xFFFFFFFF);
@@ -68,7 +71,9 @@ public final class WandHud {
         for (Aspect aspect : Aspect.getPrimalAspects()) {
             int amount = current.get(aspect);
             graphics.pose().pushMatrix();
-            graphics.pose().rotate((float) Math.toRadians(90.0F));
+            if (!dialBottom) {
+                graphics.pose().rotate((float) Math.toRadians(90.0F));
+            }
             graphics.pose().rotate((float) Math.toRadians(-15 + count * 24));
             graphics.pose().translate(0.0F, -32.0F);
             graphics.pose().scale(0.5F, 0.5F);

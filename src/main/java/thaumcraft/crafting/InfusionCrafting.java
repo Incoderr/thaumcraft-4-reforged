@@ -15,6 +15,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.infusion.InfusionKeys;
@@ -57,7 +58,7 @@ public final class InfusionCrafting {
 
     public static @Nullable Plan findRecipe(List<ItemStack> items, ItemStack central, Player player) {
         for (InfusionRecipe recipe : TcRecipes.all(InfusionRecipe.class)) {
-            if (InfusionRunicAugmentRecipe.isDisplayRecipe(recipe.key())) {
+            if (InfusionRunicAugmentRecipe.isDisplayRecipe(recipe.key()) || !Config.allowMirrors() && "Mirror".equals(recipe.key())) {
                 continue;
             }
             if (matches(recipe, items, central, player)) {

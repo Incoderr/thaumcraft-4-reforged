@@ -5,9 +5,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.fx.ClientFx;
 import thaumcraft.client.platform.ModRenderPipelines;
@@ -34,6 +37,8 @@ import thaumcraft.research.ResearchClientHooks;
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
 public final class ThaumcraftClient {
     public ThaumcraftClient(IEventBus modEventBus, ModContainer container) {
+        container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
+        container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         ClientPayloadHandlers.register();
         Fx.set(new ClientFx());
         MachineFx.set(new MachineClientFx());

@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import thaumcraft.Config;
 import thaumcraft.alchemy.FluxGooBlock;
 import thaumcraft.effect.EffectHooks;
 import thaumcraft.entity.TaintedMob;
@@ -53,7 +54,7 @@ public class TaintBlock extends Block {
             return;
         }
         int adjacent = TaintSpread.adjacentTaint(level, pos);
-        TaintBiomes.spread(level, pos, adjacent, 200);
+        TaintBiomes.spread(level, pos, adjacent, Config.taintSpreadRate());
         if (kind == Kind.CRUST) {
             if (tryToFall(level, pos, pos)) {
                 return;
@@ -76,7 +77,7 @@ public class TaintBlock extends Block {
         BlockPos target = pos.offset(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
         if (TaintBiomes.isTainted(level, target)) {
             TaintSpread.spreadFibres(level, target);
-            if (kind == Kind.CRUST && level.isEmptyBlock(pos.above()) && random.nextInt(200) == 0) {
+            if (kind == Kind.CRUST && Config.spawnTaintSpore() && level.isEmptyBlock(pos.above()) && random.nextInt(200) == 0) {
                 AABB nearbySwarmer = new AABB(pos).inflate(16.0);
                 if (level.getEntitiesOfClass(TaintSwarmer.class, nearbySwarmer).isEmpty()) {
                     TaintSwarmer swarmer = ModEntities.TAINT_SPORE_SWARMER.get().create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);

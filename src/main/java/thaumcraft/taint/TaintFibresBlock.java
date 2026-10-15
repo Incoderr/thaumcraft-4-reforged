@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import thaumcraft.Config;
 import thaumcraft.effect.EffectHooks;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModSounds;
@@ -73,13 +74,13 @@ public class TaintFibresBlock extends Block {
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int adjacent = TaintSpread.adjacentTaint(level, pos);
-        TaintBiomes.spread(level, pos, adjacent, 200);
+        TaintBiomes.spread(level, pos, adjacent, Config.taintSpreadRate());
         if (kind == Kind.FIBRES && TaintSpread.onlyAdjacentToTaint(level, pos) || !TaintBiomes.isTainted(level, pos)) {
             level.removeBlock(pos, false);
             return;
         }
         boolean selectedTaintTarget = TaintSpread.tick(level, pos);
-        if (selectedTaintTarget && kind == Kind.STALK && random.nextInt(10) == 0 && level.isEmptyBlock(pos.above())) {
+        if (selectedTaintTarget && kind == Kind.STALK && Config.spawnTaintSpore() && random.nextInt(10) == 0 && level.isEmptyBlock(pos.above())) {
             level.setBlockAndUpdate(pos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
             thaumcraft.entity.monster.taint.TaintSpore spore = thaumcraft.entity.monster.taint.TaintSpore.create(level, pos);
             if (spore != null) {

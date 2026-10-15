@@ -6,8 +6,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 
 public final class ResearchCategory {
+    private static final String MIRROR = "MIRROR";
+
     private final String key;
     private final Identifier icon;
     private final Identifier background;
@@ -40,10 +43,16 @@ public final class ResearchCategory {
     }
 
     public Collection<ResearchItem> research() {
-        return Collections.unmodifiableCollection(research.values());
+        if (Config.allowMirrors()) {
+            return Collections.unmodifiableCollection(research.values());
+        }
+        return research.values().stream().filter(item -> !MIRROR.equals(item.key())).toList();
     }
 
     public @Nullable ResearchItem get(String researchKey) {
+        if (MIRROR.equals(researchKey) && !Config.allowMirrors()) {
+            return null;
+        }
         return research.get(researchKey);
     }
 

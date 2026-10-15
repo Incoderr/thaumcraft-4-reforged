@@ -12,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.aspect.AspectRenderer;
 import thaumcraft.client.platform.BrowserDraw;
@@ -44,11 +45,11 @@ public final class ResearchHud {
         Font font = minecraft.font;
         int width = graphics.guiWidth();
         int height = graphics.guiHeight();
-        long delay = ResearchNotifications.NOTIFICATION_DELAY;
+        long delay = ClientConfig.notificationDelay();
         List<ResearchNotifications.Notification> notifications = ResearchNotifications.getListAndUpdate(time);
         int tickCount = minecraft.player == null ? 0 : minecraft.player.tickCount;
         float shift = -8.0F;
-        for (int entry = 0; entry < notifications.size() && entry < ResearchNotifications.NOTIFICATION_MAX; entry++) {
+        for (int entry = 0; entry < notifications.size() && entry < ClientConfig.notificationMax(); entry++) {
             ResearchNotifications.Notification notification = notifications.get(entry);
             int size = font.width(notification.text()) / 2;
             int alpha = 255;
