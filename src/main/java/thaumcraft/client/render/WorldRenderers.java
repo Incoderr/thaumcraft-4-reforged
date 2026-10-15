@@ -19,6 +19,7 @@ public final class WorldRenderers {
     static void registerPipelines(RegisterRenderPipelinesEvent event) {
         event.registerPipeline(ModRenderPipelines.ADDITIVE_NO_DEPTH);
         event.registerPipeline(ModRenderPipelines.TRANSLUCENT_NO_DEPTH);
+        event.registerPipeline(ModRenderPipelines.ENTITY_TRANSLUCENT_NO_DEPTH);
     }
 
     @SubscribeEvent
