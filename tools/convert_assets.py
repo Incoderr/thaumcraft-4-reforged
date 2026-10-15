@@ -382,9 +382,10 @@ def convert_lang(id_map):
             result[key] = value
             if language == "en_us":
                 prefixes[".".join(key.split(".")[:2])] += 1
-        extra_path = LANG_EXTRA / f"{language}.json"
-        if extra_path.exists():
-            result.update(json.loads(extra_path.read_text(encoding="utf-8")))
+        extra_paths = [LANG_EXTRA / f"{language}.json", *sorted(LANG_EXTRA.glob(f"*/{language}.json"))]
+        for extra_path in extra_paths:
+            if extra_path.exists():
+                result.update(json.loads(extra_path.read_text(encoding="utf-8")))
         results[language] = result
         write_json(ASSETS / "lang" / f"{language}.json", dict(sorted(result.items())))
     for key in sorted(entity_missing):
