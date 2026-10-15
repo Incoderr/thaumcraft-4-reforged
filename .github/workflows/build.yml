@@ -55,7 +55,7 @@ jobs:
           MOD_NAME: ${{ steps.props.outputs.name }}
           VERSION: ${{ steps.props.outputs.version }}
         run: |
-          tag="$VERSION-$MC"
+          tag="$MC"
           notes="$(git log -1 --format='%h: %s')"
           gh release delete "$tag" --cleanup-tag --yes || true
           latest=false
