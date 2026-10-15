@@ -1,4 +1,4 @@
-# Thaumcraft 4 Reforged
+# Thaumcraft 4: Reforged
 
 Порт Thaumcraft 4.2.3.5 (MC 1.7.10, Azanor) на Minecraft 26.3 (`main`), 1.21.1 и 1.19.2 (`mc/*`). Только для личного использования: логика, числа, тексты и ассеты оригинала переносятся 1:1. План и фазы: `PLAN.md`, инвентарь контента: `INVENTORY.md`.
 
@@ -30,7 +30,7 @@
 - Python 3 (`python3`), скрипты в `tools/` без внешних зависимостей
 - Зависимости по версиям: таблица «Решения» в `PLAN.md`
 - Облачная сессия (Linux): JDK 25 из Adoptium в `~/jdk25`, симлинки `/opt/homebrew/opt/openjdk@{25,21}` (скрипты и `gradle.properties` не меняются), оригинальный jar с cursemaven `thaumcraft-223628/2227552`, затем `tools/fetch_1710.py` (Vineflower 1.12 с Maven Central в `tools/cache/vineflower.jar`), `tools/decompile.py tc4|mc1710`; `reference/mc`, `reference/neo` из `build/moddev/artifacts` и `~/.gradle/caches/.../neoforge-*-sources.jar`
-- CI: `.github/workflows/build.yml` из TC3 присутствует (nightly-релиз `nightly-<mc>`, версия Java и MC из `gradle.properties`); выполнение workflow и выпуск nightly здесь не проверялись
+- CI: `.github/workflows/build.yml` публикует релиз `<mod_version>-<mc>` с названием `<mod_name> <mod_version> (Minecraft <mc>)`; имя мода, версия, Java и MC берутся из `gradle.properties`. Текущие имя и версия: `Thaumcraft 4: Reforged`, `1.0`; выполнение публикации здесь не проверялось
 
 ## Справочники (в .gitignore)
 
