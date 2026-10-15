@@ -13,11 +13,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.block.state.BlockState;
+import thaumcraft.Config;
 import thaumcraft.entity.golem.GolemBase;
 import thaumcraft.platform.GolemActions;
 
 public final class LogHarvestGoal extends Goal {
-    private static final int GOLEM_DELAY = 5;
     private final GolemBase golem;
     private final int range;
     private BlockPos target;
@@ -35,7 +35,7 @@ public final class LogHarvestGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!golem.isWorking() || delay >= 0 || golem.tickCount % GOLEM_DELAY != 0 || !golem.getNavigation().isDone()) return false;
+        if (!golem.isWorking() || delay >= 0 || golem.tickCount % Config.golemDelay() != 0 || !golem.getNavigation().isDone()) return false;
         target = findLog();
         if (target == null) return false;
         targetState = golem.level().getBlockState(target);

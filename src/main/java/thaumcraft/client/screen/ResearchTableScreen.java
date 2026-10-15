@@ -19,6 +19,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.blockentity.ResearchTableBlockEntity;
 import thaumcraft.client.aspect.AspectRenderer;
@@ -166,6 +167,9 @@ public class ResearchTableScreen extends AbstractContainerScreen<ResearchTableMe
 
     private void drawOrb(GuiGraphicsExtractor graphics, double x, double y, int color) {
         int part = minecraft.player.tickCount % 8;
+        if (ClientConfig.colorBlind()) {
+            color = ARGB.colorFromFloat(1.0F, ARGB.redFloat(color) / 1.8F, ARGB.greenFloat(color) / 1.8F, ARGB.blueFloat(color) / 1.8F);
+        }
         blit(graphics, AspectRenderer.PARTICLES, (int) x, (int) y, 16, 16, 128 + part * 16, 128, 256, 256, ARGB.opaque(color));
     }
 

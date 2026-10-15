@@ -20,7 +20,7 @@ import net.neoforged.neoforge.common.Tags;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.registry.ModBlocks;
-import thaumcraft.world.WorldGenConfig;
+import thaumcraft.Config;
 import thaumcraft.world.tree.GreatwoodTreeGenerator;
 import thaumcraft.world.tree.SilverwoodTreeGenerator;
 
@@ -59,17 +59,17 @@ public record ThaumcraftWorldGenFeature() implements Feature {
 
     private static void generateSurface(WorldGenLevel level, Random random, int chunkX, int chunkZ, boolean flat) {
         boolean auraGen = false;
-        if (WorldGenConfig.genTrees && !flat) {
+        if (Config.genTrees() && !flat) {
             generateVegetation(level, random, chunkX, chunkZ);
         }
         generateOres(level, random, chunkX, chunkZ);
-        if (WorldGenConfig.genAura) {
+        if (Config.genAura()) {
             if (NodeHooks.templeNode(level, random, chunkX, chunkZ)) {
                 auraGen = true;
             }
             auraGen = NodeHooks.wildNode(level, random, chunkX, chunkZ, auraGen);
         }
-        if (WorldGenConfig.genStructure && !flat) {
+        if (Config.genStructure() && !flat) {
             int x = chunkX * 16 + random.nextInt(16) - 8;
             int z = chunkZ * 16 + random.nextInt(16) - 8;
             int y = height(level, x, z) - 9;
@@ -111,7 +111,7 @@ public record ThaumcraftWorldGenFeature() implements Feature {
     }
 
     private static void generateOres(WorldGenLevel level, Random random, int chunkX, int chunkZ) {
-        if (WorldGenConfig.genCinnibar) {
+        if (Config.genCinnabar()) {
             for (int i = 0; i < 18; i++) {
                 int x = chunkX * 16 + random.nextInt(16);
                 int y = random.nextInt(256 / 5);
@@ -121,7 +121,7 @@ public record ThaumcraftWorldGenFeature() implements Feature {
                 }
             }
         }
-        if (WorldGenConfig.genAmber) {
+        if (Config.genAmber()) {
             for (int i = 0; i < 20; i++) {
                 int x = chunkX * 16 + random.nextInt(16);
                 int z = chunkZ * 16 + random.nextInt(16);
@@ -131,7 +131,7 @@ public record ThaumcraftWorldGenFeature() implements Feature {
                 }
             }
         }
-        if (WorldGenConfig.genInfusedStone) {
+        if (Config.genInfusedStone()) {
             for (int i = 0; i < 8; i++) {
                 int x = chunkX * 16 + random.nextInt(16);
                 int z = chunkZ * 16 + random.nextInt(16);

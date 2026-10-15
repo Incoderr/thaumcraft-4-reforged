@@ -17,7 +17,7 @@ import thaumcraft.registry.ModSounds;
 import thaumcraft.research.Knowledge;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchClientHooks;
-import thaumcraft.research.ResearchConfig;
+import thaumcraft.Config;
 import thaumcraft.research.ResearchItem;
 import thaumcraft.research.ResearchManager;
 
@@ -40,7 +40,7 @@ public class ThaumonomiconItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            if (cheat && ResearchConfig.ALLOW_CHEAT_SHEET) {
+            if (cheat && Config.allowCheatSheet()) {
                 for (ResearchItem item : ResearchCategories.allResearch()) {
                     ResearchManager.complete(serverPlayer, item.key(), false);
                 }

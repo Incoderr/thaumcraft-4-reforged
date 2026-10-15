@@ -12,6 +12,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.network.AspectDiscoveryPayload;
 import thaumcraft.network.AspectPoolPayload;
@@ -22,8 +23,6 @@ import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
 
 public final class ResearchNotifications {
-    public static final long NOTIFICATION_DELAY = 5000L;
-    public static final int NOTIFICATION_MAX = 15;
 
     private static final RandomSource RANDOM = RandomSource.create();
     private static List<Notification> notifications = new ArrayList<>();
@@ -53,8 +52,8 @@ public final class ResearchNotifications {
 
     public static void addNotification(String text, @Nullable Identifier image, int color) {
         long time = now();
-        long timeBonus = notifications.isEmpty() ? NOTIFICATION_DELAY / 2 : 0L;
-        notifications.add(new Notification(text, image, time + NOTIFICATION_DELAY + timeBonus, time + NOTIFICATION_DELAY / 4, color));
+        long timeBonus = notifications.isEmpty() ? ClientConfig.notificationDelay() / 2 : 0L;
+        notifications.add(new Notification(text, image, time + ClientConfig.notificationDelay() + timeBonus, time + ClientConfig.notificationDelay() / 4, color));
     }
 
     public static void addAspectNotification(Aspect aspect) {
@@ -70,7 +69,7 @@ public final class ResearchNotifications {
         for (Notification notification : notifications) {
             if (notification.expire() >= time) {
                 if (!first) {
-                    updated.add(new Notification(notification.text(), notification.image(), time + NOTIFICATION_DELAY, notification.created(), notification.color()));
+                    updated.add(new Notification(notification.text(), notification.image(), time + ClientConfig.notificationDelay(), notification.created(), notification.color()));
                 } else {
                     updated.add(notification);
                 }

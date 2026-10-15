@@ -36,6 +36,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import thaumcraft.Config;
 import thaumcraft.Thaumcraft;
 import thaumcraft.network.ShieldFxPayload;
 import thaumcraft.platform.ModNetwork;
@@ -127,11 +128,12 @@ public final class ChampionModifier {
             ChampionKeys.MODIFIER.set(mob, NORMAL);
             return;
         }
+        boolean champions = Config.championMobs();
         int roll = initialRoll;
-        if (level.getDifficulty() == net.minecraft.world.Difficulty.EASY) {
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.EASY || !champions) {
             roll += 2;
         }
-        if (level.getDifficulty() == net.minecraft.world.Difficulty.HARD) {
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.HARD && champions) {
             roll -= 2;
         }
         var mobX = (int) Math.ceil(mob.getX());
@@ -139,16 +141,18 @@ public final class ChampionModifier {
         var mobZ = (int) Math.ceil(mob.getZ());
         var biome = level.getBiome(new net.minecraft.core.BlockPos(mobX, mobY, mobZ));
         if (biome.is(Tags.Biomes.IS_SPOOKY) || biome.is(Tags.Biomes.IS_NETHER) || biome.is(Tags.Biomes.IS_END)) {
-            roll -= 2;
+            roll -= champions ? 2 : 1;
+        }
+        if (champions || mob instanceof thaumcraft.entity.boss.ThaumcraftBoss) {
+            roll -= Math.max(0, whitelist - 1);
         }
         if (level.dimension().equals(OuterLands.OUTER_LANDS)) {
             roll -= 3;
             var cell = MazeHandler.getCell(level, mobX >> 4, mobZ >> 4);
             if (cell != null && (cell.feature == 6 || cell.feature == 8)) {
-                roll -= 10;
+                roll -= champions ? 10 : 3;
             }
         }
-        roll -= Math.max(0, whitelist - 1);
         if (roll <= 0 && mob.getAttributeBaseValue(Attributes.MAX_HEALTH) >= 10.0) {
             int id = isVanilla(mob, "creeper") ? 0 : level.getRandom().nextInt(NAMES.length);
             assign(mob, id, false);

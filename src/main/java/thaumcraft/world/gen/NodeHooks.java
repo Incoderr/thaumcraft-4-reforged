@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import thaumcraft.block.ObsidianTotemBlock;
 import thaumcraft.node.NodeGenerator;
 import thaumcraft.registry.ModBlocks;
-import thaumcraft.world.WorldGenConfig;
+import thaumcraft.Config;
 
 public final class NodeHooks {
     private NodeHooks() {
@@ -53,7 +53,7 @@ public final class NodeHooks {
     }
 
     private static boolean generateWildNodes(WorldGenLevel level, Random random, int chunkX, int chunkZ, boolean auraGen) {
-        if (WorldGenConfig.genAura && random.nextInt(WorldGenConfig.nodeRarity) == 0 && !auraGen) {
+        if (Config.genAura() && random.nextInt(Config.nodeRarity()) == 0 && !auraGen) {
             int x = chunkX * 16 + random.nextInt(16);
             int z = chunkZ * 16 + random.nextInt(16);
             int q = firstUncoveredY(level, x, z);
@@ -105,7 +105,7 @@ public final class NodeHooks {
     }
 
     public static void totem(WorldGenLevel level, Random random, int chunkX, int chunkZ, boolean auraGen) {
-        if (!WorldGenConfig.genStructure || auraGen || random.nextInt(WorldGenConfig.nodeRarity * 10) != 0) {
+        if (!Config.genStructure() || auraGen || random.nextInt(Config.nodeRarity() * 10) != 0) {
             return;
         }
         int x = chunkX * 16 + random.nextInt(16);

@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.client.geom.BoxGeometry;
@@ -16,7 +17,6 @@ import thaumcraft.client.platform.ItemGeometry;
 
 public final class EssentiaJarRendering {
     private static final Identifier LABEL = Thaumcraft.id("textures/model/label.png");
-    private static final boolean CROOKED = true;
     private static final int WHITE = 0xFFFFFFFF;
 
     private EssentiaJarRendering() {
@@ -74,7 +74,7 @@ public final class EssentiaJarRendering {
         float rotation = (filter.getTag().hashCode() + posX + facing.ordinal()) % 4 - 2;
         poseStack.pushPose();
         poseStack.translate(0.0F, -0.4F, 0.315F);
-        if (CROOKED) {
+        if (ClientConfig.crooked()) {
             poseStack.rotateDegrees(Axis.ZP, rotation);
         }
         poseStack.scale(0.5F, 0.5F, 0.5F);
@@ -82,7 +82,7 @@ public final class EssentiaJarRendering {
         poseStack.popPose();
         poseStack.pushPose();
         poseStack.translate(0.0F, -0.4F, 0.316F);
-        if (CROOKED) {
+        if (ClientConfig.crooked()) {
             poseStack.rotateDegrees(Axis.ZP, rotation);
         }
         poseStack.scale(0.021F, 0.021F, 0.021F);

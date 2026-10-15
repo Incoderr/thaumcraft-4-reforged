@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
+import thaumcraft.Config;
 import thaumcraft.entity.golem.GolemBase;
 import thaumcraft.entity.golem.GolemBobber;
 
@@ -67,7 +68,7 @@ public final class FishingGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!golem.isWorking() || target != null || count > 0 || golem.tickCount % 5 != 0 || !golem.getNavigation().isDone()) return false;
+        if (!golem.isWorking() || target != null || count > 0 || golem.tickCount % Config.golemDelay() != 0 || !golem.getNavigation().isDone()) return false;
         if (bobber != null && bobber.isAlive()) bobber.discard();
         BlockPos water = findWater();
         if (water == null) return false;

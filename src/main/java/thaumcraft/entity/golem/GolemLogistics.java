@@ -10,7 +10,6 @@ import net.minecraft.world.level.Level;
 import thaumcraft.platform.Transfer;
 
 final class GolemLogistics {
-    static final int GOLEM_DELAY = 5;
 
     private GolemLogistics() {
     }

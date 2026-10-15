@@ -20,13 +20,13 @@ import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import thaumcraft.Config;
 import thaumcraft.device.CropUtils;
 import thaumcraft.entity.golem.GolemBase;
 import thaumcraft.platform.GolemActions;
 import thaumcraft.registry.ModBlocks;
 
 public final class CropHarvestGoal extends Goal {
-    private static final int GOLEM_DELAY = 5;
     private static final int[] PLANT_X = {0, 0, 1, 1, -1, 0, -1, -1, 1};
     private static final int[] PLANT_Z = {0, 1, 0, 1, 0, -1, -1, 1, -1};
     private final GolemBase golem;
@@ -47,7 +47,7 @@ public final class CropHarvestGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!golem.isWorking() || delay >= 0 || golem.tickCount % GOLEM_DELAY != 0 || !golem.getNavigation().isDone()) return false;
+        if (!golem.isWorking() || delay >= 0 || golem.tickCount % Config.golemDelay() != 0 || !golem.getNavigation().isDone()) return false;
         target = findGrownCrop();
         if (target == null) return false;
         targetState = golem.level().getBlockState(target);

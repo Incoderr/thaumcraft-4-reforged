@@ -20,6 +20,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import thaumcraft.Config;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -36,9 +37,6 @@ import thaumcraft.wand.WandManager;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class RunicShield {
-    public static final int RECHARGE = 2000;
-    public static final int WAIT = 80;
-    public static final int COST = 50;
     private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
     private static final Map<UUID, State> STATES = new HashMap<>();
 
@@ -148,8 +146,8 @@ public final class RunicShield {
             state.charge = state.max;
         } else if (state.charge < state.max
             && state.nextCycle < time
-            && WandManager.consumeVisFromInventory(player, new AspectList().add(Aspect.AIR, COST).add(Aspect.EARTH, COST))) {
-            state.nextCycle = time + RECHARGE - state.charged * 500L;
+            && WandManager.consumeVisFromInventory(player, new AspectList().add(Aspect.AIR, Config.shieldCost()).add(Aspect.EARTH, Config.shieldCost()))) {
+            state.nextCycle = time + Config.shieldRecharge() - state.charged * 500L;
             state.charge++;
         }
         if (state.lastCharge != state.charge) {
@@ -216,7 +214,7 @@ public final class RunicShield {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.RUNIC_SHIELD_CHARGE.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         }
         if (charge <= 0) {
-            state.rechargeDelay = WAIT;
+            state.rechargeDelay = Config.shieldWait();
         }
         state.charge = charge;
         send(player, charge, state.max);

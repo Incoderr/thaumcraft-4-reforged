@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import thaumcraft.Config;
 import thaumcraft.effect.EffectHooks;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModSounds;
@@ -60,7 +61,7 @@ public class FluxGooBlock extends FluxBlock {
         } else if (meta >= 6 && airAbove) {
             if (random.nextInt(25) == 0) {
                 spawnSlime(level, pos, 2);
-            } else if (random.nextInt(50) == 0) {
+            } else if (Config.taintFromFlux() && random.nextInt(50) == 0) {
                 AlchemyHooks.taintFromFlux(level, pos);
             }
         } else if (random.nextInt(30) == 0) {

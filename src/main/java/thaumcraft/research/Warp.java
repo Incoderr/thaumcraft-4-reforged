@@ -12,7 +12,7 @@ import thaumcraft.item.gear.WarpingGear;
 import thaumcraft.network.WarpMessagePayload;
 import thaumcraft.platform.Baubles;
 import thaumcraft.platform.ModNetwork;
-import thaumcraft.research.ResearchConfig;
+import thaumcraft.Config;
 
 public final class Warp {
     private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
@@ -67,7 +67,7 @@ public final class Warp {
 
     public static void onItemCrafted(ServerPlayer player, ItemStack result) {
         int amount = getItemWarp(result);
-        if (!ResearchConfig.WUSS_MODE && amount > 0) {
+        if (!Config.wuss() && amount > 0) {
             add(player, amount, WarpType.STICKY);
         }
     }

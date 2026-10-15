@@ -20,6 +20,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.alchemy.AlembicBlockEntity;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectSource;
@@ -138,7 +139,7 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()
+            if (!golem.isWorking() || golem.tickCount % Config.golemDelay() != 0 || golem.getCarried().isEmpty()
                 || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             BlockPos home = GolemLogistics.homeContainer(golem);
             ItemStack remainder = Transfer.insert(golem.level(), home, golem.getHomeFacing(), golem.getCarried(), true);
@@ -183,7 +184,7 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || golem.getCarried().isEmpty()
+            if (!golem.isWorking() || golem.tickCount % Config.golemDelay() != 0 || golem.getCarried().isEmpty()
                 || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             int core = golem.getCore();
             boolean stillWanted = switch (core) {
@@ -221,7 +222,7 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || !golem.getCarried().isEmpty() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0
+            if (!golem.isWorking() || !golem.getCarried().isEmpty() || golem.tickCount % Config.golemDelay() != 0
                 || !golem.getNavigation().isDone() || !GolemLogistics.closeTo(golem, golem.getHomePosition(), 5.0)) return false;
             BlockPos source = GolemLogistics.homeContainer(golem);
             Direction side = golem.getHomeFacing();
@@ -274,7 +275,7 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || !golem.getCarried().isEmpty() || GolemLogistics.filters(golem).isEmpty()) return false;
+            if (!golem.isWorking() || golem.tickCount % Config.golemDelay() != 0 || !golem.getCarried().isEmpty() || GolemLogistics.filters(golem).isEmpty()) return false;
             double nearest = golem.getRange() * golem.getRange();
             for (ItemStack needed : GolemLogistics.neededAtHome(golem)) {
                 for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> GolemLogistics.matchesColor(golem, candidate, needed))) {
@@ -321,7 +322,7 @@ public final class LogisticsGoals {
         @Override
         public boolean canUse() {
             ItemStack carried = golem.getCarried();
-            if (!golem.isWorking() || carried.isEmpty() || !sorting && golem.tickCount % GolemLogistics.GOLEM_DELAY != 0) return false;
+            if (!golem.isWorking() || carried.isEmpty() || !sorting && golem.tickCount % Config.golemDelay() != 0) return false;
             double nearest = golem.getRange() * golem.getRange();
             for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> sorting || GolemLogistics.matchesColor(golem, candidate, carried))) {
                 if (GolemLogistics.isHomeBlock(golem, marker.pos())) continue;
@@ -394,7 +395,7 @@ public final class LogisticsGoals {
 
         @Override
         public boolean canUse() {
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0) return false;
+            if (!golem.isWorking() || golem.tickCount % Config.golemDelay() != 0) return false;
             double range = golem.getRange();
             target = golem.level().getEntitiesOfClass(ItemEntity.class, new AABB(golem.getHomePosition()).inflate(range), item ->
                 item.isAlive() && !item.hasPickUpDelay() && (golem.inventory().isEmpty() || GolemLogistics.filters(golem).stream().anyMatch(filter -> golem.matchesFilter(filter, item.getItem())))
@@ -763,7 +764,7 @@ public final class LogisticsGoals {
         @Override
         public boolean canUse() {
             FluidStack carried = golem.getFluidCarried();
-            if (!golem.isWorking() || golem.tickCount % GolemLogistics.GOLEM_DELAY != 0 || carried.getAmount() > golem.getFluidCarryLimit() - 1000) return false;
+            if (!golem.isWorking() || golem.tickCount % Config.golemDelay() != 0 || carried.getAmount() > golem.getFluidCarryLimit() - 1000) return false;
             for (FluidStack wanted : plan.wanted()) {
                 FluidSource found = plan.findSource(wanted);
                 if (found == null || GolemLogistics.closeTo(golem, found.pos(), 4.0)) continue;

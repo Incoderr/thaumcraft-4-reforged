@@ -20,6 +20,7 @@ import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.taint.TaintBlock;
 import thaumcraft.taint.TaintFibresBlock;
 import thaumcraft.client.platform.TcRenderTypes;
@@ -115,7 +116,7 @@ public class TaintFibresModel implements DynamicBlockStateModel {
                 sideQuads.add(attachedFace(quad, direction, 0.995F));
             }
             int overlay = overlayVariant(pos, face);
-            if (overlay != BLANK_OVERLAY) {
+            if (overlay != BLANK_OVERLAY && ClientConfig.glowyTaint()) {
                 List<BakedQuad> selected = new ArrayList<>();
                 collect(this.overlays.get(face).get(overlay), level, pos, level.getBlockState(pos), direction.getOpposite(), selected);
                 for (BakedQuad quad : selected) {

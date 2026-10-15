@@ -10,14 +10,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.ClientConfig;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID, value = Dist.CLIENT)
 public final class AspectSlotOverlay {
-    public static boolean SHOW_TAGS = false;
-
     private AspectSlotOverlay() {
     }
 
@@ -26,7 +25,7 @@ public final class AspectSlotOverlay {
         if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen)) {
             return;
         }
-        if (Minecraft.getInstance().hasShiftDown() == SHOW_TAGS) {
+        if (Minecraft.getInstance().hasShiftDown() == ClientConfig.showTags()) {
             return;
         }
         Slot slot = screen.getHoveredSlot();

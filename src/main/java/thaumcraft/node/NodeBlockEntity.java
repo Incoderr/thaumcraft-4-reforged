@@ -47,7 +47,7 @@ import thaumcraft.research.ResearchGate;
 import thaumcraft.wand.WandInteractable;
 import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.Wands;
-import thaumcraft.world.WorldGenConfig;
+import thaumcraft.Config;
 
 public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteractable {
     private static final ResourceKey<Biome> TAINTED_LAND = ResourceKey.create(Registries.BIOME, Thaumcraft.id("tainted_land"));
@@ -344,7 +344,7 @@ public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteract
 
     private boolean handleHungryNodeFirst(Level tickLevel, boolean change) {
         if (nodeType == NodeType.HUNGRY && tickLevel.isClientSide()) Fx.get().hungryNode(tickLevel, worldPosition);
-        if (nodeType != NodeType.HUNGRY || !WorldGenConfig.hardNode) {
+        if (nodeType != NodeType.HUNGRY || !Config.hardNode()) {
             return change;
         }
         AABB area = new AABB(worldPosition).inflate(15.0);
@@ -580,7 +580,7 @@ public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteract
             if (serverLevel.hasChunkAt(new BlockPos(x, worldPosition.getY(), z)) && !biomeAt(serverLevel, x, z, TAINTED_LAND)) {
                 setBiome(serverLevel, x, z, TAINTED_LAND);
             }
-            if (WorldGenConfig.hardNode && random.nextBoolean()) {
+            if (Config.hardNode() && random.nextBoolean()) {
                 x = worldPosition.getX() + random.nextInt(5) - random.nextInt(5);
                 z = worldPosition.getZ() + random.nextInt(5) - random.nextInt(5);
                 int y = worldPosition.getY() + random.nextInt(5) - random.nextInt(5);
@@ -647,7 +647,7 @@ public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteract
             if (serverLevel.hasChunkAt(new BlockPos(x, worldPosition.getY(), z)) && !biomeAt(serverLevel, x, z, EERIE)) {
                 setBiome(serverLevel, x, z, EERIE);
             }
-            if (WorldGenConfig.hardNode
+            if (Config.hardNode()
                 && random.nextBoolean()
                 && serverLevel.getNearestPlayer(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5, 24.0, false) != null) {
                 double spawnX = worldPosition.getX() + (random.nextDouble() - random.nextDouble()) * 5.0;

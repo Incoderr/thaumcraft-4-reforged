@@ -120,6 +120,10 @@ public final class WarpEffectClient {
 
     private static void syncPostEffects(LocalPlayer player) {
         List<Identifier> active = new ArrayList<>(4);
+        if (!ClientConfig.shaders()) {
+            WarpPostEffects.sync(player, OWNED_SHADERS, active);
+            return;
+        }
         if (player.hasEffect(ModEffects.DEATH_GAZE)) {
             active.add(DEATH_GAZE_SHADER);
         }

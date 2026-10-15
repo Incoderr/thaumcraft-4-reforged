@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
+import thaumcraft.Config;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.network.AspectDiscoveryPayload;
@@ -50,7 +51,7 @@ public final class ResearchManager {
     }
 
     public static boolean isBuyable(ResearchItem item) {
-        return ResearchConfig.RESEARCH_DIFFICULTY == -1 || ResearchConfig.RESEARCH_DIFFICULTY == 0 && item.isSecondary();
+        return Config.researchDifficulty() == -1 || Config.researchDifficulty() == 0 && item.isSecondary();
     }
 
     public static boolean complete(ServerPlayer player, String key) {
@@ -64,7 +65,7 @@ public final class ResearchManager {
         }
         ResearchItem item = ResearchCategories.getResearch(key);
         int warp = item == null ? 0 : item.warp();
-        if (warp > 0 && !ResearchConfig.WUSS_MODE) {
+        if (warp > 0 && !Config.wuss()) {
             if (warp > 1) {
                 int sticky = warp / 2;
                 if (warp - sticky > 0) {
@@ -172,10 +173,10 @@ public final class ResearchManager {
             saved = amount;
         }
         int pool = knowledge.getAspectPool(aspect);
-        if (pool >= ResearchConfig.ASPECT_TOTAL_CAP) {
+        if (pool >= Config.aspectTotalCap()) {
             amount = (int) Math.sqrt(amount);
         }
-        if (amount > 1 && pool >= ResearchConfig.ASPECT_TOTAL_CAP * 1.25F) {
+        if (amount > 1 && pool >= Config.aspectTotalCap() * 1.25F) {
             amount = 1;
         }
         if (addAspectPool(player, aspect, amount)) {
@@ -261,7 +262,7 @@ public final class ResearchManager {
     public static @Nullable String findMatchingResearch(ServerPlayer player, Aspect aspect) {
         List<String> keys = new ArrayList<>();
         for (ResearchItem research : ResearchCategories.allResearch()) {
-            boolean secondary = research.isSecondary() && ResearchConfig.RESEARCH_DIFFICULTY == 0 || ResearchConfig.RESEARCH_DIFFICULTY == -1;
+            boolean secondary = research.isSecondary() && Config.researchDifficulty() == 0 || Config.researchDifficulty() == -1;
             if (!secondary
                 && !research.isHidden()
                 && !research.isLost()
