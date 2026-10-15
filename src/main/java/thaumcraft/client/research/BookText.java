@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -50,7 +52,26 @@ final class BookText {
     }
 
     static Component uniform(String text) {
-        return Component.literal(text).withStyle(UNIFORM);
+        MutableComponent result = Component.empty();
+        Style style = UNIFORM;
+        int start = 0;
+        for (int index = 0; index + 1 < text.length(); index++) {
+            if (text.charAt(index) != '§') {
+                continue;
+            }
+            if (index > start) {
+                result.append(Component.literal(text.substring(start, index)).withStyle(style));
+            }
+            ChatFormatting format = ChatFormatting.getByCode(text.charAt(++index));
+            if (format != null) {
+                style = format == ChatFormatting.RESET ? UNIFORM : style.applyLegacyFormat(format);
+            }
+            start = index + 1;
+        }
+        if (start < text.length()) {
+            result.append(Component.literal(text.substring(start)).withStyle(style));
+        }
+        return result;
     }
 
     static List<Line> layout(Font font, String raw, int width) {
@@ -80,6 +101,27 @@ final class BookText {
             }
         }
         return lines;
+    }
+
+    static List<List<Line>> paginate(List<Line> lines, int firstHeight, int pageHeight) {
+        List<List<Line>> pages = new ArrayList<>();
+        List<Line> page = new ArrayList<>();
+        int height = 0;
+        int limit = firstHeight;
+        for (Line line : lines) {
+            if (!page.isEmpty() && height + line.height() > limit) {
+                pages.add(List.copyOf(page));
+                page.clear();
+                height = 0;
+                limit = pageHeight;
+            }
+            page.add(line);
+            height += line.height();
+        }
+        if (!page.isEmpty() || pages.isEmpty()) {
+            pages.add(List.copyOf(page));
+        }
+        return pages;
     }
 
     static void draw(GuiGraphicsExtractor graphics, Font font, List<Line> lines, int x, int y, int width, int color) {
