@@ -1,6 +1,16 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "thaumcraft:item/inhabited_zombie_spawn_egg"
+    "model": "thaumcraft:item/inhabited_zombie_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -11176107
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -11206656
+      }
+    ]
   }
 }

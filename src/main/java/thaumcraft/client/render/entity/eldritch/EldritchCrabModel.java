@@ -49,8 +49,8 @@ public final class EldritchCrabModel extends EntityModel<EldritchCrabRenderState
         root.addOrReplaceChild("left_claw_1", CubeListBuilder.create().texOffs(0, 47).mirror().addBox(-2.0F, -1.0F, -5.066667F, 4.0F, 3.0F, 5.0F), PartPose.offset(6.0F, 15.5F, -10.0F));
         root.addOrReplaceChild("right_claw_2", CubeListBuilder.create().texOffs(14, 54).addBox(-1.5F, -1.0F, -4.066667F, 3.0F, 2.0F, 5.0F), PartPose.offsetAndRotation(-6.0F, 18.5F, -10.0F, 0.3141593F, 0.0F, 0.0F));
         root.addOrReplaceChild("left_claw_2", CubeListBuilder.create().texOffs(14, 54).addBox(-1.5F, -1.0F, -4.066667F, 3.0F, 2.0F, 5.0F), PartPose.offsetAndRotation(6.0F, 18.5F, -10.0F, 0.3141593F, 0.0F, 0.0F));
-        addLeg(root, 0, -4.0F, -1.5F, -4.5F, 2.5F, -0.9F, 0.2094395F, 0.4363323F);
-        addLeg(root, 1, -4.0F, -3.5F, -5.0F, 3.0F, -1.066667F, -0.2094395F, 0.4363323F);
+        addLeg(root, 0, -4.0F, -1.5F, -4.5F, -4.5F, -0.9F, 0.2094395F, 0.4363323F);
+        addLeg(root, 1, -4.0F, -3.5F, -5.0F, -5.0F, -1.066667F, -0.2094395F, 0.4363323F);
         addLeg(root, 2, 4.0F, -3.5F, -1.0F, 3.0F, -1.066667F, 0.2094395F, -0.4363323F);
         addLeg(root, 3, 4.0F, -1.5F, -1.5F, 2.5F, -0.9F, -0.2094395F, -0.4363323F);
         return LayerDefinition.create(mesh, 128, 64);

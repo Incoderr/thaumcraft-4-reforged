@@ -1,6 +1,16 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "thaumcraft:item/fire_bat_spawn_egg"
+    "model": "thaumcraft:item/fire_bat_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -16129
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -4194304
+      }
+    ]
   }
 }

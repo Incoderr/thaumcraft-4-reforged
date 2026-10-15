@@ -1,6 +1,16 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "thaumcraft:item/cultist_leader_spawn_egg"
+    "model": "thaumcraft:item/cultist_leader_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -44971
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -11513776
+      }
+    ]
   }
 }

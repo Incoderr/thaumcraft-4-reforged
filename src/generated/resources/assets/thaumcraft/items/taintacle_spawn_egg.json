@@ -1,6 +1,16 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "thaumcraft:item/taintacle_spawn_egg"
+    "model": "thaumcraft:item/taintacle_spawn_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -16129
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -8388480
+      }
+    ]
   }
 }

@@ -114,6 +114,7 @@ public class Thaumcraft {
         GearGameTests.register(modEventBus);
         DeviceGameTests.register(modEventBus);
         EldritchCrabGameTests.register(modEventBus);
+        thaumcraft.entity.monster.ThaumicSlimeGameTests.register(modEventBus);
         WardedGameTests.register(modEventBus);
         WarpGameTests.register(modEventBus);
         WarpEncounterGameTests.register(modEventBus);

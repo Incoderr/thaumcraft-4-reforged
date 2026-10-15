@@ -1,9 +1,11 @@
 package thaumcraft.client.render.entity.eldritch;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.resources.Identifier;
 import thaumcraft.Thaumcraft;
@@ -16,6 +18,7 @@ public final class EldritchCrabRenderer extends MobRenderer<EldritchCrab, Eldrit
 
     public EldritchCrabRenderer(EntityRendererProvider.Context context) {
         super(context, new EldritchCrabModel(context.bakeLayer(EldritchCrabModel.LAYER)), 1.0F);
+        this.addLayer(new HelmLayer(this));
     }
 
     @Override
@@ -34,18 +37,19 @@ public final class EldritchCrabRenderer extends MobRenderer<EldritchCrab, Eldrit
         return TEXTURE;
     }
 
-    @Override
-    protected boolean shouldRenderLayers(EldritchCrabRenderState state) {
-        return super.shouldRenderLayers(state) && state.hasHelm;
-    }
+    private static final class HelmLayer extends RenderLayer<EldritchCrabRenderState, EldritchCrabModel> {
+        private HelmLayer(EldritchCrabRenderer renderer) {
+            super(renderer);
+        }
 
-    @Override
-    public void submit(EldritchCrabRenderState state, com.mojang.blaze3d.vertex.PoseStack poseStack, SubmitNodeCollector collector, net.minecraft.client.renderer.state.level.CameraRenderState camera) {
-        super.submit(state, poseStack, collector, camera);
-        if (state.hasHelm && (!state.isInvisible || state.appearsGlowing())) {
+        @Override
+        public void submit(PoseStack poseStack, SubmitNodeCollector collector, int light, EldritchCrabRenderState state, float yRot, float xRot) {
+            if (!state.hasHelm || state.isInvisible && !state.appearsGlowing()) {
+                return;
+            }
             int overlay = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
             collector.order(1).submitModel(
-                this.model,
+                this.getParentModel(),
                 state,
                 poseStack,
                 state.appearsGlowing() && state.isInvisible ? TcRenderTypes.outline(OVERLAY) : TcRenderTypes.entityTranslucent(OVERLAY),

@@ -1,6 +1,7 @@
 import json
 import shutil
 from pathlib import Path
+import gen_phase10_11
 
 ROOT = Path(__file__).resolve().parent.parent
 NS = "thaumcraft"
@@ -28,11 +29,11 @@ ITEMS = {
 }
 
 SPAWN_EGGS = {
-    "eldritch_warden_spawn_egg": ("EldritchWarden", 0x222222, 0x404040, "Eldritch Warden Spawn Egg"),
-    "eldritch_golem_spawn_egg": ("EldritchGolem", 0x555555, 0x888888, "Eldritch Golem Spawn Egg"),
-    "cultist_leader_spawn_egg": ("CultistLeader", 0x8B0000, 0xFF5055, "Cultist Leader Spawn Egg"),
-    "cultist_portal_spawn_egg": ("CultistPortal", 0x550000, 0xFF5055, "Cultist Portal Spawn Egg"),
-    "taintacle_giant_spawn_egg": ("TaintacleGiant", 0x550050, 0x800080, "Giant Taintacle Spawn Egg"),
+    "eldritch_warden_spawn_egg": ("EldritchWarden", 0x552222, 0x404040, "Eldritch Warden Spawn Egg"),
+    "eldritch_golem_spawn_egg": ("EldritchGolem", 0x555555, 0x404040, "Eldritch Golem Spawn Egg"),
+    "cultist_leader_spawn_egg": ("CultistLeader", 0xFF5055, 0x505050, "Cultist Leader Spawn Egg"),
+    "cultist_portal_spawn_egg": ("CultistPortal", 0xFF5055, 0xFF50FF, "Cultist Portal Spawn Egg"),
+    "taintacle_giant_spawn_egg": ("TaintacleGiant", 0xFFC0FF, 0x808080, "Giant Taintacle Spawn Egg"),
 }
 
 RUSSIAN_SPAWN_EGGS = {
@@ -65,38 +66,6 @@ def copy_legacy_texture(ctx, name, folder):
     target = ctx.ASSETS / "textures" / ("block" if folder == "blocks" else "item") / f"{name}.png"
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
-
-
-def generate_spawn_egg_texture(ctx, name, base_color, spot_color):
-    from PIL import Image
-
-    egg_shape = [
-        "................", "......####......", ".....######.....", "....########....",
-        "....########....", "...##########...", "...##########...", "..############..",
-        "..############..", "..############..", "..############..", "..############..",
-        "...##########...", "...##########...", "....########....", "......####......",
-    ]
-    spots = {(6, 3), (9, 5), (5, 7), (10, 9), (7, 11), (4, 10), (11, 6), (8, 8), (6, 13)}
-    highlights = {(5, 4), (6, 4), (5, 5)}
-    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    for y in range(16):
-        for x in range(16):
-            if egg_shape[y][x] != "#":
-                continue
-            color = spot_color if (x, y) in spots else base_color
-            if (x, y) in highlights:
-                factor = 1.3
-            elif x == 0 or y == 0 or egg_shape[y][x - 1] != "#" or egg_shape[y - 1][x] != "#":
-                factor = 0.6
-            elif x == 15 or y == 15 or egg_shape[y][x + 1] != "#" or egg_shape[y + 1][x] != "#":
-                factor = 0.85
-            else:
-                factor = 1.0
-            channels = [min(255, int(((color >> shift) & 0xFF) * factor)) for shift in (16, 8, 0)]
-            image.putpixel((x, y), (*channels, 255))
-    target = ctx.ASSETS / "textures" / "item" / f"{name}.png"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    image.save(target)
 
 
 def generate(ctx):
@@ -187,8 +156,7 @@ def generate(ctx):
     }.items():
         ctx.generated_item(name, texture)
     for name, (_, base_color, spot_color, _) in SPAWN_EGGS.items():
-        generate_spawn_egg_texture(ctx, name, base_color, spot_color)
-        ctx.generated_item(name, name)
+        gen_phase10_11.write_spawn_egg(ctx, name, base_color, spot_color)
 
     dimension_type = {
         "ambient_light": 0.0,
