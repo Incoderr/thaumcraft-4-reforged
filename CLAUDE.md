@@ -98,6 +98,7 @@ python3 tools/gen_resources.py && git status --short src/generated
 - Curios под 26.3 падает на NeoForge 26.3.0.37+ (`ModConfig.Type.COMMON` удалён в FML 12), поэтому на `main` свои слоты за `platform/Baubles`. Конфиги только SYNCED, STARTUP, CLIENT.
 - SDL3: левая кнопка мыши `1`, проверять `InputConstants.MOUSE_BUTTON_LEFT`.
 - Data components неизменяемые: стеки хранить как `ItemStackTemplate`, наборы как `ItemContainerContents`.
+- Цвета в `items/*.json` ARGB: `default` у `minecraft:dye` без альфы делает некрашеный слой прозрачным.
 - Еда только через `Registration.food` (Consumable вне `platform/` запрещён). BE сохраняются через ванильные `ValueInput`/`ValueOutput`.
 - GameTest: мок-игроку нужен `connection.markClientLoaded()`, иначе он неуязвим. Сервер тестов тикает без пауз, кулдауны по реальному времени ждать в тесте. Outer Lands в тестах подключается датапаком `src/gametest/packs/outer_lands`.
 - `onEquipped`/`onUnequipped` бижутерии вызываются только на сервере.
@@ -106,6 +107,7 @@ python3 tools/gen_resources.py && git status --short src/generated
 
 - Знания игрока в attachment `research/Knowledge` (ключи скана строками), владельцы и связи по UUID и `GlobalPos`, рецепты TC данными в `crafting/TcRecipes` по ключам TC4.
 - Блендинг GL_ONE, texgen и `glLineWidth` заменены приближениями (`GuiLines`, вращающиеся UV, шейдер портала Края). Сверка остаётся визуальной.
+- Неизученные исследования пишутся шрифтом `thaumcraft:galactic` (`minecraft:alt` плюс кириллица на глифах SGA), в `minecraft:alt` кириллицы нет.
 - `allow_cheat_sheet` по умолчанию `false`, веса регионов TerraBlender 3 и 1.
 
 ## Код-стайл

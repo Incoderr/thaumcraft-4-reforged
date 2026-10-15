@@ -158,7 +158,10 @@ public final class ThaumometerHandRenderer {
             }
         } else if (target.kind() == ScanKind.PHENOMENON) {
             BlockPos pos = hit.pos();
-            text = new ItemStack(level.getBlockState(pos).getBlock()).getHoverName();
+            ItemStack picked = level.getBlockState(pos).getCloneItemStack(level, pos, false);
+            if (!picked.isEmpty()) {
+                text = picked.getHoverName();
+            }
             if (scanned && level.getBlockEntity(pos) instanceof Node node) {
                 aspects = node.getAspects();
                 Component nodeText = Component.translatable(node.getNodeType().getTranslationKey());

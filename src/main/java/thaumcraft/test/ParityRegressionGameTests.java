@@ -64,7 +64,8 @@ public final class ParityRegressionGameTests {
         Map.entry("parity_vis_exhaust_milk", ParityRegressionGameTests::visMilk),
         Map.entry("parity_golem_ranged_stage", ParityRegressionGameTests::golemRangedStage),
         Map.entry("parity_original_tool_damage", ParityRegressionGameTests::toolDamage),
-        Map.entry("parity_biome_spawn_lists", ParityRegressionGameTests::biomeSpawns)
+        Map.entry("parity_biome_spawn_lists", ParityRegressionGameTests::biomeSpawns),
+        Map.entry("parity_silverwood_knot_scan", ParityRegressionGameTests::silverwoodKnot)
     );
 
     static { TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test)); }
@@ -316,6 +317,22 @@ public final class ParityRegressionGameTests {
                 for (var type : List.of(ModEntities.GIANT_BRAINY_ZOMBIE.get(), ModEntities.WISP.get(), ModEntities.ELDRITCH_GUARDIAN.get())) helper.assertTrue(spawns.unwrap().stream().anyMatch(entry -> entry.value().type() == type), "Eerie lacks " + type);
             }
         }
+        helper.succeed();
+    }
+
+    private static void silverwoodKnot(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new BlockPos(2, 2, 2));
+        level.setBlock(pos, ModBlocks.SILVERWOOD_KNOT.get().defaultBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        thaumcraft.node.NodeGenerator.createRandomNodeAt(level, pos, level.getRandom(), true, false, false);
+        var target = thaumcraft.research.ScanManager.resolveBlock(level, pos);
+        helper.assertTrue(target != null && target.kind() == thaumcraft.research.ScanKind.PHENOMENON, "knot does not scan as a node");
+        helper.assertTrue(target.aspects() != null && target.aspects().getAmount(Aspect.ORDER) > 0, "knot node has no pure aspects");
+        var node = (thaumcraft.node.NodeBlockEntity) level.getBlockEntity(pos);
+        var client = new thaumcraft.node.NodeBlockEntity(pos, level.getBlockState(pos));
+        client.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), node.getUpdateTag(level.registryAccess())));
+        helper.assertTrue(client.getNodeType() == thaumcraft.node.NodeType.PURE && client.getAspects().size() == node.getAspects().size(), "knot node does not sync to the client");
+        helper.assertTrue(level.getBlockState(pos).getCloneItemStack(level, pos, false).is(ModBlocks.SILVERWOOD_LOG.get().asItem()), "knot does not pick as silverwood log");
         helper.succeed();
     }
 
