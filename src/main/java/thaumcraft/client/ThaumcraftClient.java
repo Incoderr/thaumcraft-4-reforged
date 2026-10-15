@@ -4,8 +4,10 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
@@ -13,6 +15,7 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.fx.ClientFx;
+import thaumcraft.client.platform.IrisCompat;
 import thaumcraft.client.platform.ModRenderPipelines;
 import thaumcraft.client.research.ResearchBrowserScreen;
 import thaumcraft.client.research.ThaumometerClient;
@@ -59,6 +62,13 @@ public final class ThaumcraftClient {
         event.register(ModMenus.ARCANE_BORE.get(), ArcaneBoreScreen::new);
         event.register(ModMenus.ARCANE_SPA.get(), ArcaneSpaScreen::new);
         event.register(ModMenus.PECH_TRADE.get(), PechTradeScreen::new);
+    }
+
+    @SubscribeEvent
+    static void clientSetup(FMLClientSetupEvent event) {
+        if (ModList.get().isLoaded("iris")) {
+            event.enqueueWork(IrisCompat::register);
+        }
     }
 
     @SubscribeEvent
