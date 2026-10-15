@@ -63,7 +63,7 @@ public class GenBossRoom extends GenCommon {
 
                 switch (PAT_DOORWAY[a][b]) {
                     case 1:
-                        placeBlock(world, xx, y + 2 + b, zz, 16, cell);
+                        placeBlock(world, xx, y + 2 + b, zz, 16, dir, cell);
                         break;
                     case 2:
                         placeBlock(world, xx, y + 2 + b, zz, 15, cell);

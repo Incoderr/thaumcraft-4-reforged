@@ -196,7 +196,17 @@ public final class EldritchBlockEntity extends TcBlockEntity {
                 EldritchEntities.spawnTaintEncounter(level, thaumcraft.world.dim.MazeHandler.arenaCenter(level, pos));
             } else {
                 BlockPos bossPos = thaumcraft.world.dim.MazeHandler.bossSpawnPos(level, pos, kind);
-                EldritchEntities.spawnBoss(level, bossPos, kind);
+                EldritchEntities.spawnBoss(level, bossPos, kind, thaumcraft.world.dim.MazeHandler.arenaCenter(level, pos).above(2));
+            }
+            String message = switch (kind) {
+                case GOLEM -> "golem";
+                case WARDEN -> "warden";
+                case CULTIST_PORTAL -> "crimson";
+                case TAINTACLE_GIANT -> "taint";
+            };
+            for (var player : level.players()) {
+                if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) >= 300.0) continue;
+                player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("tc.boss." + message));
             }
             level.removeBlock(pos, false);
         }

@@ -51,7 +51,7 @@ public class ExplosiveOrb extends ThrowableProjectile {
             DamageSource source = level.damageSources().source(owner == null ? DamageTypes.UNATTRIBUTED_FIREBALL : DamageTypes.FIREBALL, this, owner);
             entityHit.getEntity().hurtServer(level, source, this.strength * 1.5F);
         }
-        level.explode(null, this.getX(), this.getY(), this.getZ(), this.strength, this.onFire, Level.ExplosionInteraction.BLOCK);
+        level.explode(null, this.getX(), this.getY(), this.getZ(), this.strength, this.onFire, Level.ExplosionInteraction.NONE);
         this.discard();
     }
 

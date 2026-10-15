@@ -11,6 +11,9 @@ public interface FxProxy {
     default void beamPulse(Level level, Entity source, Entity target, int color) {
     }
 
+    default void hungryNode(Level level, BlockPos pos) {
+    }
+
     default void nodeBolt(Level level, float x, float y, float z, float targetX, float targetY, float targetZ) {
     }
 

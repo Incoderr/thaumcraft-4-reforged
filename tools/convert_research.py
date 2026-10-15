@@ -722,6 +722,13 @@ def research_java(research, lang_keys):
             f"{research.column}, {research.row}, {research.complexity}, {icon})"
         )
     lines = [head]
+    required = {
+        "CAP_copper": ["c:ingots/copper"], "CAP_silver": ["c:ingots/silver"],
+        **{f"PURE{metal.upper()}": [f"c:ores/{metal}", f"c:ingots/{metal}"] for metal in ("copper", "tin", "silver", "lead")},
+        **{f"TRANS{metal.upper()}": [f"c:ingots/{metal}"] for metal in ("copper", "tin", "silver", "lead")},
+    }.get(research.key, [])
+    if required:
+        lines.append(f"            .setRequiredTags({', '.join(string_literal(tag) for tag in required)})")
     for name, arguments in research.chain:
         if name == "setPages":
             pages = [page_java(page, context, lang_keys) for page in arguments]

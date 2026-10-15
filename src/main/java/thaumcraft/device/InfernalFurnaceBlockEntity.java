@@ -263,6 +263,12 @@ public class InfernalFurnaceBlockEntity extends TcBlockEntity {
         }
     }
 
+    private boolean releaseBlaze = true;
+
+    public void suppressBlaze() {
+        this.releaseBlaze = false;
+    }
+
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (level instanceof ServerLevel serverLevel) {
@@ -273,7 +279,7 @@ public class InfernalFurnaceBlockEntity extends TcBlockEntity {
             }
             items.clear();
             Vec3 spawn = new Vec3(pos.getX() + 0.5F, pos.getY() + 1.0F, pos.getZ() + 0.5F);
-            if (EntityTypes.BLAZE.create(serverLevel, EntitySpawnReason.TRIGGERED) instanceof LivingEntity blaze) {
+            if (this.releaseBlaze && EntityTypes.BLAZE.create(serverLevel, EntitySpawnReason.TRIGGERED) instanceof LivingEntity blaze) {
                 blaze.snapTo(spawn.x, spawn.y, spawn.z, 0.0F, 0.0F);
                 blaze.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 6000, 2));
                 blaze.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 12000, 0));

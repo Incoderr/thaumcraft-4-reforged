@@ -105,6 +105,8 @@ def vanilla_ids(reference, meta):
         return None
     flatten = VANILLA["flatten"][kind]
     names = VANILLA["names"][kind]
+    if reference == "Items.cooked_fish" and meta == WILDCARD:
+        return ["minecraft:cooked_cod", "minecraft:cooked_salmon"]
     if meta == WILDCARD:
         result = []
         if base in names:

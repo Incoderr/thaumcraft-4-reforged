@@ -34,7 +34,7 @@ public class ArcaneLampBlockEntity extends TcBlockEntity {
         if (level.isInWorldBounds(target)
             && level.isEmptyBlock(target)
             && !level.getBlockState(target).is(ModBlocks.ARCANE_LAMP_LIGHT.get())
-            && Math.max(level.getBrightness(LightLayer.BLOCK, target), level.getBrightness(LightLayer.SKY, target)) < 9) {
+            && Math.max(level.getBrightness(LightLayer.BLOCK, target), level.getBrightness(LightLayer.SKY, target) - level.getSkyDarken()) < 9) {
             level.setBlock(target, ModBlocks.ARCANE_LAMP_LIGHT.get().defaultBlockState(), 3);
         }
     }

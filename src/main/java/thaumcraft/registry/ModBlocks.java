@@ -189,42 +189,42 @@ public final class ModBlocks {
     public static final DeferredBlock<TaintBlock> CRUSTED_TAINT = withItem(BLOCKS.registerBlock(
         "crusted_taint",
         properties -> new TaintBlock(TaintBlock.Kind.CRUST, properties),
-        properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(1.0F).sound(SoundType.GRAVEL)
+        properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(1.75F, 6.0F).sound(SoundType.GRAVEL)
     ));
     public static final DeferredBlock<TaintBlock> TAINTED_SOIL = withItem(BLOCKS.registerBlock(
         "tainted_soil",
         properties -> new TaintBlock(TaintBlock.Kind.SOIL, properties),
-        properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(0.6F).sound(SoundType.GRAVEL)
+        properties -> properties.mapColor(MapColor.COLOR_PURPLE).strength(1.5F, 6.0F).sound(SoundType.GRAVEL)
     ));
     public static final DeferredBlock<TaintBlock> FLESH_BLOCK = withItem(BLOCKS.registerBlock(
         "flesh_block",
         properties -> new TaintBlock(TaintBlock.Kind.FLESH, properties),
-        properties -> properties.mapColor(MapColor.COLOR_RED).strength(0.8F).sound(SoundType.SLIME_BLOCK)
+        properties -> properties.mapColor(MapColor.COLOR_RED).strength(0.2F, 6.0F).sound(SoundType.SLIME_BLOCK)
     ));
     public static final DeferredBlock<TaintFibresBlock> FIBROUS_TAINT = withItem(BLOCKS.registerBlock(
         "fibrous_taint",
         properties -> new TaintFibresBlock(TaintFibresBlock.Kind.FIBRES, properties),
-        properties -> plant(properties)
+        properties -> plant(properties).strength(1.0F, 3.0F)
     ));
     public static final DeferredBlock<TaintFibresBlock> TAINTED_GRASS = withItem(BLOCKS.registerBlock(
         "tainted_grass",
         properties -> new TaintFibresBlock(TaintFibresBlock.Kind.GRASS, properties),
-        properties -> plant(properties)
+        properties -> plant(properties).strength(1.0F, 3.0F)
     ));
     public static final DeferredBlock<TaintFibresBlock> TAINTED_PLANT = withItem(BLOCKS.registerBlock(
         "tainted_plant",
         properties -> new TaintFibresBlock(TaintFibresBlock.Kind.PLANT, properties),
-        properties -> plant(properties)
+        properties -> plant(properties).strength(1.0F, 3.0F).lightLevel(state -> 8)
     ));
     public static final DeferredBlock<TaintFibresBlock> SPORE_STALK = withItem(BLOCKS.registerBlock(
         "spore_stalk",
         properties -> new TaintFibresBlock(TaintFibresBlock.Kind.STALK, properties),
-        properties -> plant(properties)
+        properties -> plant(properties).strength(1.0F, 3.0F)
     ));
     public static final DeferredBlock<TaintFibresBlock> MATURE_SPORE_STALK = withItem(BLOCKS.registerBlock(
         "mature_spore_stalk",
         properties -> new TaintFibresBlock(TaintFibresBlock.Kind.MATURE_STALK, properties),
-        properties -> plant(properties)
+        properties -> plant(properties).strength(1.0F, 3.0F).lightLevel(state -> 10)
     ));
 
     public static final DeferredBlock<ManaPodBlock> MANA_POD = BLOCKS.registerBlock(

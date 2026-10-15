@@ -1,5 +1,7 @@
 package thaumcraft.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.network.Connection;
@@ -9,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
@@ -53,7 +56,14 @@ public final class BossGameTests {
         "cultist_leader_drops_one_tier_two_reward",
         "base_boss_drops_pearl_and_rare_bag",
         "cultist_portal_drops_one_pearl",
-        "taintacle_giant_last_death_drops_pearl"
+        "taintacle_giant_last_death_drops_pearl",
+        "boss_spawn_ai_pause_noai_and_resume",
+        "warden_frenzy_pause_teleport_and_absorption",
+        "cultist_leader_spawn_enchantment",
+        "portal_preparation_save_and_leader_home",
+        "boss_aggro_preserves_original_scaling",
+        "portal_final_leader_home",
+        "portal_death_explosion_and_pearl"
     };
 
     static {
@@ -66,6 +76,13 @@ public final class BossGameTests {
         FUNCTIONS.register(TESTS[6], () -> BossGameTests::baseBossRewardIsUnique);
         FUNCTIONS.register(TESTS[7], () -> BossGameTests::portalRewardIsUnique);
         FUNCTIONS.register(TESTS[8], () -> BossGameTests::lastGiantRewardIsUnique);
+        FUNCTIONS.register(TESTS[9], () -> BossGameTests::bossSpawnAiPauseNoAiAndResume);
+        FUNCTIONS.register(TESTS[10], () -> BossGameTests::wardenFrenzyPauseTeleportAndAbsorption);
+        FUNCTIONS.register(TESTS[11], () -> BossGameTests::cultistLeaderSpawnEnchantment);
+        FUNCTIONS.register(TESTS[12], () -> BossGameTests::portalPreparationSaveAndLeaderHome);
+        FUNCTIONS.register(TESTS[13], () -> BossGameTests::bossAggroPreservesOriginalScaling);
+        FUNCTIONS.register(TESTS[14], () -> BossGameTests::portalFinalLeaderHome);
+        FUNCTIONS.register(TESTS[15], () -> BossGameTests::portalDeathExplosionAndPearl);
     }
 
     private BossGameTests() {
@@ -82,7 +99,7 @@ public final class BossGameTests {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(
                 function,
-                new TestData<>(environment, Thaumcraft.id("test/platform"), 300, 0, true)
+                new TestData<>(environment, Thaumcraft.id("test/platform"), 500, 0, true)
             ));
         }
     }
@@ -167,6 +184,7 @@ public final class BossGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(2, 2, 2));
         leader.snapTo(pos, 0.0F, 0.0F);
         leader.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(pos), EntitySpawnReason.TRIGGERED, null);
+        ChampionModifier.assign(leader, 0, false);
         helper.getLevel().addFreshEntity(leader);
         leader.setHealth(1.0F);
         helper.assertTrue(leader.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 10.0F), "lethal leader hit was rejected");
@@ -186,6 +204,7 @@ public final class BossGameTests {
         golem.setHeadless(true);
         golem.setSpawnTimer(0);
         golem.setHealth(1.0F);
+        ChampionModifier.assign(golem, 0, false);
         helper.assertTrue(helper.getLevel().addFreshEntity(golem), "golem could not be added");
         helper.assertTrue(golem.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 100.0F), "lethal golem hit was rejected");
         AABB bounds = new AABB(pos).inflate(4.0);
@@ -234,6 +253,311 @@ public final class BossGameTests {
             .filter(drop -> drop.getItem().is(item))
             .mapToLong(drop -> drop.getItem().getCount())
             .sum();
+    }
+
+    private static void bossSpawnAiPauseNoAiAndResume(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        CultistLeader leader = EldritchEntities.CULTIST_LEADER.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(leader != null, "leader factory returned null");
+        leader.snapTo(pos, 0.0F, 0.0F);
+        leader.setSpawnTimer(3);
+        helper.getLevel().addFreshEntity(leader);
+        ServerPlayer player = addMockPlayer(helper, pos.offset(1, 0, 1));
+        player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0);
+        player.setHealth(1000.0F);
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(leader.getTarget() == null, "spawn timer allowed target AI to run");
+            leader.setNoAi(true);
+            helper.runAfterDelay(2, () -> {
+                helper.assertTrue(leader.getTarget() == null, "NoAI mob acquired a target");
+                leader.setNoAi(false);
+                leader.getRandom().setSeed(0L);
+                helper.runAfterDelay(30, () -> {
+                    helper.assertTrue(leader.getTarget() == player, "AI did not resume after spawn timer and NoAI ended");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void wardenFrenzyPauseTeleportAndAbsorption(GameTestHelper helper) {
+        BlockPos home = helper.absolutePos(new BlockPos(8, 2, 8));
+        var level = helper.getLevel();
+        List<Long> newlyForcedChunks = new ArrayList<>();
+        int homeChunkX = home.getX() >> 4;
+        int homeChunkZ = home.getZ() >> 4;
+        for (int chunkX = homeChunkX - 1; chunkX <= homeChunkX + 1; chunkX++) {
+            for (int chunkZ = homeChunkZ - 1; chunkZ <= homeChunkZ + 1; chunkZ++) {
+                long chunk = ChunkPos.pack(chunkX, chunkZ);
+                if (!level.getForceLoadedChunks().contains(chunk) && level.setChunkForced(chunkX, chunkZ, true)) {
+                    newlyForcedChunks.add(chunk);
+                }
+            }
+        }
+        BlockPos floor = home.below();
+        for (int x = -8; x <= 8; x++) {
+            for (int z = -8; z <= 8; z++) {
+                helper.getLevel().setBlockAndUpdate(floor.offset(x, 0, z), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            }
+        }
+        helper.getLevel().setBlockAndUpdate(home, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        EldritchWarden warden = EldritchEntities.ELDRITCH_WARDEN.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(warden != null, "warden factory returned null");
+        warden.snapTo(helper.absolutePos(new BlockPos(2, 2, 2)), 0.0F, 0.0F);
+        warden.setHomeTo(home, 32);
+        warden.getRandom().setSeed(0L);
+        warden.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(warden.blockPosition()), EntitySpawnReason.TRIGGERED, null);
+        helper.assertValueEqual(warden.getMaxAbsorption(), 132.0F, "freshly finalized warden did not receive the original absorption cap");
+        helper.assertValueEqual(warden.getAbsorptionAmount(), 132.0F, "freshly finalized warden did not receive its absorption shield");
+        warden.setHomeTo(home, 32);
+        warden.setSpawnTimer(0);
+        ChampionModifier.assign(warden, 0, false);
+        helper.getLevel().addFreshEntity(warden);
+        ServerPlayer player = addMockPlayer(helper, helper.absolutePos(new BlockPos(4, 2, 4)));
+        player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0);
+        player.setHealth(1000.0F);
+        warden.setTarget(player);
+        warden.setAbsorptionAmount(0.0F);
+        warden.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0F);
+        helper.assertTrue(warden.getFrenzyTicks() == 150, "warden did not start 150-tick frenzy");
+        int frenzyStartTick = warden.tickCount;
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(warden.getTarget() == player, "frenzy unexpectedly cleared its target");
+            helper.assertTrue(warden.distanceToSqr(home.getX() + 0.5, home.getY(), home.getZ() + 0.5) > 0.25, "unsafe home teleport did not select a clear nearby position");
+            helper.assertTrue(helper.getLevel().noCollision(warden, warden.getBoundingBox()), "warden teleported into a collision");
+            warden.setTarget(null);
+            waitForWardenFrenzyAndResume(helper, warden, player, newlyForcedChunks, frenzyStartTick);
+        });
+    }
+
+    private static void waitForWardenFrenzyAndResume(GameTestHelper helper, EldritchWarden warden, ServerPlayer player, List<Long> newlyForcedChunks, int frenzyStartTick) {
+        helper.assertTrue(warden.getTarget() == null, "warden target AI ran before the final frenzy tick");
+        if (warden.getFrenzyTicks() > 0) {
+            helper.runAfterDelay(1, () -> waitForWardenFrenzyAndResume(helper, warden, player, newlyForcedChunks, frenzyStartTick));
+            return;
+        }
+        helper.assertTrue(warden.tickCount - frenzyStartTick >= 150, "warden frenzy expired before 150 entity ticks: tick=" + warden.tickCount + " start=" + frenzyStartTick);
+        helper.assertValueEqual(warden.getSpawnTimer(), 0, "warden spawn timer still paused goals after frenzy");
+        helper.assertTrue(movePlayerIntoClearWardenSight(helper, warden, player), "could not place living player in clear Warden line of sight");
+        warden.getRandom().setSeed(0L);
+        helper.runAfterDelay(30, () -> {
+            String targetState = "target=" + warden.getTarget() + " playerAlive=" + player.isAlive() + " playerHealth=" + player.getHealth()
+                + " playerPos=" + player.position() + " wardenPos=" + warden.position() + " distanceSqr=" + warden.distanceToSqr(player)
+                + " lineOfSight=" + warden.hasLineOfSight(player) + " frenzy=" + warden.getFrenzyTicks() + " spawnTimer=" + warden.getSpawnTimer();
+            helper.assertTrue(warden.getTarget() == player, "warden target AI did not resume after frenzy: " + targetState);
+            player.discard();
+            warden.setTarget(null);
+            damageWardenOnRegenBoundary(helper, warden, newlyForcedChunks);
+        });
+    }
+
+    private static boolean movePlayerIntoClearWardenSight(GameTestHelper helper, EldritchWarden warden, ServerPlayer player) {
+        BlockPos center = BlockPos.containing(warden.getX(), warden.getY(), warden.getZ());
+        for (int x = -6; x <= 6; x++) {
+            for (int z = -6; z <= 6; z++) {
+                int distanceSqr = x * x + z * z;
+                if (distanceSqr < 9 || distanceSqr > 36) {
+                    continue;
+                }
+                BlockPos target = new BlockPos(center.getX() + x, warden.getBlockY(), center.getZ() + z);
+                if (!helper.getLevel().hasChunkAt(target)) {
+                    continue;
+                }
+                player.snapTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, 0.0F, 0.0F);
+                if (helper.getLevel().noCollision(player, player.getBoundingBox()) && warden.hasLineOfSight(player)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static void damageWardenOnRegenBoundary(GameTestHelper helper, EldritchWarden warden, List<Long> newlyForcedChunks) {
+        if (warden.tickCount % 25 != 10) {
+            helper.runAfterDelay(1, () -> damageWardenOnRegenBoundary(helper, warden, newlyForcedChunks));
+            return;
+        }
+        warden.setAbsorptionAmount(0.0F);
+        helper.assertTrue(warden.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0F), "warden did not accept test damage");
+        helper.assertTrue(warden.hurtTime > 0 && warden.damageCooldownTime > 10, "test damage did not start hurt animation and damage cooldown");
+        helper.runAfterDelay(15, () -> {
+            helper.assertTrue(warden.hurtTime == 0 && warden.damageCooldownTime > 0, "test did not reach the post-animation damage cooldown interval");
+            helper.assertValueEqual(warden.getAbsorptionAmount(), 0.0F, "absorption regenerated while damage cooldown remained");
+            helper.runAfterDelay(25, () -> {
+                helper.assertValueEqual(warden.tickCount % 25, 0, "absorption check did not land on the regen tick boundary");
+                helper.assertValueEqual(warden.damageCooldownTime, 0, "damage cooldown was not clear at the next regen boundary");
+                helper.assertValueEqual(warden.getAbsorptionAmount(), 1.0F, "absorption did not regenerate after damage cooldown ended");
+                for (long chunk : newlyForcedChunks) {
+                    helper.getLevel().setChunkForced(ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false);
+                }
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void cultistLeaderSpawnEnchantment(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        helper.getLevel().getChunkAt(pos).setInhabitedTime(3600000L);
+        boolean enchanted = false;
+        var allowedEnchantments = java.util.Set.of(
+            net.minecraft.world.item.enchantment.Enchantments.SHARPNESS,
+            net.minecraft.world.item.enchantment.Enchantments.SMITE,
+            net.minecraft.world.item.enchantment.Enchantments.BANE_OF_ARTHROPODS,
+            net.minecraft.world.item.enchantment.Enchantments.KNOCKBACK,
+            net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT,
+            net.minecraft.world.item.enchantment.Enchantments.LOOTING,
+            net.minecraft.world.item.enchantment.Enchantments.UNBREAKING,
+            thaumcraft.registry.ModEnchantments.REPAIR
+        );
+        for (long attempt = 0; attempt < 64 && !enchanted; attempt++) {
+            CultistLeader leader = EldritchEntities.CULTIST_LEADER.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+            helper.assertTrue(leader != null, "leader factory returned null");
+            leader.snapTo(pos, 0.0F, 0.0F);
+            leader.getRandom().setSeed(1_000_003L * attempt + 1_234_567L);
+            leader.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(pos), EntitySpawnReason.TRIGGERED, null);
+            var enchantments = net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentsForCrafting(leader.getMainHandItem());
+            enchanted = !enchantments.isEmpty();
+            for (var enchantment : enchantments.keySet()) {
+                helper.assertTrue(allowedEnchantments.contains(enchantment.unwrapKey().orElse(null)), "leader received an enchantment outside the original sword pool");
+            }
+        }
+        helper.assertTrue(enchanted, "seeded spawn sequence never produced an enchanted sword");
+        helper.succeed();
+    }
+
+    private static void portalPreparationSaveAndLeaderHome(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(6, 2, 6));
+        CultistPortal portal = EldritchEntities.CULTIST_PORTAL.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(portal != null, "portal factory returned null");
+        portal.snapTo(pos, 0.0F, 0.0F);
+        BlockPos expectedCenter = new BlockPos((int) portal.getX(), (int) portal.getY(), (int) portal.getZ());
+        for (BlockPos banner : new BlockPos[] {
+            expectedCenter.offset(0, 0, -6), expectedCenter.offset(0, 0, 6), expectedCenter.offset(-6, 0, 0), expectedCenter.offset(6, 0, 0)
+        }) {
+            helper.getLevel().setBlockAndUpdate(banner.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        }
+        portal.getRandom().setSeed(0L);
+        helper.getLevel().addFreshEntity(portal);
+        helper.runAfterDelay(10, () -> {
+            TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+            portal.saveWithoutId(output);
+            portal.discard();
+            CultistPortal restored = EldritchEntities.CULTIST_PORTAL.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+            restored.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), output.buildResult()));
+            restored.getRandom().setSeed(0L);
+            helper.getLevel().addFreshEntity(restored);
+            helper.runAfterDelay(35, () -> {
+                BlockPos actualCenter = new BlockPos((int) restored.getX(), (int) restored.getY(), (int) restored.getZ());
+                TagValueOutput diagnosticOutput = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+                restored.saveWithoutId(diagnosticOutput);
+                int stageCounter = TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), diagnosticOutput.buildResult()).getIntOr("StageCounter", -1);
+                helper.assertValueEqual(actualCenter, expectedCenter, "portal center drifted before banner placement");
+                helper.assertTrue(stageCounter >= 150 && stageCounter < 160, "unexpected portal preparation counter=" + stageCounter + " tick=" + restored.tickCount + " pos=" + actualCenter);
+                assertBanner(helper, actualCenter.offset(0, 0, -6), 8, "north ritual banner");
+                assertBanner(helper, actualCenter.offset(0, 0, 6), 0, "south ritual banner");
+                assertBanner(helper, actualCenter.offset(-6, 0, 0), 4, "west ritual banner");
+                assertBanner(helper, actualCenter.offset(6, 0, 0), 12, "east ritual banner");
+                helper.runAfterDelay(140, () -> {
+                    boolean crateFound = false;
+                    for (int x = -4; x <= 4; x++) {
+                        for (int z = -4; z <= 4; z++) {
+                            if (helper.getLevel().getBlockState(actualCenter.offset(x, 0, z)).is(thaumcraft.registry.ModBlocks.LOOT_CRATE.get())) {
+                                crateFound = true;
+                            }
+                        }
+                    }
+                    helper.assertTrue(crateFound, "portal preparation failed to produce a crate");
+                    helper.succeed();
+                });
+            });
+        });
+    }
+
+    private static void bossAggroPreservesOriginalScaling(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(4, 2, 4));
+        EldritchWarden warden = EldritchEntities.ELDRITCH_WARDEN.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(warden != null, "warden factory returned null");
+        warden.snapTo(pos, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(warden);
+        ServerPlayer first = addMockPlayer(helper, pos.offset(1, 0, 0));
+        ServerPlayer challenger = addMockPlayer(helper, pos.offset(2, 0, 0));
+        warden.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(first), 10.0F);
+        warden.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(challenger), 40.0F);
+        warden.setTarget(first);
+        helper.runAfterDelay(22, () -> {
+            helper.assertValueEqual(warden.getMaxHealth(), 200.0F, "original challenger iteration should not add multiplayer scaling for one current player");
+            helper.succeed();
+        });
+    }
+
+    private static ServerPlayer addMockPlayer(GameTestHelper helper, BlockPos pos) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        player.connection = new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, player, cookie) {
+            @Override
+            public void send(Packet<?> packet) {
+            }
+        };
+        player.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addNewPlayer(player);
+        player.connection.markClientLoaded();
+        return player;
+    }
+
+    private static void assertBanner(GameTestHelper helper, BlockPos pos, int expectedFacing, String message) {
+        helper.assertTrue(helper.getLevel().getBlockState(pos).is(thaumcraft.registry.ModBlocks.BANNER.get()), message + " block missing");
+        helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof thaumcraft.device.BannerBlockEntity, message + " block entity missing");
+        thaumcraft.device.BannerBlockEntity banner = (thaumcraft.device.BannerBlockEntity) helper.getLevel().getBlockEntity(pos);
+        helper.assertValueEqual(banner.getFacing(), expectedFacing, message + " facing");
+    }
+
+    private static void portalFinalLeaderHome(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(5, 2, 5));
+        CultistPortal portal = EldritchEntities.CULTIST_PORTAL.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(portal != null, "portal factory returned null");
+        portal.snapTo(pos, 0.0F, 0.0F);
+        TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+        portal.saveWithoutId(output);
+        output.putInt("Stage", 12);
+        output.putInt("StageCounter", 1);
+        output.putBoolean("LeaderSpawned", false);
+        CultistPortal restored = EldritchEntities.CULTIST_PORTAL.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        restored.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), output.buildResult()));
+        restored.snapTo(pos, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(restored);
+        addMockPlayer(helper, pos.offset(2, 0, 2));
+        helper.runAfterDelay(3, () -> {
+            var leaders = helper.getLevel().getEntitiesOfClass(CultistLeader.class, new AABB(pos).inflate(4.0));
+            helper.assertValueEqual(leaders.size(), 1, "portal final leader count");
+            CultistLeader leader = leaders.getFirst();
+            helper.assertValueEqual(leader.getHomePosition(), pos, "portal leader home center");
+            helper.assertValueEqual(leader.getHomeRadius(), 32, "portal leader home radius");
+            helper.succeed();
+        });
+    }
+
+    private static void portalDeathExplosionAndPearl(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(5, 2, 5));
+        CultistPortal portal = EldritchEntities.CULTIST_PORTAL.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        net.minecraft.world.entity.monster.zombie.Zombie zombie = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(portal != null && zombie != null, "portal or zombie factory returned null");
+        portal.snapTo(pos, 0.0F, 0.0F);
+        portal.setHealth(1.0F);
+        BlockPos protectedBlock = pos.offset(-3, 0, 0);
+        helper.getLevel().setBlockAndUpdate(protectedBlock, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        zombie.snapTo(pos.getX() + 2.0, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        helper.getLevel().addFreshEntity(portal);
+        helper.getLevel().addFreshEntity(zombie);
+        float healthBefore = zombie.getHealth();
+        net.minecraft.world.phys.Vec3 velocityBefore = zombie.getDeltaMovement();
+        helper.assertTrue(portal.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 2.0F), "lethal portal hit was rejected");
+        helper.assertTrue(zombie.getHealth() < healthBefore, "portal death explosion did not damage a nearby entity");
+        helper.assertTrue(zombie.getDeltaMovement().subtract(velocityBefore).lengthSqr() > 0.01, "portal death explosion did not knock back a nearby entity");
+        helper.assertTrue(helper.getLevel().getBlockState(protectedBlock).is(net.minecraft.world.level.block.Blocks.STONE), "portal explosion damaged blocks");
+        helper.assertValueEqual(countDrops(helper, new AABB(pos).inflate(4.0), EldritchContent.PRIMORDIAL_PEARL.get()), 1L, "portal death pearl count");
+        helper.succeed();
     }
 
     private static void phaseAndWaveSurviveSave(GameTestHelper helper) {

@@ -3,6 +3,7 @@ package thaumcraft.world.dim;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,13 +20,18 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import thaumcraft.Thaumcraft;
 import thaumcraft.platform.OuterLandsData;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.world.dim.OuterLands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class MazeHandler {
     private static final ConcurrentLinkedQueue<MazeRequest> REQUESTS = new ConcurrentLinkedQueue<>();
+    private static final Map<ServerSeed, Set<CellLoc>> MAZE_CELLS = new ConcurrentHashMap<>();
+    private static final Object NATURAL_RING_LOCK = new Object();
 
     private MazeHandler() {
     }
@@ -43,34 +49,37 @@ public final class MazeHandler {
     }
 
     public static boolean ensureMaze(ServerLevel level, int originChunkX, int originChunkZ, int width, int height, long requestedSeed) {
-        OuterLandsData data = data(level);
-        String id = mazeId(originChunkX, originChunkZ);
-        OuterLandsData.MazeState state = data.maze(id);
-        if (state == null) {
-            OuterLandsData.MazeState requestedMaze = createMaze(level, originChunkX, originChunkZ, width, height, requestedSeed);
-            OuterLandsData.MazeState overlap = data.mazes().values().stream()
-                .filter(existing -> Math.abs(existing.originX() - originChunkX) <= (existing.width() + requestedMaze.width()) / 2
-                    && Math.abs(existing.originZ() - originChunkZ) <= (existing.height() + requestedMaze.height()) / 2)
-                .min(Comparator.comparingLong(existing -> {
-                    long dx = existing.originX() - (long) originChunkX;
-                    long dz = existing.originZ() - (long) originChunkZ;
-                    return dx * dx + dz * dz;
-                }))
-                .orElse(null);
-            if (overlap == null) {
-                data.putMaze(id, requestedMaze);
-                state = requestedMaze;
-            } else {
-                String overlapId = data.mazes().entrySet().stream()
-                    .filter(entry -> entry.getValue() == overlap)
-                    .map(Map.Entry::getKey)
-                    .findFirst()
-                    .orElse(id);
-                data.putAlias(id, overlapId);
-                state = overlap;
+        synchronized (NATURAL_RING_LOCK) {
+            OuterLandsData data = data(level);
+            String id = mazeId(originChunkX, originChunkZ);
+            OuterLandsData.MazeState state = data.maze(id);
+            if (state == null) {
+                OuterLandsData.MazeState requestedMaze = createMaze(originChunkX, originChunkZ, width, height, requestedSeed);
+                OuterLandsData.MazeState overlap = data.mazes().values().stream()
+                    .filter(existing -> Math.abs(existing.originX() - originChunkX) <= (existing.width() + requestedMaze.width()) / 2
+                        && Math.abs(existing.originZ() - originChunkZ) <= (existing.height() + requestedMaze.height()) / 2)
+                    .min(Comparator.comparingLong(existing -> {
+                        long dx = existing.originX() - (long) originChunkX;
+                        long dz = existing.originZ() - (long) originChunkZ;
+                        return dx * dx + dz * dz;
+                    }))
+                    .orElse(null);
+                if (overlap == null) {
+                    data.putMaze(id, requestedMaze);
+                    state = requestedMaze;
+                } else {
+                    String overlapId = data.mazes().entrySet().stream()
+                        .filter(entry -> entry.getValue() == overlap)
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(id);
+                    data.putAlias(id, overlapId);
+                    state = overlap;
+                }
             }
+            publishSnapshot(level);
+            return isReady(state);
         }
-        return isReady(state);
     }
 
     public static Cell getCell(ServerLevel level, int chunkX, int chunkZ) {
@@ -314,7 +323,7 @@ public final class MazeHandler {
         return chunkX + "," + chunkZ;
     }
 
-    private static OuterLandsData.MazeState createMaze(ServerLevel level, int originChunkX, int originChunkZ, int requestedWidth, int requestedHeight, long requestedSeed) {
+    private static OuterLandsData.MazeState createMaze(int originChunkX, int originChunkZ, int requestedWidth, int requestedHeight, long requestedSeed) {
         long seed = requestedSeed;
         Random random = new Random(seed);
         int width = requestedWidth > 0 ? requestedWidth : 15 + random.nextInt(8) * 2;
@@ -343,10 +352,58 @@ public final class MazeHandler {
         return maze.placed().size() >= maze.cells().size();
     }
 
-    public static void requestMaze(MinecraftServer server, long worldSeed, int originChunkX, int originChunkZ, int width, int height, long seed) {
-        MazeRequest request = new MazeRequest(server, worldSeed, originChunkX, originChunkZ, width, height, seed);
-        if (!REQUESTS.contains(request)) {
+    public static boolean reserveNaturalRing(MinecraftServer server, long worldSeed, int originChunkX, int originChunkZ, int width, int height, long seed) {
+        synchronized (NATURAL_RING_LOCK) {
+            ServerSeed key = new ServerSeed(server, worldSeed);
+            if (naturalRingOverlaps(key, originChunkX, originChunkZ, width, height)) {
+                return false;
+            }
+            OuterLandsData.MazeState maze = createMaze(originChunkX, originChunkZ, width, height, seed);
+            MazeRequest request = new MazeRequest(server, worldSeed, originChunkX, originChunkZ, width, height, seed,
+                maze.cells().stream().map(OuterLandsData.CellData::location).collect(java.util.stream.Collectors.toUnmodifiableSet()));
             REQUESTS.add(request);
+            return true;
+        }
+    }
+
+    public static boolean naturalRingInRange(MinecraftServer server, long worldSeed, int originChunkX, int originChunkZ, int width, int height) {
+        synchronized (NATURAL_RING_LOCK) {
+            return naturalRingOverlaps(new ServerSeed(server, worldSeed), originChunkX, originChunkZ, width, height);
+        }
+    }
+
+    private static boolean naturalRingOverlaps(ServerSeed key, int chunkX, int chunkZ, int width, int height) {
+        if (hasCellInRange(MAZE_CELLS.getOrDefault(key, Set.of()), chunkX, chunkZ, width, height)) {
+            return true;
+        }
+        for (MazeRequest request : REQUESTS) {
+            if (request.server() == key.server() && request.worldSeed() == key.worldSeed()
+                && hasCellInRange(request.cells(), chunkX, chunkZ, width, height)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasCellInRange(Set<CellLoc> cells, int chunkX, int chunkZ, int width, int height) {
+        for (CellLoc cell : cells) {
+            if (cell.x() >= chunkX - width && cell.x() <= chunkX + width
+                && cell.z() >= chunkZ - height && cell.z() <= chunkZ + height) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void publishSnapshot(ServerLevel level) {
+        synchronized (NATURAL_RING_LOCK) {
+            Set<CellLoc> cells = new HashSet<>();
+            for (OuterLandsData.MazeState maze : data(level).mazes().values()) {
+                for (OuterLandsData.CellData cell : maze.cells()) {
+                    cells.add(cell.location());
+                }
+            }
+            MAZE_CELLS.put(new ServerSeed(level.getServer(), level.getSeed()), Set.copyOf(cells));
         }
     }
 
@@ -369,8 +426,10 @@ public final class MazeHandler {
             }
             for (ServerLevel candidate : event.getServer().getAllLevels()) {
                 if (candidate.dimension().equals(OuterLands.OUTER_LANDS) && candidate.getSeed() == request.worldSeed()) {
-                    ensureMaze(candidate, request.originChunkX(), request.originChunkZ(), request.width(), request.height(), request.seed());
-                    REQUESTS.remove(request);
+                    synchronized (NATURAL_RING_LOCK) {
+                        ensureMaze(candidate, request.originChunkX(), request.originChunkZ(), request.width(), request.height(), request.seed());
+                        REQUESTS.remove(request);
+                    }
                     break;
                 }
             }
@@ -404,10 +463,32 @@ public final class MazeHandler {
     }
 
     @SubscribeEvent
-    public static void onServerStopped(ServerStoppedEvent event) {
-        REQUESTS.removeIf(request -> request.server() == event.getServer());
+    public static void onServerStarted(ServerStartedEvent event) {
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            if (level.dimension().equals(OuterLands.OUTER_LANDS)) {
+                publishSnapshot(level);
+            }
+        }
     }
 
-    private record MazeRequest(MinecraftServer server, long worldSeed, int originChunkX, int originChunkZ, int width, int height, long seed) {
+    @SubscribeEvent
+    public static void onLevelLoad(LevelEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension().equals(OuterLands.OUTER_LANDS)) {
+            publishSnapshot(level);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        synchronized (NATURAL_RING_LOCK) {
+            REQUESTS.removeIf(request -> request.server() == event.getServer());
+            MAZE_CELLS.keySet().removeIf(key -> key.server() == event.getServer());
+        }
+    }
+
+    private record ServerSeed(MinecraftServer server, long worldSeed) {
+    }
+
+    private record MazeRequest(MinecraftServer server, long worldSeed, int originChunkX, int originChunkZ, int width, int height, long seed, Set<CellLoc> cells) {
     }
 }

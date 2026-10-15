@@ -157,6 +157,7 @@ def components_of(entry):
 
 
 def recipes(ctx):
+    ctx.recipe("jar_label_filter", {"type": f"{NS}:jar_label"}, [f"{NS}:jar_label", f"{NS}:essentia_phial"])
     entries = json.loads(RECIPES.read_text(encoding="utf-8"))
     existing = existing_results(ctx)
     written = 0

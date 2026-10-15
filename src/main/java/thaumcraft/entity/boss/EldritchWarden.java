@@ -1,5 +1,6 @@
 package thaumcraft.entity.boss;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.BossEvent;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -16,12 +17,15 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import thaumcraft.entity.ai.LongRangeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -39,6 +43,7 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
     private static final EntityDataAccessor<Float> DATA_ARM_LIFT_L = SynchedEntityData.defineId(EldritchWarden.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_ARM_LIFT_R = SynchedEntityData.defineId(EldritchWarden.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DATA_FRENZY = SynchedEntityData.defineId(EldritchWarden.class, EntityDataSerializers.INT);
+    private static final String[] TITLES = {"Aphoom-Zhah", "Basatan", "Chaugnar Faugn", "Mnomquah", "Nyogtha", "Oorn", "Shaikorth", "Rhan-Tegoth", "Rhogog", "Shudde M'ell", "Vulthoom", "Yag-Kosha", "Yibb-Tstll", "Zathog", "Zushakon"};
     private int title;
     private int frenzy;
     private boolean lastBlast;
@@ -49,7 +54,7 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        return createBossAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.MOVEMENT_SPEED, 0.33).add(Attributes.ATTACK_DAMAGE, 10.0).add(Attributes.ARMOR, 4.0);
+        return createBossAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.MAX_ABSORPTION, 132.0).add(Attributes.MOVEMENT_SPEED, 0.33).add(Attributes.ATTACK_DAMAGE, 10.0).add(Attributes.ARMOR, 4.0);
     }
 
     @Override
@@ -76,8 +81,9 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 20, 40, 24.0F));
+        this.goalSelector.addGoal(2, new LongRangeAttackGoal(this, 3.0, 1.0, 20, 40, 24.0F));
         this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.1, false));
+        this.goalSelector.addGoal(5, new MoveTowardsRestrictionGoal(this, 0.8));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
@@ -112,17 +118,25 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
     @Override
     public void tick() {
         super.tick();
+        if (!this.level().isClientSide()) {
+            for (int corner = 0; corner < 4; corner++) {
+                BlockPos pos = BlockPos.containing(this.getX() + (corner % 2 * 2 - 1) * 0.25, this.getY(), this.getZ() + (corner / 2 % 2 * 2 - 1) * 0.25);
+                if (this.level().isEmptyBlock(pos)) this.level().setBlockAndUpdate(pos, ModBlocks.SAPPING_FIELD.get().defaultBlockState());
+            }
+        }
         if (this.frenzy > 0) {
             if (this.frenzy == 150 && this.hasHome()) {
-                this.teleportTo(this.getHomePosition().getX() + 0.5, this.getHomePosition().getY(), this.getHomePosition().getZ() + 0.5);
-                this.level().broadcastEntityEvent(this, (byte) 18);
+                if (this.teleportHomeSafely()) {
+                    this.level().broadcastEntityEvent(this, (byte) 18);
+                }
             }
             if (this.frenzy < 121 && this.frenzy % 10 == 0 && this.level() instanceof net.minecraft.server.level.ServerLevel level) {
                 double radius = (150 - this.frenzy) / 8.0;
                 int stride = 1 + this.frenzy / 8;
-                for (int angle = 0; angle < 180; angle += 2 * stride) {
-                    int x = (int) Math.floor(this.getX() + radius * Math.cos(Math.toRadians(angle)));
-                    int z = (int) Math.floor(this.getZ() + radius * Math.sin(Math.toRadians(angle)));
+                for (int index = 0; index < 180 / stride; index++) {
+                    int angle = index * 2 * stride;
+                    int x = this.getBlockX() + (int) (radius * Math.cos(Math.toRadians(angle)));
+                    int z = this.getBlockZ() + (int) (radius * Math.sin(Math.toRadians(angle)));
                     net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, this.getBlockY(), z);
                     if (level.isEmptyBlock(pos) && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), net.minecraft.core.Direction.UP)) {
                         level.setBlockAndUpdate(pos, ModBlocks.SAPPING_FIELD.get().defaultBlockState());
@@ -137,9 +151,61 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
             this.entityData.set(DATA_ARM_LIFT_L, Math.max(0.0F, this.getArmLiftLeft() - 0.05F));
             this.entityData.set(DATA_ARM_LIFT_R, Math.max(0.0F, this.getArmLiftRight() - 0.05F));
         }
-        if (!this.level().isClientSide() && this.tickCount % 25 == 0 && this.getAbsorptionAmount() < 132.0F) {
+        if (!this.level().isClientSide() && this.damageCooldownTime <= 0 && this.tickCount % 25 == 0 && this.getAbsorptionAmount() < this.getAttributeBaseValue(Attributes.MAX_HEALTH) * 0.66F) {
             this.setAbsorptionAmount(this.getAbsorptionAmount() + 1.0F);
         }
+    }
+
+    @Override
+    protected boolean shouldPauseBossGoals() {
+        return this.frenzy > 0 || super.shouldPauseBossGoals();
+    }
+
+    private boolean teleportHomeSafely() {
+        double oldX = this.getX();
+        double oldY = this.getY();
+        double oldZ = this.getZ();
+        BlockPos home = this.getHomePosition();
+        net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderEntity event = net.neoforged.neoforge.event.EventHooks.onEnderTeleport(this, home.getX(), home.getY(), home.getZ());
+        if (event.isCanceled()) {
+            return false;
+        }
+        double targetX = event.getTargetX();
+        double targetY = event.getTargetY();
+        double targetZ = event.getTargetZ();
+        int baseX = net.minecraft.core.BlockPos.containing(targetX, targetY, targetZ).getX();
+        int y = net.minecraft.core.BlockPos.containing(targetX, targetY, targetZ).getY();
+        int baseZ = net.minecraft.core.BlockPos.containing(targetX, targetY, targetZ).getZ();
+        BlockPos initial = new BlockPos(baseX, y, baseZ);
+        if (!this.level().hasChunkAt(initial)) {
+            return false;
+        }
+        boolean found = false;
+        int x = baseX;
+        int z = baseZ;
+        for (int attempt = 0; attempt < 20; attempt++) {
+            BlockPos pos = new BlockPos(x, y, z);
+            BlockPos below = pos.below();
+            if (this.level().hasChunkAt(pos) && this.level().hasChunkAt(below)
+                && this.level().getBlockState(below).isSolid()
+                && !this.level().getBlockState(pos).isSolid()) {
+                found = true;
+                break;
+            }
+            x = baseX + this.random.nextInt(8) - this.random.nextInt(8);
+            z = baseZ + this.random.nextInt(8) - this.random.nextInt(8);
+        }
+        if (!found) {
+            return false;
+        }
+        this.teleportTo(x + 0.5, y + 0.1, z + 0.5);
+        if (!this.level().noCollision(this, this.getBoundingBox())) {
+            this.teleportTo(oldX, oldY, oldZ);
+            return false;
+        }
+        this.level().playSound(null, oldX, oldY, oldZ, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 1.0F, 1.0F);
+        this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
+        return true;
     }
 
     @Override
@@ -210,6 +276,14 @@ public class EldritchWarden extends ThaumcraftBoss implements RangedAttackMob, t
             target.push(0.0, 0.6, 0.0);
         }
         return hit;
+    }
+
+    @Override
+    public void generateName() {
+        int modifier = thaumcraft.entity.monster.ChampionModifier.get(this);
+        if (modifier >= 0) {
+            this.setCustomName(net.minecraft.network.chat.Component.translatable(this.getType().getDescriptionId(), TITLES[Math.floorMod(this.title, TITLES.length)], net.minecraft.network.chat.Component.translatable("champion.mod." + thaumcraft.entity.monster.ChampionModifier.name(modifier))));
+        }
     }
 
     @Override

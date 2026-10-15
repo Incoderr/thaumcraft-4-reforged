@@ -52,67 +52,67 @@ public final class ConfigRecipes {
         TcRecipes.register(new CraftingRecipeRef("MundaneRing", "BASICARTIFACE", Identifier.parse("thaumcraft:mundane_ring"), TcStack.of("thaumcraft:mundane_ring")));
         TcRecipes.register(new CraftingRecipeRef("MundaneBelt", "BASICARTIFACE", Identifier.parse("thaumcraft:mundane_belt"), TcStack.of("thaumcraft:mundane_belt")));
         TcRecipes.register(new CraftingRecipeRef("JarLabel", "DISTILESSENTIA", Identifier.parse("thaumcraft:jar_label"), TcStack.of("thaumcraft:jar_label", 4)));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel0", "", Identifier.parse("thaumcraft:jar_label0"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.AIR, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel1", "", Identifier.parse("thaumcraft:jar_label1"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.EARTH, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel2", "", Identifier.parse("thaumcraft:jar_label2"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FIRE, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel3", "", Identifier.parse("thaumcraft:jar_label3"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WATER, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel4", "", Identifier.parse("thaumcraft:jar_label4"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ORDER, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel5", "", Identifier.parse("thaumcraft:jar_label5"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ENTROPY, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel6", "", Identifier.parse("thaumcraft:jar_label6"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.VOID, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel7", "", Identifier.parse("thaumcraft:jar_label7"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.LIGHT, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel0", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.AIR, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel1", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.EARTH, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel2", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FIRE, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel3", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WATER, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel4", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ORDER, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel5", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ENTROPY, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel6", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.VOID, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel7", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.LIGHT, 0))));
     }
 
     private static void normal1() {
-        TcRecipes.register(new CraftingRecipeRef("JarLabel8", "", Identifier.parse("thaumcraft:jar_label8"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WEATHER, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel9", "", Identifier.parse("thaumcraft:jar_label9"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MOTION, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel10", "", Identifier.parse("thaumcraft:jar_label10"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.COLD, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel11", "", Identifier.parse("thaumcraft:jar_label11"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CRYSTAL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel12", "", Identifier.parse("thaumcraft:jar_label12"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.LIFE, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel13", "", Identifier.parse("thaumcraft:jar_label13"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.POISON, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel14", "", Identifier.parse("thaumcraft:jar_label14"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ENERGY, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel15", "", Identifier.parse("thaumcraft:jar_label15"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.EXCHANGE, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel16", "", Identifier.parse("thaumcraft:jar_label16"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.METAL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel17", "", Identifier.parse("thaumcraft:jar_label17"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.DEATH, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel18", "", Identifier.parse("thaumcraft:jar_label18"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FLIGHT, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel19", "", Identifier.parse("thaumcraft:jar_label19"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.DARKNESS, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel8", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WEATHER, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel9", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MOTION, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel10", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.COLD, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel11", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CRYSTAL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel12", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.LIFE, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel13", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.POISON, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel14", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ENERGY, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel15", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.EXCHANGE, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel16", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.METAL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel17", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.DEATH, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel18", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FLIGHT, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel19", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.DARKNESS, 0))));
     }
 
     private static void normal2() {
-        TcRecipes.register(new CraftingRecipeRef("JarLabel20", "", Identifier.parse("thaumcraft:jar_label20"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SOUL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel21", "", Identifier.parse("thaumcraft:jar_label21"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HEAL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel22", "", Identifier.parse("thaumcraft:jar_label22"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TRAVEL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel23", "", Identifier.parse("thaumcraft:jar_label23"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ELDRITCH, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel24", "", Identifier.parse("thaumcraft:jar_label24"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MAGIC, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel25", "", Identifier.parse("thaumcraft:jar_label25"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.AURA, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel26", "", Identifier.parse("thaumcraft:jar_label26"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TAINT, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel27", "", Identifier.parse("thaumcraft:jar_label27"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SLIME, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel28", "", Identifier.parse("thaumcraft:jar_label28"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.PLANT, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel29", "", Identifier.parse("thaumcraft:jar_label29"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TREE, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel30", "", Identifier.parse("thaumcraft:jar_label30"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.BEAST, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel31", "", Identifier.parse("thaumcraft:jar_label31"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FLESH, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel20", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SOUL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel21", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HEAL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel22", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TRAVEL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel23", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ELDRITCH, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel24", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MAGIC, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel25", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.AURA, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel26", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TAINT, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel27", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SLIME, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel28", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.PLANT, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel29", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TREE, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel30", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.BEAST, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel31", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.FLESH, 0))));
     }
 
     private static void normal3() {
-        TcRecipes.register(new CraftingRecipeRef("JarLabel32", "", Identifier.parse("thaumcraft:jar_label32"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.UNDEAD, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel33", "", Identifier.parse("thaumcraft:jar_label33"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MIND, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel34", "", Identifier.parse("thaumcraft:jar_label34"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SENSES, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel35", "", Identifier.parse("thaumcraft:jar_label35"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MAN, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel36", "", Identifier.parse("thaumcraft:jar_label36"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CROP, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel37", "", Identifier.parse("thaumcraft:jar_label37"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MINE, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel38", "", Identifier.parse("thaumcraft:jar_label38"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TOOL, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel39", "", Identifier.parse("thaumcraft:jar_label39"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HARVEST, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel40", "", Identifier.parse("thaumcraft:jar_label40"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WEAPON, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel41", "", Identifier.parse("thaumcraft:jar_label41"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ARMOR, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel42", "", Identifier.parse("thaumcraft:jar_label42"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HUNGER, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel43", "", Identifier.parse("thaumcraft:jar_label43"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.GREED, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel32", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.UNDEAD, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel33", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MIND, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel34", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.SENSES, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel35", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MAN, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel36", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CROP, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel37", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MINE, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel38", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TOOL, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel39", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HARVEST, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel40", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.WEAPON, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel41", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.ARMOR, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel42", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.HUNGER, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel43", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.GREED, 0))));
     }
 
     private static void normal4() {
-        TcRecipes.register(new CraftingRecipeRef("JarLabel44", "", Identifier.parse("thaumcraft:jar_label44"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CRAFT, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel45", "", Identifier.parse("thaumcraft:jar_label45"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CLOTH, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel46", "", Identifier.parse("thaumcraft:jar_label46"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MECHANISM, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabel47", "", Identifier.parse("thaumcraft:jar_label47"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TRAP, 0))));
-        TcRecipes.register(new CraftingRecipeRef("JarLabelNull", "JARLABEL", Identifier.parse("thaumcraft:jar_label_null"), TcStack.of("thaumcraft:jar_label")));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel44", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CRAFT, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel45", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.CLOTH, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel46", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.MECHANISM, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabel47", "", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.withAspects("thaumcraft:jar_label", 1, new AspectList().add(Aspect.TRAP, 0))));
+        TcRecipes.register(new CraftingRecipeRef("JarLabelNull", "JARLABEL", Identifier.parse("thaumcraft:jar_label_filter"), TcStack.of("thaumcraft:jar_label")));
         TcRecipes.register(new CraftingRecipeRef("WandBasic", "BASICTHAUMATURGY", Identifier.parse("thaumcraft:wand_iron_wood"), TcStack.withData("thaumcraft:wand", 1, Map.of("cap", "iron", "rod", "wood"))));
         TcRecipes.register(new CraftingRecipeRef("WandCapIron", "BASICTHAUMATURGY", Identifier.parse("thaumcraft:iron_wand_cap"), TcStack.of("thaumcraft:iron_wand_cap")));
         TcRecipes.register(new CraftingRecipeRef("KnowFrag", "KNOWFRAG", Identifier.parse("thaumcraft:know_frag"), TcStack.of("thaumcraft:research_notes")));

@@ -21,7 +21,10 @@ public final class Warp {
         Thaumcraft.id("compass_stone"), 1,
         Thaumcraft.id("liquid_death_bucket"), 1,
         Thaumcraft.id("bottled_taint"), 1,
-        Thaumcraft.id("focus_primal"), 1
+        Thaumcraft.id("focus_primal"), 1,
+        Thaumcraft.id("brain_jar"), 1,
+        Thaumcraft.id("flesh_golem"), 1,
+        Thaumcraft.id("primal_staff_core"), 1
     );
 
     private Warp() {

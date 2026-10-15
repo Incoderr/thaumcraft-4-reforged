@@ -115,6 +115,11 @@ public class NodeTransducerBlockEntity extends TcBlockEntity {
         } else if (count > 0) {
             count--;
         }
+        if (!server && count > 50 && status != 0) {
+            var random = tickLevel.getRandom();
+            if (random.nextBoolean()) thaumcraft.fx.Fx.get().nodeBolt(tickLevel, worldPosition.getX() + 0.25F + random.nextFloat() * 0.5F, worldPosition.getY() + 0.5F, worldPosition.getZ() + 0.25F + random.nextFloat() * 0.5F, worldPosition.getX() + 0.5F, worldPosition.getY() - 0.5F, worldPosition.getZ() + 0.5F);
+            if (random.nextBoolean() && hasStabilizer()) thaumcraft.fx.Fx.get().nodeBolt(tickLevel, worldPosition.getX() + 0.25F + random.nextFloat() * 0.5F, worldPosition.getY() - 1.5F, worldPosition.getZ() + 0.25F + random.nextFloat() * 0.5F, worldPosition.getX() + 0.5F, worldPosition.getY() - 0.5F, worldPosition.getZ() + 0.5F);
+        }
         if (count > 1000) {
             count = 1000;
         }
@@ -151,6 +156,7 @@ public class NodeTransducerBlockEntity extends TcBlockEntity {
     public boolean triggerEvent(int id, int param) {
         if (id == 10 && param == 10) {
             if (level != null && level.isClientSide()) {
+                thaumcraft.fx.Fx.get().shockBurst(level, worldPosition.getX() + 0.5, worldPosition.getY() - 0.5, worldPosition.getZ() + 0.5, 1.0F);
                 level.playLocalSound(worldPosition.getX() + 0.5, worldPosition.getY() - 0.5, worldPosition.getZ() + 0.5, ModSounds.CRAFTFAIL.get(), SoundSource.BLOCKS, 0.5F, 1.0F, false);
             }
             return true;

@@ -16,7 +16,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import thaumcraft.entity.ai.LongRangeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -31,6 +32,7 @@ public class EldritchGolem extends ThaumcraftBoss implements RangedAttackMob, th
     private static final EntityDataAccessor<Integer> DATA_BEAM_CHARGE = SynchedEntityData.defineId(EldritchGolem.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_CHARGING_BEAM = SynchedEntityData.defineId(EldritchGolem.class, EntityDataSerializers.BOOLEAN);
     private int attackTimer;
+    private LongRangeAttackGoal rangedGoal;
     private int arcTicks;
     private int arcX;
     private int arcY;
@@ -65,10 +67,11 @@ public class EldritchGolem extends ThaumcraftBoss implements RangedAttackMob, th
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 5, 5, 24.0F));
+        this.rangedGoal = new LongRangeAttackGoal(this, 3.0, 1.0, 5, 5, 24.0F);
         this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.1, false));
-        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8));
-        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8));
+        this.goalSelector.addGoal(6, new MoveTowardsRestrictionGoal(this, 0.8));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
@@ -78,6 +81,10 @@ public class EldritchGolem extends ThaumcraftBoss implements RangedAttackMob, th
     }
 
     public void setHeadless(boolean headless) {
+        if (this.rangedGoal != null) {
+            this.goalSelector.removeGoal(this.rangedGoal);
+            if (headless) this.goalSelector.addGoal(2, this.rangedGoal);
+        }
         this.entityData.set(DATA_HEADLESS, headless);
         if (headless) {
             this.setBeamCharge(0);
@@ -162,7 +169,7 @@ public class EldritchGolem extends ThaumcraftBoss implements RangedAttackMob, th
             this.setHeadless(true);
             this.setSpawnTimer(100);
             double yaw = Math.toRadians(this.getYRot());
-            level.explode(this, this.getX() - Math.sin(yaw) * 0.75, this.getY() + this.getEyeHeight(), this.getZ() + Math.cos(yaw) * 0.75, 2.0F, Level.ExplosionInteraction.MOB);
+            level.explode(this, this.getX() - Math.sin(yaw) * 0.75, this.getY() + this.getEyeHeight(), this.getZ() + Math.cos(yaw) * 0.75, 2.0F, Level.ExplosionInteraction.NONE);
             return false;
         }
         return super.hurtServer(level, source, damage);

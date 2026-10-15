@@ -172,7 +172,11 @@ public final class MachineGameTests {
         helper.assertBlockPresent(Blocks.OBSIDIAN, origin.offset(1, 0, 1));
         helper.assertBlockPresent(Blocks.IRON_BARS, origin.offset(1, 1, 0));
         helper.assertBlockPresent(Blocks.NETHER_BRICKS, origin.offset(2, 2, 2));
-        helper.assertTrue(!helper.getLevel().getEntitiesOfClass(Blaze.class, new AABB(helper.absolutePos(origin)).inflate(5.0)).isEmpty(), "no blaze spawned");
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(Blaze.class, new AABB(helper.absolutePos(origin)).inflate(5.0)).isEmpty(), "breaking a wall spawned a blaze");
+        buildFurnace(helper, origin);
+        helper.assertTrue(form(helper, origin), "furnace did not reform");
+        helper.getLevel().destroyBlock(helper.absolutePos(origin.offset(1, 1, 1)), false);
+        helper.assertTrue(!helper.getLevel().getEntitiesOfClass(Blaze.class, new AABB(helper.absolutePos(origin)).inflate(5.0)).isEmpty(), "breaking the core did not spawn a blaze");
         helper.succeed();
     }
 

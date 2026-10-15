@@ -114,7 +114,7 @@ public final class ArmorEvents {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGH)
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         DamageSource source = event.getSource();
         float amount = event.getAmount();
@@ -156,7 +156,7 @@ public final class ArmorEvents {
         boolean magic = source.is(DamageTypes.MAGIC) || source.is(DamageTypes.INDIRECT_MAGIC);
         boolean fire = source.is(DamageTypeTags.IS_FIRE) || source.is(DamageTypeTags.IS_EXPLOSION);
         boolean bypass = source.is(DamageTypeTags.BYPASSES_ARMOR);
-        if (bypass && !magic) {
+        if (bypass && !magic && !fire) {
             return 0.0;
         }
         double fortressDefense = 0.0;
@@ -173,7 +173,7 @@ public final class ArmorEvents {
             return 0.0;
         }
         double divisor = magic ? 35.0 : (fire ? 20.0 : 25.0);
-        double ratio = fortressDefense / divisor * fortressSet(entity) + robeDefense / (magic ? 35.0 : 25.0);
+        double ratio = fortressDefense / divisor * fortressSet(entity) + (bypass && !magic ? 0.0 : robeDefense / (magic ? 35.0 : 25.0));
         double vanilla = bypass ? 0.0 : (fortressDefense + robeDefense) / 25.0;
         return ratio - vanilla;
     }

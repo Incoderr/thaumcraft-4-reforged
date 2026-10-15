@@ -145,6 +145,7 @@ public class InfernalFurnaceBlock extends Block implements EntityBlock {
                         BlockPos candidate = pos.offset(x, y, z);
                         BlockState candidateState = level.getBlockState(candidate);
                         if (candidateState.is(this) && candidateState.getValue(TILE) == InfernalTiles.CORE) {
+                            if (level.getBlockEntity(candidate) instanceof InfernalFurnaceBlockEntity furnace) furnace.suppressBlaze();
                             level.setBlock(candidate, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                             return;
                         }

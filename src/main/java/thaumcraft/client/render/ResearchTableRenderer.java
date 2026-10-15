@@ -80,7 +80,7 @@ public class ResearchTableRenderer implements BlockEntityRenderer<ResearchTableB
         int light = state.lightCoords;
         if (state.scribe) {
             collector.submitCustomGeometry(poseStack, TcRenderTypes.entityTranslucent(TABLE), (pose, buffer) ->
-                ModelBoxGeometry.box(new EntityQuadSink(pose, buffer), -6, -2, 3, 3, 2, 3, 0, 44, 128, 64, true, 0xFFFFFFFF, light));
+                ModelBoxGeometry.box(new EntityQuadSink(pose, buffer), -6, -1.98F, 3, 3, 2, 3, 0, 44, 128, 64, true, 0xFFFFFFFF, light));
             poseStack.pushPose();
             poseStack.rotateDegrees(Axis.YP, -90.0F);
             poseStack.rotateDegrees(Axis.XP, 180.0F);

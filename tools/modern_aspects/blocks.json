@@ -2084,6 +2084,226 @@
         "EARTH": 1,
         "ELDRITCH": 1
       }
+    },
+    {
+      "target": "minecraft:spruce_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:spruce_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:spruce_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:spruce_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:spruce_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:birch_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:birch_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:birch_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:birch_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:birch_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:jungle_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:jungle_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:jungle_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:jungle_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:jungle_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:acacia_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:acacia_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:acacia_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:acacia_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:acacia_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:dark_oak_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:dark_oak_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:dark_oak_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:dark_oak_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:dark_oak_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:mangrove_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:mangrove_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:mangrove_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:mangrove_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:mangrove_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:cherry_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:cherry_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:cherry_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:cherry_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:cherry_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:bamboo_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:bamboo_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:bamboo_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:bamboo_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:bamboo_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:crimson_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:crimson_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:crimson_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:crimson_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:crimson_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:warped_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:warped_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:warped_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:warped_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:warped_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
+    },
+    {
+      "target": "minecraft:pale_oak_door",
+      "copy": "minecraft:oak_door"
+    },
+    {
+      "target": "minecraft:pale_oak_button",
+      "copy": "minecraft:oak_button"
+    },
+    {
+      "target": "minecraft:pale_oak_pressure_plate",
+      "copy": "minecraft:oak_pressure_plate"
+    },
+    {
+      "target": "minecraft:pale_oak_trapdoor",
+      "copy": "minecraft:oak_trapdoor"
+    },
+    {
+      "target": "minecraft:pale_oak_fence_gate",
+      "copy": "minecraft:oak_fence_gate"
     }
   ]
 }

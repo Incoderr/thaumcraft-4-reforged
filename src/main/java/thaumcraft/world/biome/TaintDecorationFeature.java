@@ -19,7 +19,7 @@ public record TaintDecorationFeature() implements Feature {
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos origin) {
         if (level.getBiome(origin).is(TaintBiomes.TAINTED_LAND)) {
-            TaintDecorationHook.decorate(level, random, origin);
+            TaintDecorationHook.decorate(level, random, origin, chunkGenerator);
         }
         return true;
     }

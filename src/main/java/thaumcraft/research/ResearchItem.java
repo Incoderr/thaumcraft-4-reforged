@@ -34,6 +34,20 @@ public class ResearchItem {
     private List<Identifier> entityTriggers = List.of();
     private List<Aspect> aspectTriggers = List.of();
     private List<ResearchPage> pages = List.of();
+    private List<String> requiredTags = List.of();
+
+    public ResearchItem setRequiredTags(String... tags) {
+        this.requiredTags = List.of(tags);
+        return this;
+    }
+
+    public boolean isAvailable() {
+        for (String tag : this.requiredTags) {
+            var key = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, Identifier.parse(tag));
+            if (!net.minecraft.core.registries.BuiltInRegistries.ITEM.get(key).map(set -> set.size() > 0).orElse(false)) return false;
+        }
+        return true;
+    }
 
     public ResearchItem(String key, String category) {
         this.key = key;

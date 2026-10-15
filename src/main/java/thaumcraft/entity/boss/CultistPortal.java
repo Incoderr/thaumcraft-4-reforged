@@ -1,5 +1,6 @@
 package thaumcraft.entity.boss;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -78,9 +79,6 @@ public class CultistPortal extends Monster {
                 this.playSound(ModSounds.ZAP.get(), 1.0F, 0.9F + this.random.nextFloat() * 0.2F);
             }
         }
-        if (this.stageCounter > 0) {
-            this.stageCounter--;
-        }
         if (this.stageCounter <= 0) {
             if (level.getNearestPlayer(this, 48.0) == null) {
                 this.stageCounter = 30 + this.random.nextInt(30);
@@ -107,6 +105,35 @@ public class CultistPortal extends Monster {
             }
             this.stage++;
             this.entityData.set(DATA_STAGE, this.stage);
+            }
+        } else {
+            this.stageCounter--;
+            if (this.stageCounter == 160 && this.stage == 0) {
+                this.pulse = 10;
+                this.entityData.set(DATA_PULSE, this.pulse);
+                BlockPos center = new BlockPos((int) this.getX(), (int) this.getY(), (int) this.getZ());
+                placeBanner(level, center.relative(net.minecraft.core.Direction.NORTH, 6), 8);
+                placeBanner(level, center.relative(net.minecraft.core.Direction.SOUTH, 6), 0);
+                placeBanner(level, center.relative(net.minecraft.core.Direction.WEST, 6), 4);
+                placeBanner(level, center.relative(net.minecraft.core.Direction.EAST, 6), 12);
+            }
+            if (this.stageCounter > 20 && this.stageCounter < 150 && this.stage == 0 && this.stageCounter % 13 == 0) {
+                int centerX = (int) this.getX();
+                int centerZ = (int) this.getZ();
+                int x = centerX + this.random.nextInt(5) - this.random.nextInt(5);
+                int z = centerZ + this.random.nextInt(5) - this.random.nextInt(5);
+                BlockPos cratePos = new BlockPos(x, (int) this.getY(), z);
+                if (x != centerX && z != centerZ && level.isEmptyBlock(cratePos)) {
+                    this.pulse = 10;
+                    this.entityData.set(DATA_PULSE, this.pulse);
+                    float tierRoll = level.getRandom().nextFloat();
+                    net.minecraft.world.level.block.state.BlockState crate = thaumcraft.registry.ModBlocks.LOOT_CRATE.get().defaultBlockState()
+                        .setValue(thaumcraft.block.LootBlock.TIER, tierRoll < 0.05F
+                            ? thaumcraft.block.LootBlock.Tier.RARE
+                            : tierRoll < 0.2F ? thaumcraft.block.LootBlock.Tier.UNCOMMON : thaumcraft.block.LootBlock.Tier.COMMON);
+                    level.setBlock(cratePos, crate, 3);
+                    this.playSound(ModSounds.WANDFAIL.get(), 1.0F, 1.0F);
+                }
             }
         }
         if (this.stage < 12) {
@@ -136,10 +163,19 @@ public class CultistPortal extends Monster {
             return;
         }
         leader.snapTo(this.getX() + this.random.nextFloat() - this.random.nextFloat(), this.getY() + 0.25, this.getZ() + this.random.nextFloat() - this.random.nextFloat(), this.getYRot(), 0.0F);
-        leader.setHomeTo(this.blockPosition(), 32);
         leader.finalizeSpawn(level, level.getCurrentDifficultyAt(this.blockPosition()), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED, null);
+        leader.setHomeTo(this.blockPosition(), 32);
         level.addFreshEntity(leader);
         leader.playSound(ModSounds.WANDFAIL.get(), 1.0F, 1.0F);
+    }
+
+    private void placeBanner(ServerLevel level, BlockPos pos, int facing) {
+        level.setBlock(pos, thaumcraft.registry.ModBlocks.BANNER.get().defaultBlockState(), 3);
+        if (level.getBlockEntity(pos) instanceof thaumcraft.device.BannerBlockEntity banner) {
+            banner.setFacing(facing);
+            banner.sync();
+            this.playSound(ModSounds.WANDFAIL.get(), 1.0F, 1.0F);
+        }
     }
 
     @Override
@@ -202,6 +238,9 @@ public class CultistPortal extends Monster {
 
     @Override
     public void die(DamageSource cause) {
+        if (!this.level().isClientSide()) {
+            this.level().explode(this, this.damageSources().explosion(this, this), null, this.getX(), this.getY(), this.getZ(), 2.0F, false, Level.ExplosionInteraction.NONE);
+        }
         super.die(cause);
         this.bossEvent.setVisible(false);
     }

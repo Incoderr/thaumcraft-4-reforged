@@ -229,6 +229,9 @@ public final class LogisticsGoals {
             if (core == 10) {
                 return stacksAtHome(golem, source, side).stream().anyMatch(stack -> hasSortDestination(golem, stack));
             }
+            if (GolemLogistics.filters(golem).isEmpty()) {
+                return stacksAtHome(golem, source, side).stream().anyMatch(stack -> core == 8 ? hasUseDestination(golem, stack) : hasMarkerDestination(golem, stack));
+            }
             return GolemLogistics.filters(golem).stream().anyMatch(filter -> {
                 boolean valid = core == 8 ? hasUseDestination(golem, filter) : hasMarkerDestination(golem, filter);
                 return valid && Transfer.extract(golem.level(), source, side, stack -> golem.matchesFilter(filter, stack), golem.getCarrySpace(), true).getCount() > 0;
@@ -244,9 +247,9 @@ public final class LogisticsGoals {
         public void start() {
             BlockPos source = GolemLogistics.homeContainer(golem);
             Direction side = golem.getHomeFacing();
-            List<ItemStack> candidates = core == 10 ? stacksAtHome(golem, source, side) : GolemLogistics.filters(golem);
+            List<ItemStack> candidates = core == 10 || GolemLogistics.filters(golem).isEmpty() ? stacksAtHome(golem, source, side) : GolemLogistics.filters(golem);
             for (ItemStack candidate : candidates) {
-                Predicate<ItemStack> match = core == 10 ? stack -> ItemStack.isSameItemSameComponents(candidate, stack) : stack -> golem.matchesFilter(candidate, stack);
+                Predicate<ItemStack> match = core == 10 ? stack -> golem.matchesFilter(candidate, stack) : stack -> golem.matchesFilter(candidate, stack);
                 if (core == 10 && !hasSortDestination(golem, candidate)) continue;
                 if (core == 8 && !hasUseDestination(golem, candidate)) continue;
                 if (core == 1 && !hasMarkerDestination(golem, candidate)) continue;
@@ -277,7 +280,7 @@ public final class LogisticsGoals {
                 for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> GolemLogistics.matchesColor(golem, candidate, needed))) {
                     double distance = golem.distanceToSqr(marker.pos().getX() + 0.5, marker.pos().getY() + 0.5, marker.pos().getZ() + 0.5);
                     if (distance > nearest || GolemLogistics.isHomeBlock(golem, marker.pos())) continue;
-                    int amount = Math.min(golem.getCarrySpace(), needed.getCount());
+                    int amount = Math.min(golem.getCarrySpace(), golem.getToggles()[0] ? golem.getCarrySpace() : needed.getCount());
                     ItemStack found = Transfer.extract(golem.level(), marker.pos(), marker.side(), stack -> golem.matchesFilter(needed, stack), amount, true);
                     if (!found.isEmpty()) {
                         nearest = distance;
@@ -322,7 +325,7 @@ public final class LogisticsGoals {
             double nearest = golem.getRange() * golem.getRange();
             for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> sorting || GolemLogistics.matchesColor(golem, candidate, carried))) {
                 if (GolemLogistics.isHomeBlock(golem, marker.pos())) continue;
-                if (sorting && Transfer.count(golem.level(), marker.pos(), marker.side(), stack -> ItemStack.isSameItemSameComponents(carried, stack)) == 0) continue;
+                if (sorting && Transfer.count(golem.level(), marker.pos(), marker.side(), stack -> golem.matchesFilter(carried, stack)) == 0) continue;
                 if (Transfer.insert(golem.level(), marker.pos(), marker.side(), carried, true).getCount() == carried.getCount()) continue;
                 double distance = golem.distanceToSqr(marker.pos().getX() + 0.5, marker.pos().getY() + 0.5, marker.pos().getZ() + 0.5);
                 if (distance <= nearest) {
@@ -650,10 +653,10 @@ public final class LogisticsGoals {
                 if (FluidStack.isSameFluidSameComponents(GolemFluids.pickup(golem.level(), marker.pos(), true), wanted)) {
                     if (GolemLogistics.closeTo(golem, marker.pos(), 4.0)) sources.add(new FluidSource(marker.pos(), null, true));
                     if (golem.getUpgradeAmount(5) > 0) {
-                        sources.add(new FluidSource(marker.pos(), null, true));
                         for (BlockPos connected : connectedSources(marker.pos(), wanted.getFluid())) {
-                            if (golem.getHomePosition().distSqr(connected) <= golem.getRange() * golem.getRange()) sources.add(new FluidSource(connected, null, true));
+                            if (golem.getHomePosition().distSqr(connected) <= golem.getRange() * golem.getRange()) return new FluidSource(connected, null, true);
                         }
+                        sources.add(new FluidSource(marker.pos(), null, true));
                     } else {
                         sources.add(new FluidSource(marker.pos(), null, true));
                     }
@@ -681,6 +684,7 @@ public final class LogisticsGoals {
                     if (GolemFluids.pickup(golem.level(), next, true).getAmount() >= 1000) result.add(next);
                 }
             }
+            result.sort(Comparator.comparingDouble((BlockPos pos) -> pos.distSqr(origin)).reversed());
             return result;
         }
     }
@@ -855,7 +859,7 @@ public final class LogisticsGoals {
         for (Marker marker : GolemLogistics.markedItemHandlers(golem, candidate -> true)) {
             if (GolemLogistics.isHomeBlock(golem, marker.pos())) continue;
             if (golem.distanceToSqr(marker.pos().getX() + 0.5, marker.pos().getY() + 0.5, marker.pos().getZ() + 0.5) > golem.getRange() * golem.getRange()) continue;
-            if (Transfer.count(golem.level(), marker.pos(), marker.side(), candidate -> ItemStack.isSameItemSameComponents(stack, candidate)) > 0
+            if (Transfer.count(golem.level(), marker.pos(), marker.side(), candidate -> golem.matchesFilter(stack, candidate)) > 0
                 && Transfer.insert(golem.level(), marker.pos(), marker.side(), stack, true).getCount() < stack.getCount()) return true;
         }
         return false;

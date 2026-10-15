@@ -57,6 +57,7 @@ public final class GolemGameTests {
     private static final Map<String, Consumer<GameTestHelper>> TESTS = Map.ofEntries(
         Map.entry("golem_material_attributes", GolemGameTests::materials),
         Map.entry("golem_bell_place_cycle", GolemGameTests::bellCycle),
+        Map.entry("golem_bell_dismantle_core", GolemGameTests::bellDismantleCore),
         Map.entry("golem_tag_filter_components", GolemGameTests::tagFilter),
         Map.entry("golem_snapshot_roundtrip", GolemGameTests::snapshot),
         Map.entry("golem_save_resources", GolemGameTests::saveResources),
@@ -116,9 +117,11 @@ public final class GolemGameTests {
         var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
         player.setPos(original.position().add(3, 0, 0));
         ItemStack bell = new ItemStack(BuiltInRegistries.ITEM.getValue(Thaumcraft.id("golem_bell")));
-        ((thaumcraft.item.golem.GolemBellItem) bell.getItem()).onLeftClickEntity(bell, player, original);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, bell);
+        player.attack(original);
         helper.assertTrue(original.isRemoved(), "bell leaves original entity alive");
         var drops = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, original.getBoundingBox().inflate(2));
+        helper.assertFalse(drops.stream().anyMatch(item -> item.getItem().is(thaumcraft.item.golem.GolemItems.core(2).getItem())), "ordinary attack with bell removes core from golem");
         var packed = drops.stream().filter(item -> item.getItem().getItem() instanceof thaumcraft.item.golem.GolemPlacerItem).findFirst().orElseThrow();
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, packed.getItem().copy());
         packed.discard();
@@ -131,6 +134,32 @@ public final class GolemGameTests {
         helper.assertTrue(expected.equals(placed.getFirst().snapshot()), "bell cycle loses configuration");
         helper.assertTrue(player.getMainHandItem().isEmpty(), "placement does not consume item");
         helper.assertValueEqual(drops.stream().filter(item -> item.getItem().is(Items.WHEAT)).mapToInt(item -> item.getItem().getCount()).sum(), 3, "bell loses carried items");
+        helper.succeed();
+    }
+    private static void bellDismantleCore(GameTestHelper helper) {
+        GolemBase original = golem(helper, GolemType.THAUMIUM, 2);
+        original.configure(GolemType.THAUMIUM, new GolemSnapshot(2, true, List.of(2, 3, 4), "P", List.of(), ItemContainerContents.EMPTY, List.of(), 0));
+        original.setCarried(new ItemStack(Items.WHEAT, 3));
+        helper.getLevel().addFreshEntity(original);
+        var player = helper.makeMockServerPlayer(GameType.SURVIVAL);
+        player.setPos(original.position().add(1, 0, 0));
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(BuiltInRegistries.ITEM.getValue(Thaumcraft.id("golem_bell"))));
+        player.setShiftKeyDown(true);
+        player.attack(original);
+        helper.assertTrue(original.isRemoved(), "Shift + attack with bell does not dismantle golem");
+        var drops = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, original.getBoundingBox().inflate(2));
+        var cores = drops.stream().filter(item -> item.getItem().is(thaumcraft.item.golem.GolemItems.core(2).getItem())).toList();
+        helper.assertValueEqual(cores.stream().mapToInt(item -> item.getItem().getCount()).sum(), 1, "bell must return exactly one core");
+        var packed = drops.stream().filter(item -> item.getItem().getItem() instanceof thaumcraft.item.golem.GolemPlacerItem).toList();
+        helper.assertValueEqual(packed.size(), 1, "bell must return exactly one empty golem");
+        GolemSnapshot dismantled = GolemKeys.snapshot(packed.getFirst().getItem());
+        helper.assertValueEqual(dismantled.core(), -1, "dismantled golem still contains its core");
+        helper.assertTrue(dismantled.advanced(), "dismantling removes advanced infusion");
+        helper.assertTrue(dismantled.upgrades().isEmpty() && dismantled.decoration().isEmpty(), "dismantled golem still contains upgrades or decoration");
+        helper.assertValueEqual(drops.stream().filter(item -> item.getItem().is(Items.WHEAT)).mapToInt(item -> item.getItem().getCount()).sum(), 3, "dismantling loses carried items");
+        player.attack(original);
+        var repeated = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, original.getBoundingBox().inflate(2));
+        helper.assertValueEqual(repeated.size(), drops.size(), "attacking dismantled golem duplicates drops");
         helper.succeed();
     }
     private static void tagFilter(GameTestHelper helper) {

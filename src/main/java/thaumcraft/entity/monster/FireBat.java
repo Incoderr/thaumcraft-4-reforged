@@ -135,8 +135,18 @@ public class FireBat extends Monster {
         return this.owner == null ? null : this.level().getPlayerByUUID(this.owner);
     }
 
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, net.minecraft.world.damagesource.DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        if (this.isSummoned()) return;
+        int looting = source.getEntity() instanceof LivingEntity killer
+            ? net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentLevel(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING), killer) : 0;
+        int amount = this.random.nextInt(3) + (looting > 0 ? this.random.nextInt(looting + 1) : 0);
+        if (amount > 0) this.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GUNPOWDER, amount));
+    }
+
     private void updateAttributes() {
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(this.isDevil() ? 15.0 : 5.0);
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(5.0);
         this.updateAttackDamage();
     }
 
@@ -335,7 +345,7 @@ public class FireBat extends Monster {
         this.attackTime = 20;
         if ((this.isExplosive() || this.random.nextInt(10) == 0) && !this.isDevil()) {
             target.setInvulnerableTime(0);
-            level.explode(this, this.getX(), this.getY(), this.getZ(), 1.5F + (this.isExplosive() ? this.damBonus * 0.33F : 0.0F), Level.ExplosionInteraction.MOB);
+            level.explode(this, this.getX(), this.getY(), this.getZ(), 1.5F + (this.isExplosive() ? this.damBonus * 0.33F : 0.0F), Level.ExplosionInteraction.NONE);
             this.discard();
         } else if (!this.isVampire() && !this.random.nextBoolean()) {
             target.igniteForSeconds(this.isSummoned() ? 4 : 2);

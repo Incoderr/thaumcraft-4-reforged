@@ -13,3 +13,7 @@ def generate(ctx):
         ctx.DATA / namespace / profile.biome_modifier_namespace / "biome_modifier" / "world_generation_overworld.json",
         profile.feature_modifier("#minecraft:is_overworld", f"{namespace}:world_generation", "top_layer_modification"),
     )
+    ctx.write(
+        ctx.DATA / namespace / profile.biome_modifier_namespace / "biome_modifier" / "world_generation_nether.json",
+        profile.feature_modifier("#minecraft:is_nether", f"{namespace}:world_generation", "top_layer_modification"),
+    )

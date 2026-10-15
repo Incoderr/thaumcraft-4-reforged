@@ -53,6 +53,24 @@ public final class ClientFx implements FxProxy {
     }
 
     @Override
+    public void hungryNode(Level level, BlockPos pos) {
+        var random = level.getRandom();
+        int x = pos.getX() + random.nextInt(16) - random.nextInt(16);
+        int y = pos.getY() + random.nextInt(16) - random.nextInt(16);
+        int z = pos.getZ() + random.nextInt(16) - random.nextInt(16);
+        if (!level.hasChunkAt(new BlockPos(x, pos.getY(), z))) return;
+        y = Math.min(y, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z));
+        var hit = level.clip(new net.minecraft.world.level.ClipContext(net.minecraft.world.phys.Vec3.atCenterOf(pos), new net.minecraft.world.phys.Vec3(x + 0.5, y + 0.5, z + 0.5), net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.ANY, net.minecraft.world.phys.shapes.CollisionContext.empty()));
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK || pos.distSqr(hit.getBlockPos()) >= 256) return;
+        BlockState state = level.getBlockState(hit.getBlockPos());
+        if (state.isAir()) return;
+        var sprite = ParticleSprites.block(state);
+        if (sprite == null) return;
+        var source = hit.getBlockPos();
+        WorldFxRenderer.add(new BoreParticleFx(random, source.getX() + random.nextFloat(), source.getY() + random.nextFloat(), source.getZ() + random.nextFloat(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, sprite));
+    }
+
+    @Override
     public void nodeBolt(Level level, float x, float y, float z, float targetX, float targetY, float targetZ) {
         BoltRenderer.add(new LightningBolt(x, y, z, targetX, targetY, targetZ, level.getRandom().nextLong(), 10, 4.0F, 5).setType(0).defaultFractal());
     }

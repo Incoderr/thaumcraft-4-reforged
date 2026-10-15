@@ -112,6 +112,9 @@ public class SlotCraftingArcaneWorkbench extends Slot {
                 CommonHooks.setCraftingPlayer(null);
             }
         }
+        if (carried.is(thaumcraft.registry.ModBlocks.ADVANCED_ALCHEMICAL_CONSTRUCT.get().asItem()) && grid.get(4).is(thaumcraft.registry.EldritchContent.PRIMORDIAL_PEARL.get())) {
+            remaining.set(4, grid.get(4).copyWithCount(1));
+        }
         for (int y = 0; y < input.height(); y++) {
             for (int x = 0; x < input.width(); x++) {
                 int slot = x + left + (y + top) * ArcaneCrafting.GRID_SIZE;

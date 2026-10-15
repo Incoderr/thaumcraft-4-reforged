@@ -263,6 +263,7 @@ public class GenPassage extends GenCommon {
                 }
             }
             world.setBlock(center, net.minecraft.world.level.block.Blocks.SPAWNER.defaultBlockState(), 3);
+            if (world.getBlockEntity(center) instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) spawner.setEntityId(thaumcraft.registry.ModEntities.MIND_SPIDER.get(), random);
         }
     }
 

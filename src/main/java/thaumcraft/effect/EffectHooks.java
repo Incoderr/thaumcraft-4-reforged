@@ -10,7 +10,7 @@ public final class EffectHooks {
     }
 
     public static void applyVisExhaust(LivingEntity entity, int duration, int amplifier) {
-        entity.addEffect(new MobEffectInstance(ModEffects.VIS_EXHAUST, duration, amplifier, false, true, true));
+        WarpEffectEvents.addUncurableEffect(entity, new MobEffectInstance(ModEffects.VIS_EXHAUST, duration, amplifier, false, true, true));
     }
 
     public static void applyTaintPoison(LivingEntity entity, int duration, int amplifier) {

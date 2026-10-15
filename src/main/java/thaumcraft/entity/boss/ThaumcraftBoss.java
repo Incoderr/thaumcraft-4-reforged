@@ -1,5 +1,6 @@
 package thaumcraft.entity.boss;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -90,6 +91,9 @@ public abstract class ThaumcraftBoss extends Monster {
         if (this.level().isClientSide()) {
             return;
         }
+        if (this.getTarget() != null && !this.getTarget().isAlive()) {
+            this.setTarget(null);
+        }
         if (this.spawnTimer > 0) {
             this.spawnTimer--;
             this.entityData.set(DATA_SPAWN_TIMER, this.spawnTimer);
@@ -100,6 +104,7 @@ public abstract class ThaumcraftBoss extends Monster {
         if (this.tickCount % 30 == 0) {
             this.heal(1.0F);
         }
+        this.bossEvent.setName(this.getDisplayName());
         this.bossEvent.setProgress(this.getMaxHealth() <= 0.0F ? 0.0F : this.getHealth() / this.getMaxHealth());
         if (this.tickCount % 20 == 0 && this.getTarget() != null) {
             this.updateAggroTargetAndScaling();
@@ -113,40 +118,65 @@ public abstract class ThaumcraftBoss extends Monster {
         }
     }
 
+    protected boolean shouldPauseBossGoals() {
+        return this.getSpawnTimer() > 0;
+    }
+
+    @Override
+    protected void serverAiStep() {
+        if (!this.shouldPauseBossGoals()) {
+            super.serverAiStep();
+        }
+    }
+
     private void updateAggroTargetAndScaling() {
         LivingEntity current = this.getTarget();
-        int currentAggro = current == null ? 0 : this.aggro.getOrDefault(current.getId(), 0);
-        LivingEntity candidate = current;
+        if (current == null) {
+            return;
+        }
+        ArrayList<Integer> invalid = new ArrayList<>();
+        int currentId = current.getId();
+        int currentAggro = this.aggro.getOrDefault(currentId, 0);
         int highestAggro = currentAggro;
+        int selectedId = currentId;
+        LivingEntity selected = null;
         int playerCount = 0;
         for (Map.Entry<Integer, Integer> entry : this.aggro.entrySet()) {
-            if (this.level().getEntity(entry.getKey()) instanceof LivingEntity living && living.isAlive() && this.distanceToSqr(living) <= 16384.0) {
-                if (living instanceof Player) {
-                    playerCount++;
-                }
-                int threat = entry.getValue();
-                if (threat > currentAggro + 25 && threat > currentAggro * 1.1 && threat > highestAggro) {
-                    candidate = living;
-                    highestAggro = threat;
+            int challengerId = entry.getKey();
+            int threat = entry.getValue();
+            if (threat > currentAggro + 25 && threat > currentAggro * 1.1 && threat > highestAggro) {
+                LivingEntity oldTarget = this.level().getEntity(selectedId) instanceof LivingEntity living ? living : null;
+                if (oldTarget != null && oldTarget.isAlive() && this.distanceToSqr(oldTarget) <= 16384.0) {
+                    selected = oldTarget;
+                    selectedId = challengerId;
+                    highestAggro = challengerId;
+                    if (oldTarget instanceof Player) {
+                        playerCount++;
+                    }
+                } else {
+                    invalid.add(challengerId);
                 }
             }
         }
-        if (candidate != null) {
-            this.setTarget(candidate);
+        for (int entityId : invalid) {
+            this.aggro.remove(entityId);
         }
-        this.aggro.entrySet().removeIf(entry -> !(this.level().getEntity(entry.getKey()) instanceof LivingEntity living) || !living.isAlive());
+        if (selected != null && selectedId != currentId) {
+            this.setTarget(selected);
+        }
         this.bossEvent.setVisible(true);
         float oldMax = this.getMaxHealth();
-        float healthRatio = oldMax <= 0.0F ? 0.0F : this.getHealth() / oldMax;
+        float oldHealth = this.getHealth();
         for (int index = 0; index < 5; index++) {
-            this.getAttribute(Attributes.MAX_HEALTH).removeModifier(HEALTH_SCALING[index].id());
             this.getAttribute(Attributes.ATTACK_DAMAGE).removeModifier(DAMAGE_SCALING[index].id());
+            this.getAttribute(Attributes.MAX_HEALTH).removeModifier(HEALTH_SCALING[index].id());
         }
         for (int index = 0; index < Math.min(5, playerCount - 1); index++) {
             this.getAttribute(Attributes.MAX_HEALTH).addOrUpdateTransientModifier(HEALTH_SCALING[index]);
             this.getAttribute(Attributes.ATTACK_DAMAGE).addOrUpdateTransientModifier(DAMAGE_SCALING[index]);
         }
-        this.setHealth(this.getMaxHealth() * healthRatio);
+        float multiplier = oldMax == 0.0F ? 0.0F : this.getMaxHealth() / oldMax;
+        this.setHealth(oldHealth * multiplier);
     }
 
     @Override
@@ -160,6 +190,9 @@ public abstract class ThaumcraftBoss extends Monster {
                 this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 200, (int) (damage / 40.0F)));
                 this.addEffect(new MobEffectInstance(MobEffects.SPEED, 200, (int) (damage / 40.0F)));
                 this.setAnger(200);
+                if (source.getEntity() instanceof ServerPlayer player) {
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.empty().append(this.getDisplayName()).append(" ").append(net.minecraft.network.chat.Component.translatable("tc.boss.enrage")));
+                }
             }
             damage = 35.0F;
         }
@@ -201,6 +234,13 @@ public abstract class ThaumcraftBoss extends Monster {
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);
         this.setHomeTo(this.blockPosition(), 24);
         return result;
+    }
+
+    public void generateName() {
+        int modifier = thaumcraft.entity.monster.ChampionModifier.get(this);
+        if (modifier >= 0) {
+            this.setCustomName(net.minecraft.network.chat.Component.translatable(this.getType().getDescriptionId(), net.minecraft.network.chat.Component.translatable("champion.mod." + thaumcraft.entity.monster.ChampionModifier.name(modifier))));
+        }
     }
 
     @Override

@@ -171,7 +171,7 @@ public final class RunicShield {
         return true;
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || ignored(event.getSource())) {
             return;

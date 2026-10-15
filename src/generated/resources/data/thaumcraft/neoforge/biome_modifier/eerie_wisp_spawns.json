@@ -1,0 +1,9 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "thaumcraft:eerie",
+  "spawners": {
+    "type": "thaumcraft:wisp",
+    "count": 1,
+    "weight": 3
+  }
+}

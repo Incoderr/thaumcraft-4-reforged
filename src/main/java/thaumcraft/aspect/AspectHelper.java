@@ -81,6 +81,11 @@ public final class AspectHelper {
         if (stack.is(Items.POTION) || stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION)) {
             tags = applyPotion(stack, tags == null ? new AspectList() : tags);
         }
+        if (thaumcraft.wand.Wands.isWand(stack)) {
+            tags = tags == null ? new AspectList() : tags.copy();
+            int cost = thaumcraft.wand.Wands.getRod(stack).craftCost() + thaumcraft.wand.Wands.getCap(stack).craftCost();
+            tags.merge(Aspect.MAGIC, cost / 2).merge(Aspect.TOOL, cost / 3);
+        }
         return cap(tags);
     }
 

@@ -207,8 +207,8 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
                 return;
             }
             poseStack.pushPose();
-            poseStack.translate(0.0F, 0.56F, -0.25F);
-            poseStack.scale(0.15F, 0.15F, 0.15F);
+            poseStack.translate(0.0F, 0.8725F, -0.1675F - (state.decoration.contains("P") ? 0.03F : 0.0F));
+            poseStack.scale(0.175F, 0.175F, 0.56F);
             poseStack.rotateDegrees(Axis.XP, 180.0F);
             poseStack.rotateDegrees(Axis.YP, 180.0F);
             state.coreItem.submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
@@ -218,7 +218,7 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
                     continue;
                 }
                 poseStack.pushPose();
-                poseStack.translate((index - (state.upgradeCount - 1) / 2.0F) * 0.08F, 0.43F, -0.27F);
+                poseStack.translate((index - (state.upgradeCount - 1) / 2.0F) * 0.08F, 1.056F, -0.1F);
                 poseStack.scale(0.1F, 0.1F, 0.1F);
                 poseStack.rotateDegrees(Axis.YP, 180.0F);
                 state.upgrades[index].submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);

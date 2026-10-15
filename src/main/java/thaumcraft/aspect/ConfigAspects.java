@@ -170,7 +170,7 @@ public final class ConfigAspects extends AspectRegistrar {
         register("minecraft:gunpowder", tags().add(Aspect.FIRE, 4).add(Aspect.ENTROPY, 4));
         register(List.of("minecraft:white_wool", "minecraft:orange_wool", "minecraft:purple_wool", "minecraft:blue_wool", "minecraft:brown_wool", "minecraft:green_wool", "minecraft:red_wool", "minecraft:black_wool", "minecraft:magenta_wool", "minecraft:light_blue_wool", "minecraft:yellow_wool", "minecraft:lime_wool", "minecraft:pink_wool", "minecraft:gray_wool", "minecraft:light_gray_wool", "minecraft:cyan_wool"), tags().add(Aspect.CLOTH, 4).add(Aspect.CRAFT, 1));
         register(List.of("minecraft:cod", "minecraft:salmon", "minecraft:tropical_fish", "minecraft:pufferfish"), tags().add(Aspect.FLESH, 3).add(Aspect.LIFE, 1).add(Aspect.WATER, 1));
-        register("minecraft:cooked_cod", tags().add(Aspect.CRAFT, 1).add(Aspect.FLESH, 4).add(Aspect.HUNGER, 3));
+        register(List.of("minecraft:cooked_cod", "minecraft:cooked_salmon"), tags().add(Aspect.CRAFT, 1).add(Aspect.FLESH, 4).add(Aspect.HUNGER, 3));
         register("minecraft:chicken", tags().add(Aspect.FLESH, 3).add(Aspect.LIFE, 2).add(Aspect.BEAST, 1));
         register("minecraft:cooked_chicken", tags().add(Aspect.CRAFT, 1).add(Aspect.FLESH, 4).add(Aspect.HUNGER, 3));
         register("minecraft:porkchop", tags().add(Aspect.FLESH, 3).add(Aspect.LIFE, 1).add(Aspect.BEAST, 1));

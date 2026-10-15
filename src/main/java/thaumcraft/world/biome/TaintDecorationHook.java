@@ -15,9 +15,22 @@ public final class TaintDecorationHook {
     private TaintDecorationHook() {
     }
 
-    public static void decorate(WorldGenLevel level, RandomSource random, BlockPos chunkOrigin) {
+    public static void decorate(WorldGenLevel level, RandomSource random, BlockPos chunkOrigin, net.minecraft.world.level.chunk.ChunkGenerator chunkGenerator) {
         int originX = chunkOrigin.getX();
         int originZ = chunkOrigin.getZ();
+        int trees = 2 + (random.nextInt(10) == 0 ? 1 : 0);
+        for (int tree = 0; tree < trees; tree++) {
+            int x = originX + random.nextInt(16) + 8;
+            int z = originZ + random.nextInt(16) + 8;
+            BlockPos pos = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z);
+            if (random.nextInt(8) == 0) {
+                new thaumcraft.world.tree.BigMagicTreeGenerator(false).generate(level, new java.util.Random(random.nextLong()), pos);
+            } else {
+                level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.FEATURE)
+                    .get(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.FEATURE, net.minecraft.resources.Identifier.withDefaultNamespace("oak")))
+                    .ifPresent(feature -> feature.value().place(level, chunkGenerator, random, pos));
+            }
+        }
         int blobs = random.nextInt(3);
         for (int index = 0; index < blobs; index++) {
             int x = originX + random.nextInt(16) + 8;
@@ -42,7 +55,10 @@ public final class TaintDecorationHook {
             int x = originX + random.nextInt(16);
             int z = originZ + random.nextInt(16);
             BlockPos pos = new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z), z);
-            if (!level.getBiome(pos).is(TaintBiomes.TAINTED_LAND) || !level.isEmptyBlock(pos)) {
+            if (!level.getBiome(pos).is(TaintBiomes.TAINTED_LAND)) {
+                thaumcraft.platform.BiomeEdit.setWorldGenColumn(level, pos, level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME).getOrThrow(TaintBiomes.TAINTED_LAND));
+            }
+            if (!level.isEmptyBlock(pos)) {
                 continue;
             }
             for (Direction direction : Direction.values()) {

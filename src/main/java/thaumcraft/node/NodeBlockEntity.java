@@ -343,6 +343,7 @@ public class NodeBlockEntity extends TcBlockEntity implements Node, WandInteract
     }
 
     private boolean handleHungryNodeFirst(Level tickLevel, boolean change) {
+        if (nodeType == NodeType.HUNGRY && tickLevel.isClientSide()) Fx.get().hungryNode(tickLevel, worldPosition);
         if (nodeType != NodeType.HUNGRY || !WorldGenConfig.hardNode) {
             return change;
         }

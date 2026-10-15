@@ -1,0 +1,9 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "thaumcraft:eerie",
+  "spawners": {
+    "type": "thaumcraft:eldritch_guardian",
+    "count": 1,
+    "weight": 1
+  }
+}

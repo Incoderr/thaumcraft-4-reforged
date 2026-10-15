@@ -50,6 +50,14 @@ public final class BiomeEdit {
         return true;
     }
 
+    public static void setWorldGenColumn(net.minecraft.world.level.WorldGenLevel level, BlockPos pos, Holder<Biome> biome) {
+        ChunkAccess chunk = level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        int quartX = QuartPos.fromBlock(pos.getX());
+        int quartZ = QuartPos.fromBlock(pos.getZ());
+        chunk.fillBiomesFromNoise((x, y, z) -> x == quartX && z == quartZ ? biome : chunk.getNoiseBiome(x, y, z));
+        chunk.markUnsaved();
+    }
+
     public static Holder<Biome> getColumnBiome(LevelReader level, BlockPos pos) {
         return level.getNoiseBiome(QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ()));
     }

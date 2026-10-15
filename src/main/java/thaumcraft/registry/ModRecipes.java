@@ -19,6 +19,8 @@ public final class ModRecipes {
         "void_robe_armor_dye", () -> VoidRobeArmorDyeRecipe.SERIALIZER
     );
 
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<thaumcraft.crafting.JarLabelRecipe>> JAR_LABEL = SERIALIZERS.register("jar_label", () -> thaumcraft.crafting.JarLabelRecipe.SERIALIZER);
+
     private ModRecipes() {
     }
 

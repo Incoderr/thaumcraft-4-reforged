@@ -51,7 +51,7 @@ public class BellowsBlockEntity extends TcBlockEntity {
             return;
         }
         Direction facing = state.getValue(BellowsBlock.FACING);
-        onVanillaFurnace = level.getBlockState(worldPosition.relative(facing)).getBlock() instanceof AbstractFurnaceBlock;
+        onVanillaFurnace = level.getBlockState(worldPosition.relative(facing)).is(net.minecraft.world.level.block.Blocks.FURNACE);
         sync();
     }
 
@@ -105,7 +105,7 @@ public class BellowsBlockEntity extends TcBlockEntity {
         }
         bellows.delay = 0;
         BlockPos target = pos.relative(state.getValue(BellowsBlock.FACING));
-        if (level.getBlockEntity(target) instanceof AbstractFurnaceBlockEntity furnace) {
+        if (level.getBlockState(target).is(net.minecraft.world.level.block.Blocks.FURNACE) && level.getBlockEntity(target) instanceof AbstractFurnaceBlockEntity furnace) {
             CompoundTag tag = furnace.saveCustomOnly(level.registryAccess());
             int spent = tag.getIntOr("cooking_time_spent", 0);
             if (spent > 0 && spent < 199) {

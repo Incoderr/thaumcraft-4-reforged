@@ -34,7 +34,10 @@ public final class NodeHooks {
         }
         zombie.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         zombie.setYRot(level.getRandom().nextFloat() * 360.0F);
-        return zombie.checkSpawnRules(level, EntitySpawnReason.TRIGGERED) && level.noCollision(zombie) && level.addFreshEntity(zombie);
+        if (!zombie.checkSpawnRules(level, EntitySpawnReason.TRIGGERED) || !level.noCollision(zombie) || !level.addFreshEntity(zombie)) return false;
+        level.levelEvent(2004, node, 0);
+        zombie.spawnAnim();
+        return true;
     }
 
     public static void spillFlux(ServerLevel level, BlockPos pos, boolean gas) {

@@ -188,6 +188,15 @@ public class SilverwoodTreeGenerator {
                 level.scheduleTick(leafPos, leaves.getBlock(), 1);
             }
         }
+        if (this.worldgen) {
+            for (int attempt = 0; attempt < 18; attempt++) {
+                BlockPos flower = origin.offset(random.nextInt(8) - random.nextInt(8), random.nextInt(4) - random.nextInt(4), random.nextInt(8) - random.nextInt(8));
+                BlockState ground = level.getBlockState(flower.below());
+                if (level.isEmptyBlock(flower) && (ground.is(Blocks.GRASS_BLOCK) || ground.is(Blocks.SAND))) {
+                    level.setBlock(flower, ModBlocks.SHIMMERLEAF.get().defaultBlockState(), Block.UPDATE_ALL);
+                }
+            }
+        }
         return true;
     }
 }

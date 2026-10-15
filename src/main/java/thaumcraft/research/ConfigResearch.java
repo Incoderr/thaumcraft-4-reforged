@@ -353,6 +353,7 @@ public final class ConfigResearch {
             .setParents("CAP_gold", "THAUMIUM", "INFUSION")
             .registerResearchItem();
         new ResearchItem("CAP_copper", "THAUMATURGY", new AspectList().add(Aspect.METAL, 3).add(Aspect.EXCHANGE, 3).add(Aspect.TOOL, 3), 2, 0, 1, TcStack.of("thaumcraft:copper_wand_cap"))
+            .setRequiredTags("c:ingots/copper")
             .setPages(
                 ResearchPage.text("tc.research_page.CAP_copper.1"),
                 ResearchPage.arcane("WandCapCopper")
@@ -360,6 +361,7 @@ public final class ConfigResearch {
             .setParents("BASICTHAUMATURGY")
             .registerResearchItem();
         new ResearchItem("CAP_silver", "THAUMATURGY", new AspectList().add(Aspect.METAL, 3).add(Aspect.GREED, 3).add(Aspect.TOOL, 3).add(Aspect.AURA, 3), 5, 1, 1, TcStack.of("thaumcraft:silver_wand_cap"))
+            .setRequiredTags("c:ingots/silver")
             .setPages(
                 ResearchPage.text("tc.research_page.CAP_silver.1"),
                 ResearchPage.arcane("WandCapSilverInert"),
@@ -758,6 +760,7 @@ public final class ConfigResearch {
 
     private static void initAlchemy2() {
         new ResearchItem("PURECOPPER", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.ORDER, 2).add(Aspect.EXCHANGE, 1), -4, 5, 1, TcStack.of("thaumcraft:native_copper_cluster"))
+            .setRequiredTags("c:ores/copper", "c:ingots/copper")
             .setPages(
                 ResearchPage.text("tc.research_page.PURECOPPER.1"),
                 ResearchPage.crucible("PureCopper")
@@ -767,6 +770,7 @@ public final class ConfigResearch {
             .setParents("PUREIRON")
             .registerResearchItem();
         new ResearchItem("PURETIN", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.ORDER, 2).add(Aspect.CRYSTAL, 1), -4, 7, 1, TcStack.of("thaumcraft:native_tin_cluster"))
+            .setRequiredTags("c:ores/tin", "c:ingots/tin")
             .setPages(
                 ResearchPage.text("tc.research_page.PURETIN.1"),
                 ResearchPage.crucible("PureTin")
@@ -776,6 +780,7 @@ public final class ConfigResearch {
             .setParents("PUREIRON")
             .registerResearchItem();
         new ResearchItem("PURESILVER", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.ORDER, 2).add(Aspect.GREED, 1), -3, 8, 1, TcStack.of("thaumcraft:native_silver_cluster"))
+            .setRequiredTags("c:ores/silver", "c:ingots/silver")
             .setPages(
                 ResearchPage.text("tc.research_page.PURESILVER.1"),
                 ResearchPage.crucible("PureSilver")
@@ -785,6 +790,7 @@ public final class ConfigResearch {
             .setParents("PUREIRON")
             .registerResearchItem();
         new ResearchItem("PURELEAD", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.ORDER, 3), -2, 9, 1, TcStack.of("thaumcraft:native_lead_cluster"))
+            .setRequiredTags("c:ores/lead", "c:ingots/lead")
             .setPages(
                 ResearchPage.text("tc.research_page.PURELEAD.1"),
                 ResearchPage.crucible("PureLead")
@@ -811,6 +817,7 @@ public final class ConfigResearch {
             .setParents("TRANSIRON")
             .registerResearchItem();
         new ResearchItem("TRANSCOPPER", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.EXCHANGE, 3), 2, 5, 1, TcStack.of("thaumcraft:copper_nugget"))
+            .setRequiredTags("c:ingots/copper")
             .setPages(
                 ResearchPage.text("tc.research_page.TRANSCOPPER.1"),
                 ResearchPage.crucible("TransCopper")
@@ -820,6 +827,7 @@ public final class ConfigResearch {
             .setParents("TRANSIRON")
             .registerResearchItem();
         new ResearchItem("TRANSTIN", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.EXCHANGE, 2).add(Aspect.CRYSTAL, 1), 2, 7, 1, TcStack.of("thaumcraft:tin_nugget"))
+            .setRequiredTags("c:ingots/tin")
             .setPages(
                 ResearchPage.text("tc.research_page.TRANSTIN.1"),
                 ResearchPage.crucible("TransTin")
@@ -829,6 +837,7 @@ public final class ConfigResearch {
             .setParents("TRANSIRON")
             .registerResearchItem();
         new ResearchItem("TRANSSILVER", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.EXCHANGE, 2).add(Aspect.GREED, 1), 1, 8, 1, TcStack.of("thaumcraft:silver_nugget"))
+            .setRequiredTags("c:ingots/silver")
             .setPages(
                 ResearchPage.text("tc.research_page.TRANSSILVER.1"),
                 ResearchPage.crucible("TransSilver")
@@ -838,6 +847,7 @@ public final class ConfigResearch {
             .setParents("TRANSIRON")
             .registerResearchItem();
         new ResearchItem("TRANSLEAD", "ALCHEMY", new AspectList().add(Aspect.METAL, 3).add(Aspect.EXCHANGE, 2).add(Aspect.ORDER, 1), 0, 9, 1, TcStack.of("thaumcraft:lead_nugget"))
+            .setRequiredTags("c:ingots/lead")
             .setPages(
                 ResearchPage.text("tc.research_page.TRANSLEAD.1"),
                 ResearchPage.crucible("TransLead")

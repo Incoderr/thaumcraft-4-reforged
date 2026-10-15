@@ -262,6 +262,7 @@ public final class TaintGameTests {
 
     private static void sporeGrowsAfter1201Ticks(GameTestHelper helper) {
         BlockPos stalkPos = helper.absolutePos(new BlockPos(3, 2, 3));
+        helper.getLevel().setBlockAndUpdate(stalkPos.below(), Blocks.BEDROCK.defaultBlockState());
         helper.getLevel().setBlockAndUpdate(stalkPos, ModBlocks.MATURE_SPORE_STALK.get().defaultBlockState());
         TaintBiomes.set(helper.getLevel(), stalkPos, TaintBiomes.TAINTED_LAND);
         TaintSpore spore = TaintSpore.create(helper.getLevel(), stalkPos);

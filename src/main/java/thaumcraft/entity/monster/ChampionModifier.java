@@ -46,6 +46,8 @@ import thaumcraft.entity.monster.eldritch.EldritchGuardian;
 import thaumcraft.entity.monster.taint.Taintacle;
 import thaumcraft.research.Warp;
 import thaumcraft.research.WarpType;
+import thaumcraft.world.dim.MazeHandler;
+import thaumcraft.world.dim.OuterLands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ChampionModifier {
@@ -74,17 +76,24 @@ public final class ChampionModifier {
             return;
         }
         ChampionKeys.MODIFIER.set(mob, id);
-        mob.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(CHAMPION_HEALTH);
-        mob.getAttribute(Attributes.ATTACK_DAMAGE).addOrReplacePermanentModifier(CHAMPION_DAMAGE);
+        boolean boss = mob instanceof thaumcraft.entity.boss.ThaumcraftBoss;
+        if (!boss) {
+            mob.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(CHAMPION_HEALTH);
+            mob.getAttribute(Attributes.ATTACK_DAMAGE).addOrReplacePermanentModifier(CHAMPION_DAMAGE);
+            mob.heal(25.0F);
+        }
         if (id == 0) {
             mob.getAttribute(Attributes.MOVEMENT_SPEED).addOrReplacePermanentModifier(BOLD_SPEED);
         } else if (id == 3) {
             mob.getAttribute(Attributes.ATTACK_DAMAGE).addOrReplacePermanentModifier(MIGHTY_DAMAGE);
         } else if (id == 5) {
-            mob.setAbsorptionAmount(mob.getAbsorptionAmount() + (float) (mob.getAttributeBaseValue(Attributes.MAX_HEALTH) / 2.0));
+            float absorption = mob.getAbsorptionAmount() + (float) (mob.getAttributeBaseValue(Attributes.MAX_HEALTH) / 2.0);
+            mob.getAttribute(Attributes.MAX_ABSORPTION).setBaseValue(Math.max(mob.getAttributeBaseValue(Attributes.MAX_ABSORPTION), absorption));
+            mob.setAbsorptionAmount(absorption);
         }
-        mob.heal(25.0F);
-        if (!isVanilla(mob, "ender_dragon")) {
+        if (mob instanceof thaumcraft.entity.boss.ThaumcraftBoss thaumcraftBoss) {
+            thaumcraftBoss.generateName();
+        } else if (!isVanilla(mob, "ender_dragon")) {
             mob.setCustomName(Component.translatable("champion.mod." + NAMES[id]).append(" ").append(mob.getName()));
         }
         if (persist) {
@@ -102,23 +111,44 @@ public final class ChampionModifier {
         if (state != UNPROCESSED) {
             return;
         }
+        if (whitelistLevel(mob) < 0) {
+            ChampionKeys.MODIFIER.set(mob, NORMAL);
+            return;
+        }
+        processSpawn(mob, level.getRandom().nextInt(100));
+    }
+
+    public static void processSpawn(Mob mob, int initialRoll) {
+        if (!(mob.level() instanceof ServerLevel level) || mob.level().isClientSide() || get(mob) != UNPROCESSED) {
+            return;
+        }
         int whitelist = whitelistLevel(mob);
         if (whitelist < 0) {
             ChampionKeys.MODIFIER.set(mob, NORMAL);
             return;
         }
-        int roll = level.getRandom().nextInt(100);
+        int roll = initialRoll;
         if (level.getDifficulty() == net.minecraft.world.Difficulty.EASY) {
             roll += 2;
         }
         if (level.getDifficulty() == net.minecraft.world.Difficulty.HARD) {
             roll -= 2;
         }
-        var biome = level.getBiome(mob.blockPosition());
+        var mobX = (int) Math.ceil(mob.getX());
+        var mobY = (int) Math.ceil(mob.getY());
+        var mobZ = (int) Math.ceil(mob.getZ());
+        var biome = level.getBiome(new net.minecraft.core.BlockPos(mobX, mobY, mobZ));
         if (biome.is(Tags.Biomes.IS_SPOOKY) || biome.is(Tags.Biomes.IS_NETHER) || biome.is(Tags.Biomes.IS_END)) {
             roll -= 2;
         }
-        roll -= whitelist - 1;
+        if (level.dimension().equals(OuterLands.OUTER_LANDS)) {
+            roll -= 3;
+            var cell = MazeHandler.getCell(level, mobX >> 4, mobZ >> 4);
+            if (cell != null && (cell.feature == 6 || cell.feature == 8)) {
+                roll -= 10;
+            }
+        }
+        roll -= Math.max(0, whitelist - 1);
         if (roll <= 0 && mob.getAttributeBaseValue(Attributes.MAX_HEALTH) >= 10.0) {
             int id = isVanilla(mob, "creeper") ? 0 : level.getRandom().nextInt(NAMES.length);
             assign(mob, id, false);
@@ -131,9 +161,10 @@ public final class ChampionModifier {
         EntityType<?> type = mob.getType();
         int level = -1;
         if (mob instanceof Zombie || mob instanceof Spider || isVanilla(mob, "blaze") || isVanilla(mob, "enderman") || mob instanceof AbstractSkeleton || type == ModEntities.ELDRITCH_CRAB.get()) level = 0;
-        if (mob instanceof Witch || type == ModEntities.WISP.get() || mob instanceof thaumcraft.entity.monster.Pech || mob instanceof thaumcraft.entity.monster.Cultist) level = Math.max(level, 1);
+        if (mob instanceof Witch || mob instanceof thaumcraft.entity.monster.Pech || mob instanceof thaumcraft.entity.monster.Cultist) level = Math.max(level, 1);
         if (mob instanceof Taintacle) level = Math.max(level, 2);
         if (mob instanceof thaumcraft.entity.monster.InhabitedZombie) level = Math.max(level, 3);
+        if (mob instanceof thaumcraft.entity.boss.ThaumcraftBoss) level = 200;
         return level;
     }
 
@@ -147,7 +178,7 @@ public final class ChampionModifier {
             return;
         }
         int id = get(mob);
-        if (id == 5 && mob.getInvulnerableTime() <= 0 && mob.tickCount % 25 == 0) {
+        if (id == 5 && mob.damageCooldownTime <= 0 && mob.tickCount % 25 == 0) {
             float limit = (float) (mob.getAttributeBaseValue(Attributes.MAX_HEALTH) / 2.0);
             if (mob.getAbsorptionAmount() < limit) {
                 mob.setAbsorptionAmount(mob.getAbsorptionAmount() + 1.0F);
@@ -197,7 +228,7 @@ public final class ChampionModifier {
     public static void applyAttackEffect(int id, Mob attacker, LivingEntity target, float damage, float chanceRoll, int roll) {
         switch (id) {
             case 4 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200)); }
-            case 6 -> { if (target instanceof ServerPlayer player && chanceRoll < 0.33F) Warp.add(player, 1 + roll, WarpType.PERMANENT); }
+            case 6 -> { if (target instanceof ServerPlayer player && chanceRoll < 0.33F) Warp.add(player, 1 + roll, WarpType.TEMPORARY); }
             case 8 -> { if (chanceRoll < 0.4F) target.igniteForSeconds(4.0F); }
             case 9 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 500)); }
             case 10 -> { if (chanceRoll < 0.4F) target.addEffect(new MobEffectInstance(MobEffects.POISON, 100)); }
@@ -208,7 +239,7 @@ public final class ChampionModifier {
 
     @SubscribeEvent
     static void onChampionDrops(LivingDropsEvent event) {
-        if (!(event.getEntity() instanceof Mob mob) || !(mob.level() instanceof ServerLevel level) || get(mob) < 0
+        if (!(event.getEntity() instanceof Mob mob) || !(mob.level() instanceof ServerLevel level) || get(mob) < 0 || mob instanceof thaumcraft.entity.boss.ThaumcraftBoss
             || !event.isRecentlyHit() || event.getSource().getEntity() instanceof FakePlayer) return;
         int looting = event.getSource().getEntity() instanceof LivingEntity killer
             ? EnchantmentHelper.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING), killer)

@@ -77,7 +77,7 @@ public class WandPedestalBlockEntity extends TcBlockEntity {
     }
 
     public int getComparatorSignal() {
-        if (VisStorage.isStorage(stack)) {
+        if (thaumcraft.wand.Wands.isWand(stack)) {
             float ratio = VisStorage.getAllVis(stack).visSize() / (VisStorage.getMaxVis(stack) * 6.0F);
             return (int) Math.floor(ratio * 14.0F) + 1;
         }

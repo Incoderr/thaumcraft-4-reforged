@@ -79,7 +79,7 @@ final class GolemLogistics {
 
     static int missingAtHome(GolemBase golem, ItemStack filter) {
         if (golem.getToggles()[0]) {
-            return filter.getCount();
+            return golem.getCarrySpace();
         }
         int stored = Transfer.count(golem.level(), homeContainer(golem), golem.getHomeFacing(), matches(golem, filter));
         return Math.max(0, required(golem, filter) - stored);

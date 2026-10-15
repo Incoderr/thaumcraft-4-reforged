@@ -137,6 +137,7 @@ public class ElementalSwordItem extends Item implements Repairable {
     }
 
     private static boolean isOwnedBy(Entity target, Player player) {
-        return target instanceof TamableAnimal tamable && tamable.isOwnedBy(player);
+        return target instanceof TamableAnimal tamable && tamable.isOwnedBy(player)
+            || target instanceof thaumcraft.entity.golem.GolemBase golem && player.getUUID().equals(golem.getOwnerUUID());
     }
 }

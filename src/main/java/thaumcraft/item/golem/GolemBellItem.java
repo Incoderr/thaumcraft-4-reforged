@@ -29,6 +29,10 @@ public class GolemBellItem extends Item {
     }
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        var hit = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK && !level.getFluidState(hit.getBlockPos()).isEmpty()) {
+            return this.useOn(new UseOnContext(player, hand, hit));
+        }
         if (player.isShiftKeyDown() && !level.isClientSide()) {
             var selection = GolemKeys.BELL.get(player.getItemInHand(hand));
             if (selection != null && level instanceof ServerLevel server && server.getEntity(selection.entity()) instanceof GolemBase golem) {

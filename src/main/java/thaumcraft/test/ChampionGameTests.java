@@ -41,18 +41,23 @@ import thaumcraft.entity.AspectOrb;
 import thaumcraft.node.NodeHooks;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.registry.ModEntities;
+import thaumcraft.platform.OuterLandsData;
+import thaumcraft.world.dim.Cell;
+import thaumcraft.world.dim.CellLoc;
+import thaumcraft.world.dim.OuterLands;
 import thaumcraft.wand.Wands;
 import thaumcraft.world.gen.HalloweenFirebatSpawnModifier;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ChampionGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"champion_modifiers_apply_once", "champion_combat_and_rewards", "aspect_orb_persistence_pickup_and_node"};
+    private static final String[] TESTS = {"champion_modifiers_apply_once", "champion_combat_and_rewards", "aspect_orb_persistence_pickup_and_node", "champion_spawn_roll_boundaries"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ChampionGameTests::modifiersApplyOnce);
         FUNCTIONS.register(TESTS[1], () -> ChampionGameTests::championCombatAndRewards);
         FUNCTIONS.register(TESTS[2], () -> ChampionGameTests::aspectOrbPersistencePickupAndNode);
+        FUNCTIONS.register(TESTS[3], () -> ChampionGameTests::championSpawnRollBoundaries);
     }
 
     private ChampionGameTests() {
@@ -106,6 +111,37 @@ public final class ChampionGameTests {
         helper.succeed();
     }
 
+    private static void championSpawnRollBoundaries(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var zombieType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("zombie"));
+        Mob normal = (Mob) zombieType.create(level, EntitySpawnReason.TRIGGERED);
+        ChampionModifier.processSpawn(normal, 0);
+        helper.assertTrue(ChampionModifier.get(normal) >= 0, "whitelist level zero must preserve the successful zero roll");
+
+        var outer = level.getServer().getLevel(OuterLands.OUTER_LANDS);
+        helper.assertTrue(outer != null, "Outer Lands level is unavailable");
+        if (outer == null) {
+            return;
+        }
+        Cell dangerous = new Cell();
+        dangerous.feature = 6;
+        CellLoc location = new CellLoc(1, 0);
+        OuterLandsData data = outer.getDataStorage().computeIfAbsent(OuterLandsData.TYPE);
+        data.putMaze("champion_test_" + location.x() + "_" + location.z(), new OuterLandsData.MazeState(
+            17L, location.x(), location.z(), 1, 1,
+            java.util.List.of(new OuterLandsData.CellData(location, (short) dangerous.pack())), java.util.List.of()
+        ));
+        Mob dangerousMob = (Mob) zombieType.create(outer, EntitySpawnReason.TRIGGERED);
+        dangerousMob.setPos(15.5, 64.0, 0.5);
+        ChampionModifier.processSpawn(dangerousMob, 10);
+        helper.assertTrue(ChampionModifier.get(dangerousMob) >= 0, "Outer Lands and dangerous-cell adjustments must make roll ten pass at ceil-coordinate chunk edge");
+        data.putMaze("champion_test_" + location.x() + "_" + location.z(), new OuterLandsData.MazeState(
+            17L, location.x(), location.z(), 1, 1, java.util.List.of(), java.util.List.of()
+        ));
+        thaumcraft.world.dim.MazeHandler.publishSnapshot(outer);
+        helper.succeed();
+    }
+
     private static void championCombatAndRewards(GameTestHelper helper) {
         var level = helper.getLevel();
         var zombieType = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace("zombie"));
@@ -135,11 +171,12 @@ public final class ChampionGameTests {
         helper.assertValueEqual(attacker.getHealth(), 3.0F, "vampiric heals by half of damage with a two point minimum");
 
         java.util.List<ItemEntity> drops = new java.util.ArrayList<>();
+        int xpBefore = level.getEntitiesOfClass(ExperienceOrb.class, attacker.getBoundingBox().inflate(4.0)).stream().mapToInt(orb -> orb.getValue() * orb.count).sum();
         ChampionModifier.awardChampionRewards(level, attacker, drops, 0, 1, 0);
         helper.assertValueEqual(drops.size(), 1, "champion awards one loot bag");
         helper.assertTrue(drops.getFirst().getItem().is(thaumcraft.registry.ModItems.COMMON_LOOT_BAG.get()), "fixed low roll awards common bag");
-        int xp = level.getEntitiesOfClass(ExperienceOrb.class, attacker.getBoundingBox().inflate(4.0)).stream().mapToInt(ExperienceOrb::getValue).sum();
-        helper.assertValueEqual(xp, 6, "champion awards fixed XP amount for deterministic roll");
+        int xp = level.getEntitiesOfClass(ExperienceOrb.class, attacker.getBoundingBox().inflate(4.0)).stream().mapToInt(orb -> orb.getValue() * orb.count).sum();
+        helper.assertValueEqual(xp - xpBefore, 6, "champion awards fixed XP amount for deterministic roll");
         helper.succeed();
     }
 

@@ -336,7 +336,8 @@ public final class ThaumcraftCommand {
         int amount = IntegerArgumentType.getInteger(context, "amount");
         Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
         for (ServerPlayer player : players) {
-            Warp.add(player, amount, type);
+            if (type == WarpType.PERMANENT && amount < 0) Warp.set(player, Warp.get(player, type) + amount, type);
+            else Warp.add(player, amount, type);
         }
         context.getSource().sendSuccess(() -> Component.literal("Added " + amount + " warp to " + players.size() + " players"), true);
         return players.size();

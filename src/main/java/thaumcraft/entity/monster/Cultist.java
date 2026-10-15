@@ -19,6 +19,7 @@ public abstract class Cultist extends Monster {
     protected <T extends Cultist> Cultist(net.minecraft.world.entity.EntityType<? extends T> type, Level level) {
         super(type, level);
         this.setCanPickUpLoot(false);
+        this.xpReward = 10;
     }
 
     public static AttributeSupplier.Builder createCultistAttributes() {
@@ -46,7 +47,7 @@ public abstract class Cultist extends Monster {
         } else if (roll <= 3 + looting) {
             this.spawnAtLocation(level, new ItemStack(ModItems.GOLD_COIN.get()));
         }
-        if (recentlyHit && this.random.nextInt(200) == 0) {
+        if (recentlyHit && this.random.nextInt(200) - looting < 5) {
             this.spawnAtLocation(level, new ItemStack(ModItems.CRIMSON_RITES.get()));
         }
     }

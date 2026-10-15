@@ -180,6 +180,7 @@ def generate(ctx):
 
     placed("eerie_trees", "minecraft:oak", surface_trees(2))
     placed("tainted_trees", "minecraft:oak", surface_trees(2))
+    placed("tainted_grass", "minecraft:grass", patch(2, "WORLD_SURFACE_WG", 32))
     placed("eerie_flowers", "minecraft:flower_default", patch(1, "MOTION_BLOCKING", 64))
     placed("eerie_grass", "minecraft:grass", patch(2, "WORLD_SURFACE_WG", 32))
     feature("taint_decoration", {"type": f"{NS}:taint_decoration"})
@@ -294,7 +295,7 @@ def generate(ctx):
             "minecraft:visual/sky_color": hex_color(0x7C44FF),
         },
         {"water_color": hex_color(0xCC1188), "grass_color": hex_color(0x6D4189), "foliage_color": hex_color(0x7C6D87)},
-        features([f"{NS}:tainted_trees", f"{NS}:taint_decoration"]),
+        features([f"{NS}:tainted_grass", f"{NS}:taint_decoration"]),
     )
 
     biome(

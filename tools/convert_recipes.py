@@ -1247,7 +1247,7 @@ def emit_java(sections, refs):
         result = java_stack(entry["result"])
         ref_lines.append(
             f"TcRecipes.register(new CraftingRecipeRef({java_string(entry['key'])}, {java_string(entry['research'])}, "
-            f"Identifier.parse({java_string('thaumcraft:' + entry['id'])}), {result}));"
+            f"Identifier.parse({java_string('thaumcraft:jar_label_filter' if entry['key'].startswith('JarLabel') and entry['key'] != 'JarLabel' else 'thaumcraft:' + entry['id'])}), {result}));"
         )
     sections["normal"] = ref_lines
     for section in order:

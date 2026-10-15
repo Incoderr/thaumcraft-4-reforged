@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.Thaumcraft;
@@ -30,6 +31,11 @@ public class InfusionPillarRenderer implements BlockEntityRenderer<InfusionPilla
     @Override
     public State createRenderState() {
         return new State();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(InfusionPillarBlockEntity entity) {
+        return new AABB(entity.getBlockPos()).inflate(0.1, 0.0, 0.1).expandTowards(0.0, 1.1, 0.0);
     }
 
     @Override

@@ -63,6 +63,10 @@ public final class EldritchEntities {
     }
 
     public static boolean spawnBoss(ServerLevel level, BlockPos pos, BossKind kind) {
+        return spawnBoss(level, pos, kind, pos);
+    }
+
+    public static boolean spawnBoss(ServerLevel level, BlockPos pos, BossKind kind, BlockPos home) {
         var type = switch (kind) {
             case GOLEM -> ELDRITCH_GOLEM.get();
             case WARDEN -> ELDRITCH_WARDEN.get();
@@ -78,7 +82,7 @@ public final class EldritchEntities {
         }
         boss.snapTo(Vec3.atBottomCenterOf(pos), 0.0F, 0.0F);
         boss.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.TRIGGERED, null);
-        boss.setHomeTo(pos, 24);
+        boss.setHomeTo(home, 32);
         return level.addFreshEntity(boss);
     }
 

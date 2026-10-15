@@ -23,7 +23,7 @@ public class FluxGasBlock extends FluxBlock {
         if (level.isClientSide() || level.getRandom().nextInt(10) != 0 || !(entity instanceof LivingEntity living)) {
             return;
         }
-        if (EffectHooks.isTainted(living) || living.getType().getTags().anyMatch(EntityTypeTags.UNDEAD::equals) || living.hasEffect(MobEffects.NAUSEA)) {
+        if (EffectHooks.isTainted(living) || living.getType().getTags().anyMatch(EntityTypeTags.UNDEAD::equals) || living.hasEffect(MobEffects.NAUSEA) || living.hasEffect(thaumcraft.registry.ModEffects.VIS_EXHAUST)) {
             return;
         }
         int quantaIndex = state.getValue(LEVEL) - 1;

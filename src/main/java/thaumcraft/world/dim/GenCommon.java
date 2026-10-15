@@ -101,7 +101,7 @@ public class GenCommon {
                 removeDecorations(pos);
                 break;
             case DOOR_LOCK:
-                state = EldritchContent.ANCIENT_LOCKING_MECHANISM.get().defaultBlockState();
+                state = EldritchContent.ANCIENT_LOCKING_MECHANISM.get().defaultBlockState().setValue(thaumcraft.eldritch.EldritchBlock.FACING, facing.getAxis().isHorizontal() ? facing : Direction.NORTH);
                 removeDecorations(pos);
                 break;
             case VOID_DOOR:

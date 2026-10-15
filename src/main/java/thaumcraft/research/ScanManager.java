@@ -25,6 +25,7 @@ import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.aspect.EntityAspects;
+import thaumcraft.entity.golem.GolemBase;
 import thaumcraft.network.ScanPayload;
 import thaumcraft.node.Node;
 
@@ -142,6 +143,9 @@ public final class ScanManager {
             if (creeper.isPowered()) {
                 key.append("POWERED");
             }
+        }
+        if (entity instanceof GolemBase golem) {
+            key.append(golem.getGolemType().name());
         }
         return key.toString();
     }

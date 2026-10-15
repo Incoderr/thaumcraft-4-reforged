@@ -115,6 +115,9 @@ public class Thaumcraft {
         WarpGameTests.register(modEventBus);
         WarpEncounterGameTests.register(modEventBus);
         ChampionGameTests.register(modEventBus);
+        thaumcraft.test.ParityCoreGameTests.register(modEventBus);
+        thaumcraft.test.ParityRegressionGameTests.register(modEventBus);
+        thaumcraft.test.ParityFocusGameTests.register(modEventBus);
         MachineGameTests.register(modEventBus);
         thaumcraft.test.MirrorGameTests.register(modEventBus);
         thaumcraft.entity.projectile.ProjectileGameTests.register(modEventBus);

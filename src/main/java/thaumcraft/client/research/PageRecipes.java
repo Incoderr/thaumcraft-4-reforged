@@ -73,6 +73,18 @@ final class PageRecipes {
         if (holder == null) {
             return null;
         }
+        if (holder.value() instanceof thaumcraft.crafting.JarLabelRecipe) {
+            ItemStack label = new ItemStack(thaumcraft.registry.ModItems.JAR_LABEL.get());
+            if (reference.key().equals("JarLabelNull")) {
+                thaumcraft.aspect.AspectKeys.ASPECTS.set(label, new AspectList().add(Aspect.WATER, 0));
+                return new Grid(false, 3, 3, List.of(List.of(label)), stacks(reference.result()));
+            }
+            AspectList aspects = reference.result().aspects();
+            if (aspects == null || aspects.isEmpty()) return null;
+            ItemStack phial = new ItemStack(thaumcraft.registry.ModItems.ESSENTIA_PHIAL.get());
+            thaumcraft.aspect.AspectKeys.ASPECTS.set(phial, new AspectList().add(aspects.getAspects().getFirst(), 8));
+            return new Grid(false, 3, 3, List.of(List.of(label), List.of(phial)), stacks(reference.result()));
+        }
         ContextMap context = SlotDisplayContext.fromLevel(renderer.minecraft.level);
         for (RecipeDisplay display : holder.value().display()) {
             if (display instanceof ShapedCraftingRecipeDisplay shaped) {

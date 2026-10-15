@@ -167,7 +167,7 @@ public final class CropHarvestGoal extends Goal {
                 Direction facing = targetState.hasProperty(HorizontalDirectionalBlock.FACING)
                     ? targetState.getValue(HorizontalDirectionalBlock.FACING)
                     : Direction.NORTH;
-                BlockPos support = target.relative(facing.getOpposite());
+                BlockPos support = target.relative(facing);
                 BlockState supportState = server.getBlockState(support);
                 if (supportState.is(Blocks.JUNGLE_LOG) || supportState.is(Blocks.STRIPPED_JUNGLE_LOG)
                     || supportState.is(Blocks.JUNGLE_WOOD) || supportState.is(Blocks.STRIPPED_JUNGLE_WOOD)) {
