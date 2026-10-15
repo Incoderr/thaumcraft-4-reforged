@@ -315,7 +315,6 @@ public class ResearchBrowserScreen extends Screen {
         }
 
         currentHighlight = null;
-        List<int[]> darkened = new ArrayList<>();
         List<Runnable> icons = new ArrayList<>();
         for (ResearchItem item : research) {
             int relativeX = item.column() * 24 - offsetX;
@@ -370,9 +369,6 @@ public class ResearchBrowserScreen extends Screen {
                     BrowserDraw.full(graphics, item.iconTexture(), iconX, iconY, 16, 16, iconTint);
                 }
             });
-            if (!unlockable && item.iconItem() != null) {
-                darkened.add(new int[] {iconX, iconY});
-            }
             if (mouseX >= mapLeft && mouseY >= mapTop && mouseX < mapLeft + VIEW_WIDTH && mouseY < mapTop + VIEW_HEIGHT
                 && mouseX >= x && mouseX <= x + 22 && mouseY >= y && mouseY <= y + 22) {
                 currentHighlight = item;
@@ -383,9 +379,6 @@ public class ResearchBrowserScreen extends Screen {
             icon.run();
         }
         graphics.nextStratum();
-        for (int[] position : darkened) {
-            graphics.fill(position[0], position[1], position[0] + 16, position[1] + 16, 0xE6000000);
-        }
         graphics.disableScissor();
         graphics.nextStratum();
 

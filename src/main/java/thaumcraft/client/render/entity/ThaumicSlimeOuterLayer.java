@@ -30,7 +30,7 @@ final class ThaumicSlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeMo
                 this.model,
                 state,
                 poseStack,
-                glowingWithInvisibility ? TcRenderTypes.outline(TEXTURE) : TcRenderTypes.entityTranslucent(TEXTURE),
+                glowingWithInvisibility ? TcRenderTypes.outline(TEXTURE) : TcRenderTypes.entityTranslucentNoDepth(TEXTURE),
                 light,
                 overlay,
                 state.outlineColor
