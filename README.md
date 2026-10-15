@@ -28,7 +28,7 @@ Versions used by the main branch:
 
 Every push to `main` or `mc/*` that passes the workflow's path filters builds the mod on GitHub Actions and publishes it on the [Releases](https://github.com/notlikethiss/thaumcraft-4-reforged/releases) page. The mod version comes from `mod_version` in `gradle.properties`, independently of the original Thaumcraft version.
 
-For Minecraft 26.3, version `1.0` is published as a release named `1.0` with the tag `26.3` and the file `thaumcraft-4-reforged-1.0-26.3.jar`. Tags contain only the Minecraft version. Each build replaces the release for that Minecraft version. Releases from `main` are marked as latest.
+For Minecraft 26.3, version `1.0` is published as a release named `26.3` with the tag `26.3` and the file `thaumcraft-4-reforged-1.0-26.3.jar`. Tags contain only the Minecraft version. Each build replaces the release for that Minecraft version. Releases from `main` are marked as latest.
 
 ## Building and running
 
