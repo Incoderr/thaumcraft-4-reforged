@@ -54,7 +54,7 @@ public class MirrorItem extends BlockItem {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         GlobalPos link = MirrorKeys.LINK.get(stack);
         if (link != null) {
-            MirrorLinks.appendLink("Linked to ", link, builder);
+            MirrorLinks.appendLink(link, builder);
         }
         super.appendHoverText(stack, context, display, builder, flag);
     }

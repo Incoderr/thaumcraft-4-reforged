@@ -69,7 +69,7 @@ public class ThaumonomiconItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         if (cheat) {
-            builder.accept(Component.literal("Cheat Sheet"));
+            builder.accept(Component.translatable("tc.cheatsheet"));
         }
         super.appendHoverText(stack, context, display, builder, flag);
     }

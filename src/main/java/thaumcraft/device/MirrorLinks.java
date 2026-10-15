@@ -15,31 +15,31 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 public final class MirrorLinks {
-    public static final Component ALREADY_LINKED = Component.literal("That mirror is already linked to a valid destination.").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC);
+    public static final Component ALREADY_LINKED = Component.translatable("tc.mirror.alreadylinked").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC);
 
     private MirrorLinks() {
     }
 
-    public static String dimensionName(ResourceKey<Level> dimension) {
+    public static Component dimensionName(ResourceKey<Level> dimension) {
         if (dimension == Level.OVERWORLD) {
-            return "Overworld";
+            return Component.translatable("tc.mirror.dim.overworld");
         }
         if (dimension == Level.NETHER) {
-            return "Nether";
+            return Component.translatable("tc.mirror.dim.nether");
         }
         if (dimension == Level.END) {
-            return "The End";
+            return Component.translatable("tc.mirror.dim.end");
         }
-        return dimension.identifier().toString();
+        return Component.literal(dimension.identifier().toString());
     }
 
-    public static String describe(GlobalPos link) {
+    public static Component describe(GlobalPos link) {
         BlockPos pos = link.pos();
-        return pos.getX() + "," + pos.getY() + "," + pos.getZ() + " in " + dimensionName(link.dimension());
+        return Component.translatable("tc.mirror.linkdesc", pos.getX(), pos.getY(), pos.getZ(), dimensionName(link.dimension()));
     }
 
-    public static void appendLink(String prefix, GlobalPos link, Consumer<Component> builder) {
-        builder.accept(Component.literal(prefix + describe(link)).withStyle(ChatFormatting.GRAY));
+    public static void appendLink(GlobalPos link, Consumer<Component> builder) {
+        builder.accept(Component.translatable("tc.handmirrorlinkedto").append(" ").append(describe(link)).withStyle(ChatFormatting.GRAY));
     }
 
     public static @Nullable ServerLevel levelOf(ServerLevel from, GlobalPos link) {

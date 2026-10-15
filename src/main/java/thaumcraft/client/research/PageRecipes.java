@@ -250,7 +250,7 @@ final class PageRecipes {
         renderer.title("recipe.type.infusionenchantment", x + start, y);
         renderer.instability(recipe.instability(), x + start, y + 194);
         renderer.centered(name, x + start + 56, y + 24, ENCHANT_COLOR);
-        renderer.centered(Component.literal(experience * level + " levels"), x + start + 56, y + 40, XP_COLOR);
+        renderer.centered(Component.translatable("tc.infusion.levels", experience * level), x + start + 56, y + 40, XP_COLOR);
         renderer.graphics.pose().pushMatrix();
         renderer.graphics.pose().translate(x + start, y + 20);
         renderer.graphics.pose().scale(2.0F, 2.0F);

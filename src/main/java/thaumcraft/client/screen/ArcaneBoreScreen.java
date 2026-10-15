@@ -41,20 +41,20 @@ public class ArcaneBoreScreen extends AbstractContainerScreen<ArcaneBoreMenu> {
         graphics.pose().pushMatrix();
         graphics.pose().translate(leftPos + 112, topPos + 8);
         graphics.pose().scale(0.5F, 0.5F);
-        graphics.text(font, "Width: " + (1 + (bore.getArea() + ArcaneBoreBlockEntity.MAX_RADIUS) * 2), 0, 0, 0xFFFFFFFF, true);
-        graphics.text(font, "Speed: +" + bore.getSpeed(), 0, 10, 0xFFFFFFFF, true);
-        graphics.text(font, "Other properties:", 0, 24, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("tc.bore.width", 1 + (bore.getArea() + ArcaneBoreBlockEntity.MAX_RADIUS) * 2), 0, 0, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("tc.bore.speed", bore.getSpeed()), 0, 10, 0xFFFFFFFF, true);
+        graphics.text(font, Component.translatable("tc.bore.other"), 0, 24, 0xFFFFFFFF, true);
         int base = 0;
         if (bore.hasDowsing()) {
-            graphics.text(font, "Native Clusters", 4, 34 + base, 0xFF000000 | 12632256, true);
+            graphics.text(font, Component.translatable("tc.bore.native"), 4, 34 + base, 0xFF000000 | 12632256, true);
             base += 9;
         }
         if (bore.getFortune() > 0) {
-            graphics.text(font, "Fortune " + bore.getFortune(), 4, 34 + base, 0xFF000000 | 15648330, true);
+            graphics.text(font, Component.translatable("enchantment.minecraft.fortune").append(" " + bore.getFortune()), 4, 34 + base, 0xFF000000 | 15648330, true);
             base += 9;
         }
         if (bore.hasSilkTouch()) {
-            graphics.text(font, "Silk Touch", 4, 34 + base, 0xFF000000 | 8421631, true);
+            graphics.text(font, Component.translatable("focus.upgrade.silktouch.name"), 4, 34 + base, 0xFF000000 | 8421631, true);
         }
         graphics.pose().popMatrix();
     }

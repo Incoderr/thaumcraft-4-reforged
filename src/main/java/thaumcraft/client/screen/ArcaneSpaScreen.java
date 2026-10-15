@@ -80,7 +80,7 @@ public class ArcaneSpaScreen extends AbstractContainerScreen<ArcaneSpaMenu> {
             if (!fluid.isEmpty()) {
                 List<Component> lines = new ArrayList<>();
                 lines.add(fluid.getHoverName());
-                lines.add(Component.literal(fluid.getAmount() + " mb"));
+                lines.add(Component.translatable("tc.spa.mb", fluid.getAmount()));
                 graphics.setTooltipForNextFrame(font, lines, java.util.Optional.empty(), mouseX, mouseY);
             }
         }
