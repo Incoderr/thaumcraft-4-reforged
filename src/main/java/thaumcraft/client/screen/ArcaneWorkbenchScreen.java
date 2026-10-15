@@ -68,7 +68,7 @@ public class ArcaneWorkbenchScreen extends AbstractContainerScreen<ArcaneWorkben
             graphics.pose().pushMatrix();
             graphics.pose().translate(leftPos + 168, topPos + 46);
             graphics.pose().scale(0.5F, 0.5F);
-            Component text = Component.literal("Insufficient vis");
+            Component text = Component.translatable("tc.workbench.insufficient");
             graphics.text(font, text, -font.width(text) / 2, 0, 0xFF000000 | INSUFFICIENT_COLOR, false);
             graphics.pose().popMatrix();
         }

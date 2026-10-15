@@ -41,7 +41,7 @@ public final class EldritchObjectItem extends Item {
                 .withStyle(line == 3 ? net.minecraft.ChatFormatting.DARK_BLUE : net.minecraft.ChatFormatting.DARK_PURPLE));
         }
         if (this.kind == 4) {
-            builder.accept(net.minecraft.network.chat.Component.literal("Creative Mode Only").withStyle(net.minecraft.ChatFormatting.ITALIC));
+            builder.accept(net.minecraft.network.chat.Component.translatable("tc.creativeonly").withStyle(net.minecraft.ChatFormatting.ITALIC));
         }
     }
 

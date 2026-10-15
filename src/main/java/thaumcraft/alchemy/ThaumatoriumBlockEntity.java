@@ -345,7 +345,7 @@ public class ThaumatoriumBlockEntity extends TcBlockEntity implements AspectCont
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("tile.blockMetalDevice.10.name");
+        return Component.translatable("block.thaumcraft.thaumatorium");
     }
 
     @Override

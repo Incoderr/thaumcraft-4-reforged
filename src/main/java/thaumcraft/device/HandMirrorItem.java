@@ -82,7 +82,7 @@ public class HandMirrorItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         GlobalPos link = MirrorKeys.LINK.get(stack);
         if (link != null) {
-            builder.accept(Component.translatable("tc.handmirrorlinkedto").append(" " + MirrorLinks.describe(link)).withStyle(ChatFormatting.GRAY));
+            builder.accept(Component.translatable("tc.handmirrorlinkedto").append(" ").append(MirrorLinks.describe(link)).withStyle(ChatFormatting.GRAY));
         }
         super.appendHoverText(stack, context, display, builder, flag);
     }

@@ -28,7 +28,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"
     };
     private static final int[] TARGET_TOGGLES = {1, 2, 3, 4};
-    private static final String[] TARGET_NAMES = {"Monsters", "Animals", "Players", "Creepers"};
+    private static final String[] TARGET_NAMES = {"tc.golem.target.monsters", "tc.golem.target.animals", "tc.golem.target.players", "tc.golem.target.creepers"};
     private final GolemBase golem;
     private final int threat;
 
@@ -44,12 +44,11 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         GuiBlit.blit(graphics, TEXTURE, leftPos + x, topPos + y, u, v, width, height, 256, 256);
     }
 
-    private void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
-        graphics.text(font, Component.literal(value), leftPos + x, topPos + y, color, true);
+    private void text(GuiGraphicsExtractor graphics, String key, int x, int y, int color) {
+        graphics.text(font, Component.translatable(key), leftPos + x, topPos + y, color, true);
     }
 
-    private void scaled(GuiGraphicsExtractor graphics, String value, int x, int y, int color, float scale) {
-        Component component = Component.literal(value);
+    private void scaled(GuiGraphicsExtractor graphics, Component component, int x, int y, int color, float scale) {
         graphics.pose().pushMatrix();
         graphics.pose().translate(leftPos + x, topPos + y);
         graphics.pose().scale(scale, scale);
@@ -80,7 +79,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         String key = threat >= 0 ? "golemthreat." + threat + ".text" : "golemblurb." + Math.max(0, core) + ".text";
         graphics.textWithWordWrap(font, Component.translatable(key), leftPos + 80, topPos + 22, 110, TEXT, true);
         if (menu.maxScroll() > 0) {
-            scaled(graphics, (menu.currentScroll() + 1) + "/" + (menu.maxScroll() + 1), 161, 70, TEXT, 0.5F);
+            scaled(graphics, Component.literal((menu.currentScroll() + 1) + "/" + (menu.maxScroll() + 1)), 161, 70, TEXT, 0.5F);
         }
         int count = Math.min(6, menu.filterSlots());
         for (int index = 0; index < count; index++) {
@@ -88,7 +87,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
             int y = 4 + index % 2 * 31;
             if (inside(mouseX - leftPos, mouseY - topPos, x, y, 24, 12)) {
                 int color = golem.getColors(index + menu.currentScroll() * 6);
-                Component name = Component.translatable(color < 0 ? "gui.thaumcraft.any_color" : "color.minecraft." + COLOR_NAMES[color]);
+                Component name = Component.translatable(color < 0 ? "tc.golem.anycolor" : "color.minecraft." + COLOR_NAMES[color]);
                 graphics.text(font, name, leftPos + 133 - font.width(name) / 2, topPos - 6, LABEL, true);
             }
         }
@@ -125,14 +124,14 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         }
         if (core == 0) {
             toggle(graphics, 62, 54, 0);
-            scaled(graphics, toggled(0) ? "Any amount" : "Precise amount", 66, 48, LABEL, 0.5F);
+            scaled(graphics, Component.translatable(toggled(0) ? "tc.golem.amount.any" : "tc.golem.amount.precise"), 66, 48, LABEL, 0.5F);
         }
         if (core == 8) {
-            String[] names = {"Block", "Right click", "Not sneaking"};
-            String[] active = {"Empty space", "Left click", "Sneaking"};
+            String[] names = {"tc.golem.toggle.block", "tc.golem.toggle.rightclick", "tc.golem.toggle.notsneaking"};
+            String[] active = {"tc.golem.toggle.empty", "tc.golem.toggle.leftclick", "tc.golem.toggle.sneaking"};
             for (int index = 0; index < 3; index++) {
                 toggle(graphics, 42, 40 + index * 10, index);
-                scaled(graphics, toggled(index) ? active[index] : names[index], 53, 42 + index * 10, LABEL, 0.5F);
+                scaled(graphics, Component.translatable(toggled(index) ? active[index] : names[index]), 53, 42 + index * 10, LABEL, 0.5F);
             }
         }
         if (golem.getUpgradeAmount(5) > 0 && (core == 0 || core == 1 || core == 2 || core == 8 || core == 10)) {
@@ -140,8 +139,8 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
             int y = core == 10 ? 12 : 0;
             for (int index = 0; index < 3; index++) {
                 toggle(graphics, x, 24 + y + index * 10, 5 + index);
-                String[] options = {"Use Ore dictionary", "Ignore item damage", "Ignore NBT values"};
-                scaled(graphics, options[index], x + 10, 26 + y + index * 10, toggled(5 + index) ? LABEL : 0xFF666666, 0.5F);
+                String[] options = {"tc.golem.sort.oredict", "tc.golem.sort.damage", "tc.golem.sort.nbt"};
+                scaled(graphics, Component.translatable(options[index]), x + 10, 26 + y + index * 10, toggled(5 + index) ? LABEL : 0xFF666666, 0.5F);
             }
         }
         InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, leftPos + 26, topPos + 8, leftPos + 76, topPos + 78, 45, 0.0625F, mouseX, mouseY, golem);

@@ -54,7 +54,7 @@ public final class NoteOverlay {
         if (note < 0) {
             return;
         }
-        Component text = Component.literal("Note: " + note);
+        Component text = Component.translatable("tc.note", note);
         Font font = minecraft.font;
         Vec3 camera = event.getLevelRenderState().cameraRenderState.pos;
         double dx = camera.x - (pos.getX() + 0.5);

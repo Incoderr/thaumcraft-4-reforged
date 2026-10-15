@@ -10,7 +10,6 @@ import thaumcraft.client.platform.BrowserDraw;
 import thaumcraft.research.ResearchItem;
 
 public class ResearchToast implements Toast {
-    private static final String TITLE = "Research Completed!";
     private static final long DISPLAY_TIME = 3000L;
     private static final float MAX_NAME_WIDTH = 125.0F;
 
@@ -38,7 +37,7 @@ public class ResearchToast implements Toast {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, Font font, long fullyVisibleForMs) {
         BrowserDraw.toastBackground(graphics, width(), height());
-        graphics.text(font, TITLE, 30, 7, 0xFFFFFF00, false);
+        graphics.text(font, Component.translatable("tc.research.completed"), 30, 7, 0xFFFFFF00, false);
         int nameWidth = font.width(name);
         if (nameWidth <= MAX_NAME_WIDTH) {
             graphics.text(font, name, 30, 18, 0xFFFFFFFF, false);
