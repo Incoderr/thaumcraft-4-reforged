@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -34,10 +35,14 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.arcane.ArcaneWorkbenchBlockEntity;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.crafting.ArcaneCrafting;
+import thaumcraft.crafting.TcStack;
 import thaumcraft.menu.ArcaneWorkbenchMenu;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import thaumcraft.research.Knowledge;
+import thaumcraft.research.Warp;
+import thaumcraft.wand.WandCap;
+import thaumcraft.wand.WandRod;
 import thaumcraft.wand.WandRegistry;
 import thaumcraft.wand.WandTriggers;
 import thaumcraft.wand.Wands;
@@ -45,12 +50,13 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ArcaneGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"arcane_workbench_consumes_vis", "wand_recipe_builds_wand", "table_wand_becomes_worktable"};
+    private static final String[] TESTS = {"arcane_workbench_consumes_vis", "wand_recipe_builds_wand", "table_wand_becomes_worktable", "addon_wand_parts_and_hooks"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ArcaneGameTests::workbenchConsumesVis);
         FUNCTIONS.register(TESTS[1], () -> ArcaneGameTests::wandRecipeBuildsWand);
         FUNCTIONS.register(TESTS[2], () -> ArcaneGameTests::tableWandBecomesWorktable);
+        FUNCTIONS.register(TESTS[3], () -> ArcaneGameTests::addonWandPartsAndHooks);
     }
 
     private ArcaneGameTests() {
@@ -151,6 +157,53 @@ public final class ArcaneGameTests {
         ArcaneWorkbenchBlockEntity workbench = helper.getBlockEntity(tablePos, ArcaneWorkbenchBlockEntity.class);
         helper.assertTrue(Wands.isWand(workbench.getWand()), "wand not placed in the workbench");
         helper.assertTrue(player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty(), "wand still in hand");
+        helper.succeed();
+    }
+
+    private static void addonWandPartsAndHooks(GameTestHelper helper) {
+        Identifier capTexture = Identifier.fromNamespaceAndPath("addon", "textures/model/cap.png");
+        Identifier rodTexture = Identifier.fromNamespaceAndPath("addon", "textures/model/rod.png");
+        if (WandRegistry.findCap("addon_test") == null) {
+            WandRegistry.registerCap(
+                "addon_test", 0.5F, List.of(Aspect.FIRE), 0.25F, Identifier.withDefaultNamespace("amethyst_shard"), 2, null, capTexture
+            );
+            WandRegistry.registerRod("addon_test", 40, Identifier.withDefaultNamespace("breeze_rod"), 3, null, true, false, false, rodTexture);
+        }
+        WandCap cap = WandRegistry.cap("addon_test");
+        WandRod rod = WandRegistry.rod("addon_test");
+        helper.assertValueEqual(cap.texture(), capTexture, "cap texture");
+        helper.assertValueEqual(rod.texture(), rodTexture, "rod texture");
+        helper.assertValueEqual(WandRegistry.CAP_GOLD.texture(), Thaumcraft.id("textures/model/wand_cap_gold.png"), "builtin cap texture");
+        helper.assertValueEqual(WandRegistry.ROD_SILVERWOOD.texture(), Thaumcraft.id("textures/model/wand_rod_silverwood.png"), "builtin rod texture");
+        helper.assertValueEqual(WandRegistry.STAFF_PRIMAL.texture(), Thaumcraft.id("textures/model/wand_rod_primal.png"), "builtin staff texture");
+        ItemStack wand = Wands.create(cap, rod, false);
+        helper.assertValueEqual(Wands.getCap(wand).texture(), capTexture, "wand cap texture");
+        helper.assertValueEqual(Wands.getMaxVis(wand), 4000, "max vis");
+        helper.assertValueEqual(Wands.getCap(wand).getCostModifier(Aspect.FIRE), 0.25F, "special discount");
+        helper.assertValueEqual(Wands.getCap(wand).getCostModifier(Aspect.AIR), 0.5F, "base discount");
+        ServerPlayer player = mockServerPlayer(helper);
+        List<ItemStack> grid = new ArrayList<>();
+        for (int slot = 0; slot < 9; slot++) {
+            grid.add(ItemStack.EMPTY);
+        }
+        grid.set(6, new ItemStack(Items.AMETHYST_SHARD));
+        grid.set(2, new ItemStack(Items.AMETHYST_SHARD));
+        grid.set(4, new ItemStack(Items.BREEZE_ROD));
+        helper.assertTrue(ArcaneCrafting.findResult(grid, player).isEmpty(), "addon wand crafted without research");
+        Knowledge.get(player).addResearch("CAP_addon_test");
+        Knowledge.get(player).addResearch("ROD_addon_test");
+        ItemStack crafted = ArcaneCrafting.findResult(grid, player);
+        helper.assertTrue(Wands.isWand(crafted), "addon wand not built");
+        helper.assertValueEqual(Wands.getCap(crafted).tag(), "addon_test", "crafted cap");
+        helper.assertValueEqual(Wands.getRod(crafted).tag(), "addon_test", "crafted rod");
+        helper.assertValueEqual(ArcaneCrafting.findAspects(grid, player).getAmount(Aspect.ORDER), 6, "addon order cost");
+        Warp.registerItem(Identifier.withDefaultNamespace("amethyst_shard"), 3);
+        helper.assertValueEqual(Warp.getItemWarp(new ItemStack(Items.AMETHYST_SHARD)), 3, "item warp");
+        int[] applied = {0};
+        TcStack.registerDataHandler("addon_test_key", (stack, value) -> applied[0] += Integer.parseInt(value));
+        ItemStack created = TcStack.withData("minecraft:stick", 1, java.util.Map.of("addon_test_key", "7")).create();
+        helper.assertValueEqual(applied[0], 7, "data handler");
+        helper.assertTrue(created.is(Items.STICK), "data stack item");
         helper.succeed();
     }
 }
