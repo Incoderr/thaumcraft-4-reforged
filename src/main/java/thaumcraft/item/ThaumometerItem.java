@@ -26,7 +26,7 @@ public class ThaumometerItem extends Item {
 
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity user) {
-        return 25;
+        return 72000;
     }
 
     @Override
@@ -37,10 +37,9 @@ public class ThaumometerItem extends Item {
     }
 
     @Override
-    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int remainingTime) {
-        if (level.isClientSide()) {
+    public void onStopUsing(ItemStack stack, LivingEntity entity, int remainingTime) {
+        if (entity.level().isClientSide()) {
             ScanClientHooks.stopUsing(entity);
         }
-        return false;
     }
 }

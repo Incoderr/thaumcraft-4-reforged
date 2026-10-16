@@ -23,6 +23,8 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
@@ -62,7 +64,7 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water"};
+    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water", "scan_continuous_use"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ThaumcraftGameTests::wandTapsNode);
@@ -75,6 +77,7 @@ public final class ThaumcraftGameTests {
         FUNCTIONS.register(TESTS[7], () -> ThaumcraftGameTests::wandCastingVisualState);
         FUNCTIONS.register(TESTS[8], () -> ThaumcraftGameTests::scanFluidTargets);
         FUNCTIONS.register(TESTS[9], () -> ThaumcraftGameTests::scanBlocksThroughWater);
+        FUNCTIONS.register(TESTS[10], () -> ThaumcraftGameTests::scanContinuousUse);
     }
 
     private ThaumcraftGameTests() {
@@ -178,6 +181,30 @@ public final class ThaumcraftGameTests {
         knowledge.setAspectPool(Aspect.FIRE, 125);
         helper.assertValueEqual(ResearchManager.awardAspect(player, Aspect.FIRE, 16), 1, "award above 125");
         helper.assertValueEqual(knowledge.getAspectPool(Aspect.FIRE), 126, "pool after awards");
+        helper.succeed();
+    }
+
+    private static void scanContinuousUse(GameTestHelper helper) {
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setPos(helper.absoluteVec(new net.minecraft.world.phys.Vec3(2.5, 3, 2.5)));
+        player.setNoGravity(true);
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack stack = new ItemStack(ModItems.THAUMOMETER.get());
+            player.setItemInHand(hand, stack);
+            InteractionResult result = stack.getItem().use(helper.getLevel(), player, hand);
+            helper.assertTrue(result instanceof InteractionResult.Success success && !success.shouldSwing(), "scanning must start without a hand swing");
+            for (int tick = 0; tick < 60; tick++) {
+                player.tick();
+            }
+            helper.assertTrue(player.isUsingItem() && player.getUsedItemHand() == hand, "holding the scanner must not end and restart every 25 ticks");
+            helper.assertValueEqual(player.getTicksUsingItem(), 60, "held scanner use must advance continuously");
+            player.releaseUsingItem();
+            helper.assertFalse(player.isUsingItem(), "releasing the scanner must end use");
+            stack.getItem().use(helper.getLevel(), player, hand);
+            player.setItemInHand(hand, ItemStack.EMPTY);
+            player.tick();
+            helper.assertFalse(player.isUsingItem(), "changing the held item must end scanner use");
+        }
         helper.succeed();
     }
 

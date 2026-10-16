@@ -32,14 +32,14 @@ public class ThaumometerItemRenderer implements NoDataSpecialModelRenderer {
     }
 
     private void transform(PoseStack poseStack) {
+        if (view == LegacyItemView.EQUIPPED) {
+            poseStack.translate(0.5F, 0.5F, 0.2F);
+            poseStack.scale(0.25F, 0.25F, 0.25F);
+            return;
+        }
         view.apply(poseStack);
         poseStack.scale(0.5F, 0.5F, 0.5F);
         switch (view) {
-            case EQUIPPED -> {
-                poseStack.translate(1.6F, 0.3F, 2.0F);
-                poseStack.rotateDegrees(Axis.XN, 90.0F);
-                poseStack.rotateDegrees(Axis.ZN, 30.0F);
-            }
             case INVENTORY -> {
                 poseStack.rotateDegrees(Axis.XP, 60.0F);
                 poseStack.rotateDegrees(Axis.ZN, 30.0F);
