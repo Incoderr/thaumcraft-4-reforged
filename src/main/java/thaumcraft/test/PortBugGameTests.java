@@ -4,6 +4,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
@@ -31,9 +32,12 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import thaumcraft.Thaumcraft;
 import thaumcraft.eldritch.EldritchBlockEntity;
 import thaumcraft.item.tool.FollowingItems;
+import thaumcraft.item.tool.ToolKeys;
 import thaumcraft.registry.EldritchContent;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModEntities;
@@ -42,7 +46,7 @@ import thaumcraft.registry.ModItems;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class PortBugGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final List<String> TESTS = List.of("eldritch_natural_spawn_support", "altar_guardian_population", "crusher_drops_follow_and_pickup", "following_item_releases_target", "trunk_original_dimensions", "following_item_releases_dimension", "zombie_natural_spawn_support");
+    private static final List<String> TESTS = List.of("eldritch_natural_spawn_support", "altar_guardian_population", "crusher_drops_follow_and_pickup", "following_item_releases_target", "trunk_original_dimensions", "following_item_releases_dimension", "zombie_natural_spawn_support", "crusher_floor_drops_follow_and_pickup", "following_item_tick_and_lifetime");
 
     static {
         FUNCTIONS.register(TESTS.get(0), () -> PortBugGameTests::naturalSpawnSupport);
@@ -52,6 +56,8 @@ public final class PortBugGameTests {
         FUNCTIONS.register(TESTS.get(4), () -> PortBugGameTests::trunkDimensions);
         FUNCTIONS.register(TESTS.get(5), () -> PortBugGameTests::releasesDimension);
         FUNCTIONS.register(TESTS.get(6), () -> PortBugGameTests::zombieSpawnSupport);
+        FUNCTIONS.register(TESTS.get(7), () -> helper -> crusherDrops(helper, true));
+        FUNCTIONS.register(TESTS.get(8), () -> PortBugGameTests::followingLifetime);
     }
 
     public static void register(IEventBus bus) {
@@ -63,7 +69,7 @@ public final class PortBugGameTests {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Thaumcraft.id("port_bugs_default"), new TestEnvironmentDefinition.AllOf());
         for (String name : TESTS) {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
-            event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id((name.equals("altar_guardian_population") || name.equals("crusher_drops_follow_and_pickup")) ? "test/eldritch_regression" : "test/platform"), 300, 0, true)));
+            event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id((name.equals("altar_guardian_population") || name.startsWith("crusher_")) ? "test/eldritch_regression" : "test/platform"), 300, 0, true)));
         }
     }
 
@@ -151,25 +157,38 @@ public final class PortBugGameTests {
     }
 
     private static void crusherDrops(GameTestHelper helper) {
+        crusherDrops(helper, false);
+    }
+
+    private static void crusherDrops(GameTestHelper helper, boolean floor) {
         var player = player(helper);
         BlockPos center = helper.absolutePos(new BlockPos(16, 3, 16));
-        player.setPos(center.getX() + 0.5, center.getY() - 1, center.getZ() + 5);
+        player.setPos(center.getX() + 0.5, center.getY() + (floor ? 2 : -1), center.getZ() + 5);
         player.setNoGravity(true);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.PRIMAL_CRUSHER.get()));
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
-                helper.getLevel().setBlockAndUpdate(center.offset(x, y, 0), Blocks.STONE.defaultBlockState());
+                helper.getLevel().setBlockAndUpdate(center.offset(x, floor ? 0 : y, floor ? y : 0), Blocks.STONE.defaultBlockState());
+            }
+        }
+        // Force every drop through solid blocks on its way to the player.
+        for (int x = -2; x <= 2; x++) {
+            for (int y = -1; y <= 5; y++) {
+                helper.getLevel().setBlockAndUpdate(center.offset(x, y, 2), Blocks.STONE.defaultBlockState());
             }
         }
         helper.onEachTick(player::aiStep);
+        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(player, center, floor ? Direction.UP : Direction.NORTH, PlayerInteractEvent.LeftClickBlock.Action.START));
         player.gameMode.destroyBlock(center);
         var area = new net.minecraft.world.phys.AABB(center).inflate(3);
         var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, area);
         helper.assertValueEqual(drops.stream().mapToInt(item -> item.getItem().getCount()).sum(), 9, "crusher must drop exactly nine blocks including the center");
         helper.assertTrue(drops.stream().allMatch(FollowingItems::isFollowing), "every crusher drop must follow the player");
+        helper.assertTrue(drops.stream().allMatch(item -> ToolKeys.FOLLOWING.get(item)), "following physics must be synchronized to clients");
         double initial = drops.stream().mapToDouble(item -> item.distanceToSqr(player)).sum();
         helper.runAfterDelay(10, () -> {
             helper.assertTrue(drops.stream().filter(item -> !item.isRemoved()).mapToDouble(item -> item.distanceToSqr(player)).sum() < initial, "crusher drops must approach the player");
+            helper.assertTrue(drops.stream().allMatch(item -> item.tickCount >= 9 && item.tickCount == item.age), "custom motion must advance commonTick and item age once per tick");
             player.setPos(player.position().add(2, 0, 0));
         });
         helper.runAfterDelay(100, () -> {
@@ -190,6 +209,7 @@ public final class PortBugGameTests {
         player.discard();
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(!FollowingItems.isFollowing(item) && !item.isNoGravity() && !item.noPhysics, "lost target must restore normal item physics");
+            helper.assertFalse(ToolKeys.FOLLOWING.get(item), "release must synchronize normal physics");
             helper.assertValueEqual(item.getItem().getCount(), 7, "releasing target must preserve the stack");
             item.discard();
             helper.succeed();
@@ -220,5 +240,25 @@ public final class PortBugGameTests {
         var trunk = ModEntities.TRAVELING_TRUNK.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(Math.abs(trunk.getBbWidth() - 0.8F) < 0.0001F && Math.abs(trunk.getBbHeight() - 0.8F) < 0.0001F, "trunk dimensions must match TC4");
         helper.succeed();
+    }
+
+    private static void followingLifetime(GameTestHelper helper) {
+        var player = player(helper);
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 3, 1));
+        player.setPos(Vec3.atCenterOf(pos.offset(6, 0, 0)));
+        var item = new ItemEntity(helper.getLevel(), pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.DIAMOND));
+        item.pickupDelay = 10;
+        item.lifespan = 5;
+        helper.getLevel().addFreshEntity(item);
+        FollowingItems.follow(item, player);
+        helper.runAfterDelay(3, () -> {
+            helper.assertTrue(item.tickCount > 0 && item.tickCount == item.age, "following item skipped or duplicated its common tick");
+            helper.assertValueEqual(item.pickupDelay, 10 - item.age, "following item pickup delay must tick normally");
+        });
+        helper.runAfterDelay(8, () -> {
+            helper.assertTrue(item.isRemoved(), "following item ignored its lifespan");
+            player.discard();
+            helper.succeed();
+        });
     }
 }

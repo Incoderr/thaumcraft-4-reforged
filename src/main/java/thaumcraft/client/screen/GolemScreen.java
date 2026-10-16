@@ -49,8 +49,12 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
     }
 
     private void scaled(GuiGraphicsExtractor graphics, Component component, int x, int y, int color, float scale) {
+        scaledLabel(graphics, component, leftPos + x, topPos + y, color, scale);
+    }
+
+    private void scaledLabel(GuiGraphicsExtractor graphics, Component component, int x, int y, int color, float scale) {
         graphics.pose().pushMatrix();
-        graphics.pose().translate(leftPos + x, topPos + y);
+        graphics.pose().translate(x, y);
         graphics.pose().scale(scale, scale);
         graphics.text(font, component, 0, 0, color, true);
         graphics.pose().popMatrix();
@@ -77,9 +81,9 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
         }
         int core = golem.getCore();
         String key = threat >= 0 ? "golemthreat." + threat + ".text" : "golemblurb." + Math.max(0, core) + ".text";
-        graphics.textWithWordWrap(font, Component.translatable(key), leftPos + 80, topPos + 22, 110, TEXT, true);
+        graphics.textWithWordWrap(font, Component.translatable(key), 80, 22, 110, TEXT, true);
         if (menu.maxScroll() > 0) {
-            scaled(graphics, Component.literal((menu.currentScroll() + 1) + "/" + (menu.maxScroll() + 1)), 161, 70, TEXT, 0.5F);
+            scaledLabel(graphics, Component.literal((menu.currentScroll() + 1) + "/" + (menu.maxScroll() + 1)), 161, 70, TEXT, 0.5F);
         }
         int count = Math.min(6, menu.filterSlots());
         for (int index = 0; index < count; index++) {
@@ -88,7 +92,7 @@ public final class GolemScreen extends AbstractContainerScreen<GolemMenu> {
             if (inside(mouseX - leftPos, mouseY - topPos, x, y, 24, 12)) {
                 int color = golem.getColors(index + menu.currentScroll() * 6);
                 Component name = Component.translatable(color < 0 ? "tc.golem.anycolor" : "color.minecraft." + COLOR_NAMES[color]);
-                graphics.text(font, name, leftPos + 133 - font.width(name) / 2, topPos - 6, LABEL, true);
+                graphics.text(font, name, 133 - font.width(name) / 2, -6, LABEL, true);
             }
         }
     }

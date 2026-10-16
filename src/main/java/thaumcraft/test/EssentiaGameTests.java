@@ -9,6 +9,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -16,17 +17,19 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.essentia.EssentiaHandler;
 import thaumcraft.essentia.JarBlockEntity;
 import thaumcraft.registry.ModBlocks;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class EssentiaGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"essentia_moves_through_tubes", "void_jar_voids_overflow"};
+    private static final String[] TESTS = {"essentia_moves_through_tubes", "void_jar_voids_overflow", "essentia_cache_recovers_replaced_jars"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> EssentiaGameTests::essentiaMovesThroughTubes);
         FUNCTIONS.register(TESTS[1], () -> EssentiaGameTests::voidJarVoidsOverflow);
+        FUNCTIONS.register(TESTS[2], () -> EssentiaGameTests::cacheRecoversReplacedJars);
     }
 
     private EssentiaGameTests() {
@@ -69,6 +72,33 @@ public final class EssentiaGameTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(targetJar.getAmount() >= 3, "essentia did not reach the second jar");
             helper.assertTrue(sourceJar.getAmount() + targetJar.getAmount() <= 10, "essentia was duplicated");
+        });
+    }
+
+    private static void cacheRecoversReplacedJars(GameTestHelper helper) {
+        BlockPos consumerPos = new BlockPos(3, 3, 3);
+        BlockPos oldSource = new BlockPos(1, 1, 1);
+        helper.setBlock(consumerPos, ModBlocks.WARDED_JAR.get());
+        helper.setBlock(oldSource, ModBlocks.WARDED_JAR.get());
+        JarBlockEntity consumer = helper.getBlockEntity(consumerPos, JarBlockEntity.class);
+        helper.getBlockEntity(oldSource, JarBlockEntity.class).addToContainer(Aspect.MOTION, 8);
+        helper.assertTrue(EssentiaHandler.drainEssentia(consumer, Aspect.MOTION, null, 12), "initial source was not cached");
+        helper.setBlock(oldSource, Blocks.AIR);
+        Aspect[] aspects = {Aspect.AIR, Aspect.MOTION, Aspect.ENERGY};
+        BlockPos[] sources = {new BlockPos(0, 1, 3), new BlockPos(3, 1, 0), new BlockPos(6, 1, 3)};
+        for (int index = 0; index < sources.length; index++) {
+            helper.setBlock(sources[index], ModBlocks.WARDED_JAR.get());
+            helper.getBlockEntity(sources[index], JarBlockEntity.class).addToContainer(aspects[index], 8);
+        }
+        EssentiaHandler.drainEssentia(consumer, Aspect.AIR, null, 12);
+        helper.succeedWhen(() -> {
+            for (Aspect aspect : aspects) {
+                helper.assertTrue(EssentiaHandler.findEssentia(consumer, aspect, null, 12), "replacement source not found for " + aspect);
+            }
+            for (int index = 0; index < sources.length; index++) {
+                helper.assertTrue(EssentiaHandler.drainEssentia(consumer, aspects[index], null, 12), "replacement source not drained for " + aspects[index]);
+                helper.assertValueEqual(helper.getBlockEntity(sources[index], JarBlockEntity.class).getAmount(), 7, "replacement jar amount");
+            }
         });
     }
 

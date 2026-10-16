@@ -14,10 +14,15 @@ public final class FollowingItemMotion {
     }
 
     public static void tick(ItemEntity item, Vec3 movement) {
+        // EntityTickEvent.Pre cancellation skips commonTick as well as ItemEntity.tick.
+        item.commonTick();
         if (item.getItem().onEntityItemUpdate(item)) {
             return;
         }
         item.baseTick();
+        item.xo = item.getX();
+        item.yo = item.getY();
+        item.zo = item.getZ();
         if (item.pickupDelay > 0 && item.pickupDelay != 32767) {
             item.pickupDelay--;
         }
@@ -27,8 +32,10 @@ public final class FollowingItemMotion {
         item.noPhysics = true;
         item.setDeltaMovement(movement);
         item.move(MoverType.SELF, movement);
-        sync(item);
-        if (item.age >= item.lifespan) {
+        if (!item.level().isClientSide()) {
+            sync(item);
+        }
+        if (!item.level().isClientSide() && item.age >= item.lifespan) {
             item.lifespan = Math.clamp((long) item.lifespan + EventHooks.onItemExpire(item), 0, Short.MAX_VALUE - 1);
             if (item.age >= item.lifespan) {
                 item.discard();

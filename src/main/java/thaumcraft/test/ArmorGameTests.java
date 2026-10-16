@@ -18,6 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -27,28 +30,33 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import thaumcraft.Thaumcraft;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectKeys;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.crafting.RobeArmorDyeRecipe;
 import thaumcraft.item.armor.Hover;
+import thaumcraft.item.armor.ArmorEvents;
 import thaumcraft.item.armor.RobeColor;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModEnchantments;
 import thaumcraft.research.Warp;
 import thaumcraft.wand.WandManager;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ArmorGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"armor_vis_discount_sums", "armor_warp_from_gear", "robe_dye_mixes_color", "hover_harness_burns_fuel"};
+    private static final String[] TESTS = {"armor_vis_discount_sums", "armor_warp_from_gear", "robe_dye_mixes_color", "hover_harness_burns_fuel", "traveller_boots_elytra_no_thrust"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ArmorGameTests::visDiscountSums);
         FUNCTIONS.register(TESTS[1], () -> ArmorGameTests::warpFromGear);
         FUNCTIONS.register(TESTS[2], () -> ArmorGameTests::robeDyeMixesColor);
         FUNCTIONS.register(TESTS[3], () -> ArmorGameTests::hoverBurnsFuel);
+        FUNCTIONS.register(TESTS[4], () -> ArmorGameTests::travellerElytra);
     }
 
     private ArmorGameTests() {
@@ -136,6 +144,45 @@ public final class ArmorGameTests {
         helper.assertValueEqual(Hover.getHarnessFuel(armor), 1, "fuel after burn");
         Hover.toggle(player);
         helper.assertTrue(Hover.isHovering(armor), "hover not toggled");
+        helper.succeed();
+    }
+
+    private static void travellerElytra(GameTestHelper helper) {
+        ServerPlayer player = mockServerPlayer(helper);
+        player.setLastClientInput(new Input(true, false, false, false, false, false, false));
+        player.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.ELYTRA));
+        player.setItemSlot(EquipmentSlot.FEET, new ItemStack(ModItems.BOOTS_TRAVELLER.get()));
+        var step = player.getAttribute(Attributes.STEP_HEIGHT);
+        double originalStep = step.getValue();
+        player.setOnGround(true);
+        player.setDeltaMovement(Vec3.ZERO);
+        ArmorEvents.onPlayerTick(new PlayerTickEvent.Pre(player));
+        helper.assertTrue(player.getDeltaMovement().horizontalDistance() > 0.05, "boots must still accelerate walking");
+        helper.assertTrue(step.getValue() > originalStep, "boots must still increase step height");
+        ArmorEvents.onJump(new LivingEvent.LivingJumpEvent(player));
+        helper.assertTrue(player.getDeltaMovement().y > 0.27, "boots must still boost jumping");
+        player.setOnGround(false);
+        player.startFallFlying();
+        Vec3 gliding = new Vec3(0.4, -0.05, 0.8);
+        for (var boots : List.of(Items.LEATHER_BOOTS, ModItems.BOOTS_TRAVELLER.get())) {
+            for (int haste : new int[]{0, 3}) {
+                ItemStack stack = new ItemStack(boots);
+                if (haste > 0) {
+                    stack.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(ModEnchantments.HASTE), haste);
+                }
+                player.setItemSlot(EquipmentSlot.FEET, stack);
+                player.setDeltaMovement(gliding);
+                for (int tick = 0; tick < 80; tick++) {
+                    ArmorEvents.onPlayerTick(new PlayerTickEvent.Pre(player));
+                }
+                helper.assertTrue(player.getDeltaMovement().equals(gliding), "boots/haste added elytra thrust: " + boots + " haste=" + haste);
+                helper.assertTrue(Math.abs(step.getValue() - originalStep) < 1.0E-6, "gliding must remove the step modifier");
+            }
+        }
+        player.stopFallFlying();
+        player.fallDistance = 3;
+        ArmorEvents.onPlayerTick(new PlayerTickEvent.Pre(player));
+        helper.assertTrue(player.fallDistance < 3, "boots must still reduce fall distance");
         helper.succeed();
     }
 }

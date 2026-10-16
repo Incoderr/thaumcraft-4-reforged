@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
@@ -18,10 +19,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -41,6 +45,8 @@ import thaumcraft.infusion.InfusionTriggers;
 import thaumcraft.infusion.PedestalBlockEntity;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.research.ResearchManager;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.Wands;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class InfusionGameTests {
@@ -117,17 +123,35 @@ public final class InfusionGameTests {
         InfusionTriggers.replace(helper.getLevel(), origin);
     }
 
+    private static void equipWand(ServerPlayer player) {
+        ItemStack wand = Wands.create(WandRegistry.CAP_GOLD, WandRegistry.ROD_SILVERWOOD, false);
+        Wands.fill(wand);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
+    }
+
+    private static void clickMatrix(GameTestHelper helper, ServerPlayer player) {
+        BlockPos matrixPos = helper.absolutePos(new BlockPos(3, 3, 3));
+        helper.assertTrue(player.gameMode.useItemOn(player, helper.getLevel(), player.getMainHandItem(), InteractionHand.MAIN_HAND,
+            new BlockHitResult(Vec3.atCenterOf(matrixPos), Direction.UP, matrixPos, false)).consumesAction(), "wand click was not handled");
+    }
+
     private static void altarForms(GameTestHelper helper) {
         buildFrame(helper);
         BlockPos origin = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.assertTrue(InfusionTriggers.fits(helper.getLevel(), origin), "blueprint does not fit");
-        form(helper);
+        ServerPlayer player = mockServerPlayer(helper);
+        ResearchManager.complete(player, "INFUSION");
+        equipWand(player);
+        clickMatrix(helper, player);
         InfusionMatrixBlockEntity matrix = helper.getBlockEntity(new BlockPos(3, 3, 3), InfusionMatrixBlockEntity.class);
         helper.assertTrue(matrix.isActive(), "matrix not active");
         helper.assertTrue(matrix.validLocation(), "structure invalid");
         helper.assertTrue(helper.getBlockState(new BlockPos(2, 2, 2)).is(ModBlocks.INFUSION_PILLAR_TOP.get()), "no pillar top");
         helper.assertTrue(helper.getBlockState(new BlockPos(4, 1, 4)).is(ModBlocks.INFUSION_PILLAR.get()), "no pillar");
         helper.assertValueEqual(helper.getBlockEntity(new BlockPos(4, 1, 4), InfusionPillarBlockEntity.class).getOrientation(), 5, "orientation");
+        for (Aspect aspect : Aspect.getPrimalAspects()) {
+            helper.assertValueEqual(Wands.getVis(player.getMainHandItem(), aspect), 7500, "formation vis cost for " + aspect);
+        }
         helper.succeed();
     }
 
@@ -180,8 +204,11 @@ public final class InfusionGameTests {
 
     private static void prepare(GameTestHelper helper, ServerPlayer player, InfusionRecipe chosen) {
         ResearchManager.complete(player, chosen.research());
+        ResearchManager.complete(player, "INFUSION");
         buildFrame(helper);
-        form(helper);
+        equipWand(player);
+        clickMatrix(helper, player);
+        helper.assertTrue(helper.getBlockEntity(new BlockPos(3, 3, 3), InfusionMatrixBlockEntity.class).validLocation(), "altar did not form through wand interaction");
         ItemStack central = chosen.central().displayStacks().get(0).copyWithCount(1);
         helper.getBlockEntity(new BlockPos(3, 1, 3), PedestalBlockEntity.class).setStack(central);
         for (int index = 0; index < chosen.components().size(); index++) {
@@ -193,7 +220,7 @@ public final class InfusionGameTests {
     private static InfusionMatrixBlockEntity start(GameTestHelper helper, ServerPlayer player) {
         InfusionMatrixBlockEntity matrix = helper.getBlockEntity(new BlockPos(3, 3, 3), InfusionMatrixBlockEntity.class);
         matrix.recalculateSurroundings();
-        matrix.craftingStart(player);
+        clickMatrix(helper, player);
         helper.assertTrue(matrix.isCrafting(), "crafting did not start");
         return matrix;
     }

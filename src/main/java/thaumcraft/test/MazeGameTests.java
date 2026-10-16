@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
@@ -24,6 +25,9 @@ import thaumcraft.world.dim.OuterLands;
 import thaumcraft.world.dim.Cell;
 import thaumcraft.world.dim.CellLoc;
 import thaumcraft.world.dim.MazeGenerator;
+import thaumcraft.world.dim.MazeHandler;
+import thaumcraft.eldritch.EldritchBlockEntity;
+import thaumcraft.registry.EldritchContent;
 
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class MazeGameTests {
@@ -34,7 +38,8 @@ public final class MazeGameTests {
         "maze_connections_reciprocal_and_reachable", MazeGameTests::connectionsReciprocalAndReachable,
         "maze_chunk_boundary_connections", MazeGameTests::chunkBoundaryConnections,
         "maze_saved_state_round_trip", MazeGameTests::savedStateRoundTrip,
-        "maze_dimension_key", MazeGameTests::dimensionKey
+        "maze_dimension_key", MazeGameTests::dimensionKey,
+        "maze_first_eye_starts_only_its_reservation", MazeGameTests::firstEyeStartsReservation
     );
 
     static {
@@ -86,7 +91,54 @@ public final class MazeGameTests {
         OuterLandsData restored = OuterLandsData.CODEC.parse(JsonOps.INSTANCE, encoded).result().orElseThrow();
         helper.assertTrue(restored.maze("8,8").placed().contains(location), "maze alias and placement survive codec round trip");
         helper.assertTrue(restored.maze("4,-7").seed() == 991L, "maze seed survives codec round trip");
+        helper.assertTrue(restored.maze("4,-7").generationStarted(), "legacy maze without generation_started must keep building");
+        var reserved = new OuterLandsData.MazeState(17L, -1, -1, 11, 11, maze.cells(), java.util.List.of(), false);
+        data.putMaze("reserved", reserved.withPlaced(location));
+        encoded = OuterLandsData.CODEC.encodeStart(JsonOps.INSTANCE, data).result().orElseThrow();
+        restored = OuterLandsData.CODEC.parse(JsonOps.INSTANCE, encoded).result().orElseThrow();
+        helper.assertTrue(!restored.maze("reserved").generationStarted() && restored.maze("reserved").placed().contains(location), "reservation and placement survive reload without starting generation");
         helper.succeed();
+    }
+
+    private static void firstEyeStartsReservation(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var outer = level.getServer().getLevel(OuterLands.OUTER_LANDS);
+        helper.assertTrue(outer != null, "Outer Lands unavailable");
+        var data = outer.getDataStorage().computeIfAbsent(OuterLandsData.TYPE);
+        // Negative coordinates at the last block of a chunk exercise the portal's key.
+        BlockPos altarPos = new BlockPos(-320001, 70, -320001);
+        int cx = altarPos.getX() >> 4;
+        int cz = altarPos.getZ() >> 4;
+        for (int index = 0; index < 3; index++) {
+            helper.assertTrue(MazeHandler.reserveNaturalRing(level.getServer(), outer.getSeed(), cx + index * 100, cz, 11, 11, 97L + index), "isolated altar reservation rejected");
+        }
+        helper.runAfterDelay(3, () -> {
+            for (int index = 0; index < 3; index++) {
+                var reserved = data.maze((cx + index * 100) + "," + cz);
+                helper.assertTrue(reserved != null && !reserved.generationStarted() && reserved.placed().isEmpty(), "unused altar generated maze rooms");
+                var cell = reserved.cells().getFirst().location();
+                helper.assertTrue(outer.getBlockState(new BlockPos(cell.x() * 16 + 8, 50, cell.z() * 16 + 8)).isAir(), "reservation placed physical blocks");
+            }
+            int count = data.mazes().size();
+            var reserved = data.maze(cx + "," + cz);
+            level.setBlockAndUpdate(altarPos, EldritchContent.ELDRITCH_ALTAR.get().defaultBlockState());
+            var altar = (EldritchBlockEntity) level.getBlockEntity(altarPos);
+            helper.assertTrue(altar.addEye(), "first eye rejected");
+            helper.assertTrue(data.maze(cx + "," + cz).generationStarted(), "first eye did not start its reservation");
+            for (int index = 0; index < 3; index++) altar.addEye();
+            MazeHandler.ensureMaze(outer, altarPos.above());
+            helper.assertValueEqual(data.mazes().size(), count, "eyes and portal lookup created additional mazes");
+            var started = data.maze(cx + "," + cz);
+            helper.assertTrue(started.seed() == reserved.seed() && started.cells().equals(reserved.cells()), "activation changed reserved topology");
+            for (int index = 1; index < 3; index++) {
+                helper.assertTrue(!data.maze((cx + index * 100) + "," + cz).generationStarted(), "eye started another altar's maze");
+            }
+            var encoded = OuterLandsData.CODEC.encodeStart(JsonOps.INSTANCE, data).result().orElseThrow();
+            var restored = OuterLandsData.CODEC.parse(JsonOps.INSTANCE, encoded).result().orElseThrow();
+            helper.assertTrue(restored.maze(cx + "," + cz).generationStarted() && restored.maze(cx + "," + cz).seed() == 97L, "reload lost activation or seed");
+            helper.assertTrue(!restored.maze((cx + 100) + "," + cz).generationStarted(), "reload started an unused reservation");
+            helper.succeed();
+        });
     }
 
     private static void dimensionKey(GameTestHelper helper) {

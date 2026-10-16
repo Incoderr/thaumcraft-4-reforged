@@ -138,9 +138,9 @@ public final class ParityCoreGameTests {
         if (outer == null) {
             return;
         }
-        BlockPos center = helper.absolutePos(new BlockPos(8, 8, 8));
-        int chunkX = (center.getX() >> 4) + 1024;
-        int chunkZ = (center.getZ() >> 4) + 1024;
+        BlockPos center = helper.absolutePos(new BlockPos(8, 8, 8)).offset(16384, 0, 16384);
+        int chunkX = center.getX() >> 4;
+        int chunkZ = center.getZ() >> 4;
         CellLoc cell = new CellLoc(chunkX, chunkZ);
         OuterLandsData data = outer.getDataStorage().computeIfAbsent(OuterLandsData.TYPE);
         String mazeId = "ring_test_" + chunkX + "_" + chunkZ;
@@ -184,9 +184,9 @@ public final class ParityCoreGameTests {
 
     private static void acceptedRingReservesQueuedMaze(GameTestHelper helper) {
         var level = helper.getLevel();
-        BlockPos center = helper.absolutePos(new BlockPos(8, 8, 8));
-        int chunkX = (center.getX() >> 4) + 1_000_000;
-        int chunkZ = (center.getZ() >> 4) + 1_000_000;
+        BlockPos center = helper.absolutePos(new BlockPos(8, 8, 8)).offset(32000, 0, 32000);
+        int chunkX = center.getX() >> 4;
+        int chunkZ = center.getZ() >> 4;
         var outer = level.getServer().getLevel(OuterLands.OUTER_LANDS);
         helper.assertTrue(outer != null, "Outer Lands level is unavailable");
         if (outer == null) {
@@ -195,7 +195,7 @@ public final class ParityCoreGameTests {
         helper.assertFalse(MazeHandler.mazesInRange(outer, chunkX, chunkZ, 21, 21), "isolated ring request origin overlaps a saved maze");
         prepareRingSite(level, center);
         assertRingSite(helper, level, center);
-        helper.assertTrue(EldritchRingGenerator.generate(level, new Random(29L), chunkX, chunkZ, center.getX(), center.getY(), center.getZ()),
+        helper.assertTrue(EldritchRingGenerator.generate(level, new Random(29L), chunkX + 1, chunkZ + 1, center.getX(), center.getY(), center.getZ()),
             "ring candidate with no nearby saved maze or pending request was rejected");
         helper.assertTrue(level.getBlockState(center.above()).is(EldritchContent.ELDRITCH_ALTAR.get()), "accepted ring did not place its altar");
 
@@ -210,7 +210,11 @@ public final class ParityCoreGameTests {
         helper.assertValueEqual(random.nextLong(), control.nextLong(), "queued-overlap ring rejection consumed decoration randomness");
         helper.assertTrue(level.getBlockState(observed).isAir(), "queued-overlap rejection modified the ring site");
         helper.assertTrue(level.getBlockState(center.below()).is(Blocks.STONE), "queued-overlap rejection modified the ground");
-        helper.succeed();
+        helper.runAfterDelay(2, () -> {
+            var state = outer.getDataStorage().computeIfAbsent(OuterLandsData.TYPE).maze(chunkX + "," + chunkZ);
+            helper.assertTrue(state != null && !state.generationStarted() && state.placed().isEmpty(), "natural altar must reserve its actual chunk without building a maze");
+            helper.succeed();
+        });
     }
 
     private static void prepareRingSite(net.minecraft.world.level.WorldGenLevel level, BlockPos center) {
