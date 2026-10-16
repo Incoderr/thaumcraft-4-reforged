@@ -28,6 +28,7 @@ import thaumcraft.client.geom.ClippedQuadSink;
 import thaumcraft.client.geom.FacingQuads;
 import thaumcraft.client.geom.NodeGeometry;
 import thaumcraft.client.geom.QuadSink;
+import thaumcraft.client.platform.NodeRenderTypes;
 import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.client.platform.VertexQuadSink;
 import thaumcraft.node.NodeBlockEntity;
@@ -195,12 +196,12 @@ public abstract class NodeRenderer<T extends BlockEntity> implements BlockEntity
                 state.nanoTime
             );
             var planes = state.throughThaumometer ? ThaumometerLens.clipPlanes(camera, pos) : null;
-            collector.submitCustomGeometry(poseStack, TcRenderTypes.of(state.depthIgnore ? TcRenderTypes.Kind.ADDITIVE_NO_DEPTH : TcRenderTypes.Kind.ADDITIVE, NODES), (pose, buffer) -> {
+            collector.submitCustomGeometry(poseStack, NodeRenderTypes.of(NODES, false, state.depthIgnore), (pose, buffer) -> {
                 QuadSink sink = new VertexQuadSink(pose, buffer);
                 NodeGeometry.render(params, planes == null ? sink : new ClippedQuadSink(sink, planes), WorldRendering.NOOP);
             });
             if (state.needsTranslucent) {
-                collector.submitCustomGeometry(poseStack, TcRenderTypes.of(state.depthIgnore ? TcRenderTypes.Kind.TRANSLUCENT_NO_DEPTH : TcRenderTypes.Kind.TRANSLUCENT, NODES), (pose, buffer) -> {
+                collector.submitCustomGeometry(poseStack, NodeRenderTypes.of(NODES, true, state.depthIgnore), (pose, buffer) -> {
                     QuadSink sink = new VertexQuadSink(pose, buffer);
                     NodeGeometry.render(params, WorldRendering.NOOP, planes == null ? sink : new ClippedQuadSink(sink, planes));
                 });
