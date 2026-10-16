@@ -2,6 +2,8 @@ package thaumcraft.crafting;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -16,6 +18,8 @@ import thaumcraft.wand.WandKeys;
 import thaumcraft.wand.WandParts;
 
 public record TcStack(Identifier item, int count, @Nullable AspectList aspects, Map<String, String> data) {
+    private static final Map<String, BiConsumer<ItemStack, String>> DATA_HANDLERS = new ConcurrentHashMap<>();
+
     public static final TcStack NONE = new TcStack(Identifier.parse("minecraft:air"), 0, null, Map.of());
 
     public TcStack {
@@ -24,6 +28,10 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects, 
 
     public TcStack(Identifier item, int count, @Nullable AspectList aspects) {
         this(item, count, aspects, Map.of());
+    }
+
+    public static void registerDataHandler(String key, BiConsumer<ItemStack, String> handler) {
+        DATA_HANDLERS.put(key, handler);
     }
 
     public static TcStack of(String item) {
@@ -69,7 +77,21 @@ public record TcStack(Identifier item, int count, @Nullable AspectList aspects, 
                 WardedKeys.BANNER_COLOR.set(stack, color);
             }
         }
+        applyDataHandlers(stack);
         return stack;
+    }
+
+    public boolean hasDataHandler() {
+        return data.keySet().stream().anyMatch(DATA_HANDLERS::containsKey);
+    }
+
+    private void applyDataHandlers(ItemStack stack) {
+        data.forEach((key, value) -> {
+            BiConsumer<ItemStack, String> handler = DATA_HANDLERS.get(key);
+            if (handler != null) {
+                handler.accept(stack, value);
+            }
+        });
     }
 
     public boolean matches(ItemStack stack) {
