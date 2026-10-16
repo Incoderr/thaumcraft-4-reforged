@@ -104,7 +104,10 @@ public class EldritchGuardian extends Monster implements RangedAttackMob, thaumc
 
     @Override
     public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level, EntitySpawnReason reason) {
-        return this.level().getEntitiesOfClass(EldritchGuardian.class, this.getBoundingBox().inflate(32.0, 16.0, 32.0), other -> other != this).isEmpty() && super.checkSpawnRules(level, reason);
+        return this.level().getEntitiesOfClass(EldritchGuardian.class, this.getBoundingBox().inflate(32.0, 16.0, 32.0), other -> other != this).isEmpty()
+            && level instanceof net.minecraft.world.level.ServerLevelAccessor server
+            && level.getDifficulty() != Difficulty.PEACEFUL
+            && thaumcraft.entity.monster.EldritchSpawnRules.check(ModEntities.ELDRITCH_GUARDIAN.get(), server, reason, this.blockPosition(), this.random);
     }
 
     @Override

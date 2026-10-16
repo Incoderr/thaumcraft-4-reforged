@@ -11,6 +11,42 @@ public final class EldritchSurfaceGeometry {
         {{1, 0, 1}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}}
     };
 
+    private static final int[] COLORS = new int[16];
+    private static final float[] ROTATIONS = new float[16];
+
+    static {
+        COLORS[0] = 0xFFFFFFFF;
+        for (int layer = 1; layer < 16; layer++) {
+            java.util.Random random = new java.util.Random(31100L + layer);
+            float alpha = 1.0F / (17 - layer);
+            int red = (int) ((random.nextFloat() * 0.5F + 0.1F) * 255 * alpha);
+            int green = (int) ((random.nextFloat() * 0.5F + 0.4F) * 255 * alpha);
+            int blue = (int) ((random.nextFloat() * 0.5F + 0.5F) * 255 * alpha);
+            COLORS[layer] = 0xFF000000 | red << 16 | green << 8 | blue;
+            ROTATIONS[layer] = (float) Math.toRadians((layer * layer * 4321.0F + layer * 9.0F) * 2.0F);
+        }
+    }
+
+    public static boolean exposed(boolean sameSurface, boolean solidNeighbor) {
+        return !sameSurface && !solidNeighbor;
+    }
+
+    public static int colorForLayer(int layer) {
+        return COLORS[layer];
+    }
+
+    public static float rotationForLayer(int layer, float time) {
+        return ROTATIONS[layer] + (float) Math.toRadians(time * 0.004F * (layer + 1));
+    }
+
+    public static void faces(QuadSink sink, int mask, float uvScale, float rotation, int color, int light) {
+        for (int side = 0; side < 6; side++) {
+            if ((mask & (1 << side)) != 0) {
+                cubeFace(sink, side, uvScale, rotation, color, light);
+            }
+        }
+    }
+
     private EldritchSurfaceGeometry() {
     }
 

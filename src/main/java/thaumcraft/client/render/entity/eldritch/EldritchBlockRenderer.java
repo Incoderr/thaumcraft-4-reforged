@@ -183,17 +183,7 @@ public final class EldritchBlockRenderer implements BlockEntityRenderer<Eldritch
     }
 
     private void submitPortalLayers(PoseStack poseStack, SubmitNodeCollector collector, State state, float x0, float y0, float z0, float x1, float y1, float z1) {
-        if (!state.nearby) {
-            EldritchSurfaces.submitRectangle(collector, poseStack, TcRenderTypes.translucent(FIELD_FAR), x0, y0, z0, x1, y1, z1, 1.0F, 0.0F, 0xFF808080, 0xF000F0);
-            return;
-        }
-        for (int layer = 0; layer < 16; layer++) {
-            float alpha = layer == 0 ? 0.1F : 1.0F / (17 - layer);
-            float tile = layer == 0 ? 0.125F : 0.5F;
-            float rotation = (float) Math.toRadians((layer * layer * 4321.0F + layer * 9.0F) * 2.0F + state.time * 0.004F * (layer + 1));
-            int color = layer == 0 ? 0xFFFFFFFF : colorForLayer(layer, alpha);
-            EldritchSurfaces.submitRectangle(collector, poseStack, layer == 0 ? TcRenderTypes.translucent(TUNNEL) : TcRenderTypes.additive(FIELD), x0, y0, z0, x1, y1, z1, tile, rotation, color, 0xF000F0);
-        }
+        EldritchSurfaces.submitPortalRectangle(collector, poseStack, state.nearby, state.time, x0, y0, z0, x1, y1, z1);
     }
 
     private void submitEyes(State state, PoseStack poseStack, SubmitNodeCollector collector) {
@@ -249,27 +239,8 @@ public final class EldritchBlockRenderer implements BlockEntityRenderer<Eldritch
         poseStack.translate(0.5F, 0.0F, 0.5F);
         poseStack.rotateDegrees(Axis.YP, facing.toYRot());
         poseStack.translate(0.0F, 0.0F, -0.505F);
-        float phase = state.time * 0.004F;
-        for (int layer = 0; layer < 16; layer++) {
-            float alpha = layer == 0 ? 0.1F : 1.0F / (17 - layer);
-            float extent = 2.5F;
-            float rotation = (layer * layer * 4321.0F + layer * 9.0F) * 2.0F + phase * (layer + 1);
-            poseStack.pushPose();
-            float tile = layer == 0 ? 0.125F : 0.5F;
-            var renderType = layer == 0 ? TcRenderTypes.translucent(TUNNEL) : state.nearby ? TcRenderTypes.additive(FIELD) : TcRenderTypes.translucent(FIELD_FAR);
-            int color = layer == 0 ? 0xFFFFFFFF : state.nearby ? colorForLayer(layer, alpha) : 0xFF808080;
-            EldritchSurfaces.submitRectangle(collector, poseStack, renderType, -extent, -2.0F, 0.0F, extent, 3.0F, 0.0F, tile, (float) Math.toRadians(rotation), color, state.lightCoords);
-            poseStack.popPose();
-        }
+        EldritchSurfaces.submitPortalRectangle(collector, poseStack, state.nearby, state.time, -2.5F, -2.0F, 0.0F, 2.5F, 3.0F, 0.0F);
         poseStack.popPose();
-    }
-
-    private static int colorForLayer(int layer, float alpha) {
-        Random random = new Random(31100L + layer);
-        int red = (int) ((random.nextFloat() * 0.5F + 0.1F) * 255.0F * alpha);
-        int green = (int) ((random.nextFloat() * 0.5F + 0.4F) * 255.0F * alpha);
-        int blue = (int) ((random.nextFloat() * 0.5F + 0.5F) * 255.0F * alpha);
-        return net.minecraft.util.ARGB.color(255, red, green, blue);
     }
 
     @Override

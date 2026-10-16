@@ -184,6 +184,13 @@ def generate(ctx):
         "monster_spawn_light_level": 0,
         "skybox": "none",
     }
+    if not ctx.mcformat.profile.modern:
+        for field in ["attributes", "cardinal_light", "has_ender_dragon_fight", "has_fixed_time", "skybox"]:
+            dimension_type.pop(field)
+        dimension_type.update({
+            "ultrawarm": False, "natural": False, "piglin_safe": False, "bed_works": False,
+            "respawn_anchor_works": False, "has_raids": False, "fixed_time": 18000, "effects": "minecraft:the_end",
+        })
     ctx.write(data / NS / "dimension_type" / "outer_lands.json", dimension_type)
     ctx.write(data / NS / "dimension" / "outer_lands.json", {
         "type": f"{NS}:outer_lands",
@@ -195,11 +202,14 @@ def generate(ctx):
 
     biome_path = data / NS / "worldgen" / "biome" / "eldritch.json"
     biome = json.loads(biome_path.read_text(encoding="utf-8"))
-    spawns = biome["attributes"]["minecraft:gameplay/natural_mob_spawns"]["argument"]["spawns_by_category"]["monster"]
-    spawns[:] = [
-        {"type": f"{NS}:inhabited_zombie", "count": 1, "weight": 1},
-        {"type": f"{NS}:eldritch_guardian", "count": 1, "weight": 1},
-    ]
+    if ctx.mcformat.profile.modern:
+        biome["attributes"]["minecraft:gameplay/natural_mob_spawns"]["argument"]["spawns_by_category"]["monster"] = [
+            {"type": f"{NS}:{name}", "count": 1, "weight": 1} for name in ["inhabited_zombie", "eldritch_guardian"]
+        ]
+    else:
+        biome["spawners"]["monster"] = [
+            {"type": f"{NS}:{name}", "minCount": 1, "maxCount": 1, "weight": 1} for name in ["inhabited_zombie", "eldritch_guardian"]
+        ]
     ctx.write(biome_path, biome)
 
     locale_files = sorted((ctx.SOURCE_TEXTURES.parent / "lang").glob("*.json"))

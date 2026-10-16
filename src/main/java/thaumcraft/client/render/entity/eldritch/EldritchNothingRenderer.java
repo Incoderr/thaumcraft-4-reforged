@@ -17,12 +17,8 @@ import thaumcraft.client.platform.TcRenderTypes;
 import thaumcraft.eldritch.EldritchNothingBlockEntity;
 
 public final class EldritchNothingRenderer implements BlockEntityRenderer<EldritchNothingBlockEntity, EldritchNothingRenderer.State> {
-    private static final net.minecraft.resources.Identifier TUNNEL = Thaumcraft.id("textures/misc/tunnel.png");
-    private static final net.minecraft.resources.Identifier FIELD = Thaumcraft.id("textures/misc/particlefield.png");
-    private static final net.minecraft.resources.Identifier FIELD_FAR = Thaumcraft.id("textures/misc/particlefield32.png");
-
     static final class State extends BlockEntityRenderState {
-        boolean[] exposed = new boolean[6];
+        int exposed;
         boolean nearby;
         float time;
     }
@@ -40,46 +36,22 @@ public final class EldritchNothingRenderer implements BlockEntityRenderer<Eldrit
         BlockEntityRenderer.super.extractRenderState(entity, state, partialTicks, cameraPosition, breakProgress);
         state.nearby = cameraPosition.distanceToSqr(Vec3.atCenterOf(entity.getBlockPos())) < 512.0;
         state.time = (entity.getLevel() == null ? 0.0F : (float) entity.getLevel().getGameTime()) + partialTicks;
+        state.exposed = 0;
         if (entity.getLevel() == null || !entity.exposed()) {
-            java.util.Arrays.fill(state.exposed, false);
             return;
         }
         BlockPos pos = entity.getBlockPos();
         for (Direction direction : Direction.values()) {
-            state.exposed[direction.ordinal()] = !entity.getLevel().getBlockState(pos.relative(direction)).isSolidRender();
+            var neighbor = entity.getLevel().getBlockState(pos.relative(direction));
+            if (thaumcraft.client.geom.EldritchSurfaceGeometry.exposed(neighbor.is(thaumcraft.registry.EldritchContent.ELDRITCH_NOTHING.get()), neighbor.isSolidRender())) {
+                state.exposed |= 1 << direction.ordinal();
+            }
         }
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        for (Direction direction : Direction.values()) {
-            if (!state.exposed[direction.ordinal()]) {
-                continue;
-            }
-            this.submitFace(state, direction, poseStack, collector);
-        }
-    }
-
-    private void submitFace(State state, Direction direction, PoseStack poseStack, SubmitNodeCollector collector) {
-        if (!state.nearby) {
-            EldritchSurfaces.submitFace(collector, poseStack, TcRenderTypes.translucent(FIELD_FAR), direction.ordinal(), 1.0F, 0.0F, 0xFF808080, 0xF000F0);
-            return;
-        }
-        for (int layer = 0; layer < 16; layer++) {
-            float layerAlpha = layer == 0 ? 0.1F : 1.0F / (17 - layer);
-            float tile = layer == 0 ? 0.125F : 0.5F;
-            float rotate = (float) Math.toRadians((layer * layer * 4321.0F + layer * 9.0F) * 2.0F);
-            int color = layer == 0 ? 0xFFFFFFFF : colorForLayer(layer, layerAlpha);
-            EldritchSurfaces.submitFace(collector, poseStack, layer == 0 ? TcRenderTypes.translucent(TUNNEL) : TcRenderTypes.additive(FIELD), direction.ordinal(), tile, rotate, color, 0xF000F0);
-        }
-    }
-
-    private static int colorForLayer(int layer, float alpha) {
-        java.util.Random random = new java.util.Random(31100L + layer);
-        int red = (int) ((random.nextFloat() * 0.5F + 0.1F) * 255.0F * alpha);
-        int green = (int) ((random.nextFloat() * 0.5F + 0.4F) * 255.0F * alpha);
-        int blue = (int) ((random.nextFloat() * 0.5F + 0.5F) * 255.0F * alpha);
-        return net.minecraft.util.ARGB.color(255, red, green, blue);
+        EldritchSurfaces.submitPortalFaces(collector, poseStack, state.exposed, state.nearby, state.time);
     }
 
     @Override

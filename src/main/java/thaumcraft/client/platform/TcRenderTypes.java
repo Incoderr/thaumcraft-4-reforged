@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
 public final class TcRenderTypes {
+    private static final Map<Identifier, RenderType> ELDRITCH = new HashMap<>();
     private static final Map<Identifier, RenderType> ADDITIVE = new HashMap<>();
     private static final Map<Identifier, RenderType> TRANSLUCENT = new HashMap<>();
     private static final Map<Identifier, RenderType> ADDITIVE_NO_DEPTH = new HashMap<>();
@@ -40,6 +41,16 @@ public final class TcRenderTypes {
             case ENTITY_CUTOUT_NO_CULL -> entityCutoutNoCull(texture);
             case ENTITY_TRANSLUCENT -> entityTranslucent(texture);
         };
+    }
+
+    public static RenderType eldritchSurface(Identifier texture) {
+        return ELDRITCH.computeIfAbsent(texture, key -> RenderType.create(
+            "thaumcraft_eldritch_surface",
+            RenderSetup.builder(ModRenderPipelines.ELDRITCH_SURFACE)
+                .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
+                .useLightmap()
+                .createRenderSetup()
+        ));
     }
 
     public static RenderType additive(Identifier texture) {

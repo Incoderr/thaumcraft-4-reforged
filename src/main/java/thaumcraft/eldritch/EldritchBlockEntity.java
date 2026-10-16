@@ -150,7 +150,7 @@ public final class EldritchBlockEntity extends TcBlockEntity {
         }
         BlockPos spawnPos = randomOffset(level, pos, 4, 10, 0, 3);
         guardian.setPos(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-        if (hasSolidTop(level, spawnPos.below()) && validSpawn(level, guardian)) {
+        if (hasSolidTop(level, spawnPos.below()) && guardian.checkSpawnRules(level, EntitySpawnReason.NATURAL) && validSpawn(level, guardian)) {
             guardian.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.TRIGGERED, (SpawnGroupData) null);
             guardian.setHomeTo(pos, 16);
             level.addFreshEntity(guardian);

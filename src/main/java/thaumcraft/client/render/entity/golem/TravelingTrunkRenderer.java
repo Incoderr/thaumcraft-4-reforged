@@ -51,8 +51,11 @@ public final class TravelingTrunkRenderer extends MobRenderer<TravelingTrunk, Tr
 
     @Override
     protected void scale(TravelingTrunkRenderState state, PoseStack poseStack) {
-        float scale = state.upgrade == 1 ? 1.15F : 1.0F;
-        poseStack.scale(scale, scale, scale);
+        float size = state.upgrade == 1 ? 2.0F / 1.33F : 2.0F / 1.5F;
+        float horizontal = size / 1.4F;
+        float vertical = size * 0.7F;
+        poseStack.scale(horizontal, vertical, horizontal);
+        poseStack.translate(-0.5F, 0.5F, -0.5F);
     }
 
     private static final class UpgradeLayer extends RenderLayer<TravelingTrunkRenderState, TravelingTrunkModel> {

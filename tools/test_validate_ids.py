@@ -50,6 +50,16 @@ class BlockStateValidatorTests(unittest.TestCase):
             self.validator.problems,
         )
 
+    def test_font_references_and_bitmap_files_have_distinct_types(self):
+        self.assertEqual("font", self.validator.classify("minecraft:alt", ["providers", "id"], "font"))
+        self.assertEqual("font_texture", self.validator.classify("minecraft:font/ascii_sga.png", ["providers", "file"], "font"))
+        self.validator.fonts = {"minecraft:alt"}
+        self.validator.textures = {"minecraft:font/ascii_sga"}
+        self.validator.check("font/test.json", "minecraft:alt", "font")
+        self.validator.check("font/test.json", "minecraft:font/ascii_sga.png", "font_texture")
+        self.validator.check("font/test.json", "minecraft:missing_font", "font")
+        self.assertEqual([("font/test.json", "minecraft:missing_font", "font")], self.validator.problems)
+
     def test_dimension_infiniburn_is_a_block_tag(self):
         self.assertEqual(
             "tag:block",

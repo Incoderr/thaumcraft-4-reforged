@@ -10,6 +10,12 @@ import net.minecraft.client.renderer.RenderPipelines;
 import thaumcraft.Thaumcraft;
 
 public final class ModRenderPipelines {
+    public static final RenderPipeline ELDRITCH_SURFACE = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
+        .withLocation(Thaumcraft.id("pipeline/eldritch_surface"))
+        .withCull(false)
+        .withColorTargetState(ColorTargetState.DEFAULT)
+        .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+        .build();
     public static final RenderPipeline ADDITIVE_PARTICLE = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/additive_particle"))
         .withCull(false)

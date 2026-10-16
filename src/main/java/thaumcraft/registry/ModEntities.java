@@ -109,7 +109,7 @@ public final class ModEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.GolemBase>> GOLEM = ENTITIES.registerEntityType("golem", thaumcraft.entity.golem.GolemBase::new, MobCategory.MISC, builder -> builder.sized(0.4F, 0.95F).clientTrackingRange(4).updateInterval(3));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.TravelingTrunk>> TRAVELING_TRUNK = ENTITIES.registerEntityType("traveling_trunk", thaumcraft.entity.golem.TravelingTrunk::new, MobCategory.MISC, builder -> builder.sized(0.9F, 0.9F).fireImmune().clientTrackingRange(4).updateInterval(3));
+    public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.TravelingTrunk>> TRAVELING_TRUNK = ENTITIES.registerEntityType("traveling_trunk", thaumcraft.entity.golem.TravelingTrunk::new, MobCategory.MISC, builder -> builder.sized(0.8F, 0.8F).fireImmune().clientTrackingRange(4).updateInterval(3));
     public static final DeferredHolder<EntityType<?>, EntityType<thaumcraft.entity.golem.GolemBobber>> GOLEM_BOBBER = ENTITIES.registerEntityType("golem_bobber", thaumcraft.entity.golem.GolemBobber::new, MobCategory.MISC, builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(64));
 
     private ModEntities() {
@@ -174,6 +174,10 @@ public final class ModEntities {
     }
 
     private static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+        event.register(ELDRITCH_GUARDIAN.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            thaumcraft.entity.monster.EldritchSpawnRules::check, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(INHABITED_ZOMBIE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            thaumcraft.entity.monster.EldritchSpawnRules::check, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(
             TAINTACLE.get(),
             SpawnPlacementTypes.ON_GROUND,

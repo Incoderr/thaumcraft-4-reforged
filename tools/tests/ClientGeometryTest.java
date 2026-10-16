@@ -43,6 +43,12 @@ public final class ClientGeometryTest {
         return result.div(result.w);
     }
     public static void main(String[] args) {
+        check(!thaumcraft.client.geom.EldritchSurfaceGeometry.exposed(true, false), "adjacent void surfaces hide their shared face");
+        check(!thaumcraft.client.geom.EldritchSurfaceGeometry.exposed(false, true), "solid neighbors hide void faces");
+        check(thaumcraft.client.geom.EldritchSurfaceGeometry.exposed(false, false), "void surface borders air");
+        Output surface = new Output();
+        thaumcraft.client.geom.EldritchSurfaceGeometry.faces(surface, 0b100001, 1, 0, 0xFFABCDEF, 220);
+        check(surface.vertices.size() == 8, "only two exposed faces emit vertices");
         Output full = new Output();
         quad(new ClippedQuadSink(full, List.of()), -1, 1, -1, 1, 0);
         check(full.vertices.size() == 4, "an uncut quad remains intact");
