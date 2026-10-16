@@ -110,6 +110,15 @@ python3 tools/gen_resources.py && git status --short src/generated
 - Неизученные исследования пишутся шрифтом `thaumcraft:galactic` (`minecraft:alt` плюс кириллица на глифах SGA), в `minecraft:alt` кириллицы нет.
 - `allow_cheat_sheet` по умолчанию `false`, веса регионов TerraBlender 3 и 1.
 
+## API для аддонов
+
+- `AspectSync.addRegistrar(Consumer<AspectRegistry>)`: вызывается в `rebuild` после `ConfigAspects`, до `registerDerived`.
+- `WandRegistry.registerCap`/`registerRod`: явные `item` и `texture` Identifier любого namespace, дубликат тега бросает исключение. Ключи исследования `CAP_<tag>`/`ROD_<tag>`, lang `item.Wand.<tag>.cap`/`.rod` аддон добавляет сам.
+- `ArcaneCrafting.registerDynamic(DynamicArcaneRecipe)`: добавляется после рецептов жезла и скипетра.
+- `Warp.registerItem(Identifier, int)`: изменяемая карта `WARP_ITEMS`.
+- `TcArmorMaterial.assetId` принимает полный Identifier ассета брони.
+- `TcStack.registerDataHandler(key, BiConsumer<ItemStack, String>)`: `create()` вызывает обработчик для ключа `data`, результат инфузии с таким ключом создаётся через `create()`, а не копией центрального предмета.
+
 ## Код-стайл
 
 - Java: 4 пробела, без комментариев.
