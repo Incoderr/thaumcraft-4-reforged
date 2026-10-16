@@ -42,7 +42,7 @@ import thaumcraft.registry.ModItems;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class PortBugGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final List<String> TESTS = List.of("eldritch_natural_spawn_support", "altar_guardian_population", "crusher_drops_follow_and_pickup", "following_item_releases_target", "trunk_original_dimensions", "following_item_releases_dimension");
+    private static final List<String> TESTS = List.of("eldritch_natural_spawn_support", "altar_guardian_population", "crusher_drops_follow_and_pickup", "following_item_releases_target", "trunk_original_dimensions", "following_item_releases_dimension", "zombie_natural_spawn_support");
 
     static {
         FUNCTIONS.register(TESTS.get(0), () -> PortBugGameTests::naturalSpawnSupport);
@@ -51,6 +51,7 @@ public final class PortBugGameTests {
         FUNCTIONS.register(TESTS.get(3), () -> PortBugGameTests::releasesTarget);
         FUNCTIONS.register(TESTS.get(4), () -> PortBugGameTests::trunkDimensions);
         FUNCTIONS.register(TESTS.get(5), () -> PortBugGameTests::releasesDimension);
+        FUNCTIONS.register(TESTS.get(6), () -> PortBugGameTests::zombieSpawnSupport);
     }
 
     public static void register(IEventBus bus) {
@@ -89,6 +90,29 @@ public final class PortBugGameTests {
             }
             helper.getLevel().setBlockAndUpdate(pos.below(), ModBlocks.ANCIENT_STONE.get().defaultBlockState());
             helper.assertTrue(SpawnPlacements.isSpawnPositionOk(type, helper.getLevel(), pos), "natural spawn rejected a normal maze floor");
+        }
+        helper.succeed();
+    }
+
+    private static void zombieSpawnSupport(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        var level = helper.getLevel();
+        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
+        for (var type : List.of(ModEntities.BRAINY_ZOMBIE.get(), ModEntities.GIANT_BRAINY_ZOMBIE.get())) {
+            for (var floor : List.of(Blocks.AIR, Blocks.WATER, Blocks.LAVA)) {
+                level.setBlockAndUpdate(pos.below(), floor.defaultBlockState());
+                helper.assertTrue(!SpawnPlacements.isSpawnPositionOk(type, level, pos), "zombie spawn allowed above " + floor);
+                helper.assertTrue(!SpawnPlacements.checkSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, net.minecraft.util.RandomSource.create(0)), "zombie spawn predicate allowed an invalid floor");
+            }
+            level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
+            helper.assertTrue(SpawnPlacements.isSpawnPositionOk(type, level, pos), "zombie spawn rejected dry solid ground");
+            level.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
+            helper.assertTrue(!SpawnPlacements.isSpawnPositionOk(type, level, pos), "zombie spawn allowed in water above solid ground");
+            level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.WATER.defaultBlockState());
+            helper.assertTrue(!SpawnPlacements.isSpawnPositionOk(type, level, pos), "zombie spawn allowed with its head underwater");
+            level.setBlockAndUpdate(pos.above(), Blocks.AIR.defaultBlockState());
         }
         helper.succeed();
     }
