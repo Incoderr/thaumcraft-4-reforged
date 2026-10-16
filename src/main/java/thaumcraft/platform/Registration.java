@@ -25,7 +25,6 @@ import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFlo
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import org.jspecify.annotations.Nullable;
-import thaumcraft.Thaumcraft;
 
 public final class Registration {
     private Registration() {
@@ -52,7 +51,7 @@ public final class Registration {
     }
 
     private static ArmorMaterial convert(TcArmorMaterial material) {
-        ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID, Thaumcraft.id(material.assetName()));
+        ResourceKey<EquipmentAsset> asset = ResourceKey.create(EquipmentAssets.ROOT_ID, material.assetId());
         Map<ArmorType, Integer> defense = Map.of(
             ArmorType.HELMET, material.helmetDefense(),
             ArmorType.CHESTPLATE, material.chestplateDefense(),

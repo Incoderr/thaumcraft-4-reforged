@@ -43,6 +43,6 @@ public final class TcMaterials {
     }
 
     private static TcArmorMaterial armor(int durability, int helmet, int chest, int legs, int boots, int enchantability, TagKey<Item> repair, String asset) {
-        return new TcArmorMaterial(durability, helmet, chest, legs, boots, enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, 0.0F, 0.0F, repair, asset);
+        return new TcArmorMaterial(durability, helmet, chest, legs, boots, enchantability, SoundEvents.ARMOR_EQUIP_GENERIC, 0.0F, 0.0F, repair, Thaumcraft.id(asset));
     }
 }

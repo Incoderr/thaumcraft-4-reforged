@@ -1,6 +1,7 @@
 package thaumcraft.platform;
 
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -16,7 +17,7 @@ public record TcArmorMaterial(
     float toughness,
     float knockbackResistance,
     TagKey<Item> repairItems,
-    String assetName
+    Identifier assetId
 ) {
     public int defense(ArmorSlot slot) {
         return switch (slot) {
