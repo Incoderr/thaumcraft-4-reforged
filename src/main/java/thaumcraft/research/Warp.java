@@ -4,6 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import thaumcraft.Thaumcraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -16,7 +17,7 @@ import thaumcraft.Config;
 
 public final class Warp {
     private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
-    private static final Map<Identifier, Integer> WARP_ITEMS = Map.of(
+    private static final Map<Identifier, Integer> WARP_ITEMS = new ConcurrentHashMap<>(Map.of(
         Thaumcraft.id("focus_nine_hells"), 1,
         Thaumcraft.id("compass_stone"), 1,
         Thaumcraft.id("liquid_death_bucket"), 1,
@@ -25,9 +26,13 @@ public final class Warp {
         Thaumcraft.id("brain_jar"), 1,
         Thaumcraft.id("flesh_golem"), 1,
         Thaumcraft.id("primal_staff_core"), 1
-    );
+    ));
 
     private Warp() {
+    }
+
+    public static void registerItem(Identifier item, int warp) {
+        WARP_ITEMS.put(item, warp);
     }
 
     public static int get(Player player, WarpType type) {
