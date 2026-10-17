@@ -38,6 +38,10 @@ public class WardedBlockEntity extends TcBlockEntity {
         return light;
     }
 
+    public boolean hasSameOwner(WardedBlockEntity other) {
+        return java.util.Objects.equals(owner, other.owner);
+    }
+
     public boolean isOwner(UUID player) {
         return player.equals(owner);
     }

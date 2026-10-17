@@ -64,7 +64,7 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water", "scan_continuous_use", "energized_node_scan_identity", "legacy_energized_node_identity", "released_node_scan_sync", "node_charge_visual_sync"};
+    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water", "scan_continuous_use", "energized_node_scan_identity", "legacy_energized_node_identity", "released_node_scan_sync", "node_charge_visual_sync", "scan_fire_targets"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ThaumcraftGameTests::wandTapsNode);
@@ -82,6 +82,7 @@ public final class ThaumcraftGameTests {
         FUNCTIONS.register(TESTS[12], () -> ThaumcraftGameTests::legacyEnergizedNodeIdentity);
         FUNCTIONS.register(TESTS[13], () -> ThaumcraftGameTests::releasedNodeScanSync);
         FUNCTIONS.register(TESTS[14], () -> ThaumcraftGameTests::nodeChargeVisualSync);
+        FUNCTIONS.register(TESTS[15], () -> ThaumcraftGameTests::scanFireTargets);
     }
 
     private ThaumcraftGameTests() {
@@ -238,6 +239,34 @@ public final class ThaumcraftGameTests {
         helper.assertValueEqual(lava.aspects().getAmount(Aspect.FIRE), 3, "lava fire aspects");
         helper.assertValueEqual(lava.aspects().getAmount(Aspect.EARTH), 1, "lava earth aspects");
         helper.assertTrue(!ScanManager.hasBeenScanned(player, lava), "water must not mark lava scanned");
+        helper.succeed();
+    }
+
+    private static void scanFireTargets(GameTestHelper helper) {
+        var level = helper.getLevel();
+        ServerPlayer player = mockServerPlayer(helper);
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
+        level.setBlockAndUpdate(pos.below(), Blocks.NETHERRACK.defaultBlockState());
+        level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+        level.setBlockAndUpdate(pos.south(), Blocks.STONE.defaultBlockState());
+        player.snapTo(pos.getX() + 0.5, pos.getY() + 0.5 - player.getEyeHeight(), pos.getZ() - 1.5, 0.0F, 0.0F);
+        var hit = ScanManager.pickBlock(level, player);
+        helper.assertTrue(hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(pos), "scanner must target the flame rather than the block behind it");
+        var target = ScanManager.resolveChecked(player, new ScanPayload(ScanManager.KIND_BLOCK, pos, 0));
+        helper.assertTrue(target != null && target.key().equals("minecraft:fire") && target.clueStack().isEmpty(), "itemless fire must be a scan target");
+        helper.assertValueEqual(target.aspects().getAmount(Aspect.FIRE), 4, "original fire aspect amount");
+        int pool = Knowledge.get(player).getAspectPool(Aspect.FIRE);
+        helper.assertTrue(ScanManager.completeScan(player, target), "fire scan did not complete");
+        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.FIRE), pool + 4, "fire scan award");
+        level.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState().setValue(net.minecraft.world.level.block.FireBlock.AGE, 8));
+        helper.assertTrue(ScanManager.hasBeenScanned(player, ScanManager.resolveBlock(level, pos)), "fire age changed the scan identity");
+        ScanManager.handleScan(new ScanPayload(ScanManager.KIND_BLOCK, pos, 0), player);
+        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.FIRE), pool + 4, "repeated fire scan awarded aspects");
+        level.setBlockAndUpdate(pos.north(), Blocks.STONE.defaultBlockState());
+        hit = ScanManager.pickBlock(level, player);
+        helper.assertTrue(hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(pos.north()), "fire targeting must respect solid obstructions");
+        player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() - 10.0);
+        helper.assertTrue(ScanManager.resolveChecked(player, new ScanPayload(ScanManager.KIND_BLOCK, pos, 0)) == null, "server accepted fire outside scan range");
         helper.succeed();
     }
 
