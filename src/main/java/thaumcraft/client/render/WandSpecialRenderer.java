@@ -82,7 +82,7 @@ public class WandSpecialRenderer implements SpecialModelRenderer<WandSpecialRend
     private static final int BLEND_ADDITIVE = 1;
 
     private void animate(PoseStack poseStack, State state) {
-        if (state.useTicks() < 0.0F) {
+        if ((view != LegacyItemView.FIRST_PERSON && view != LegacyItemView.EQUIPPED) || state.useTicks() < 0.0F) {
             return;
         }
         float t = Math.min(state.useTicks(), 3.0F);
@@ -209,7 +209,7 @@ public class WandSpecialRenderer implements SpecialModelRenderer<WandSpecialRend
         );
         float useTicks = -1.0F;
         LivingEntity living = owner == null ? null : owner.asLivingEntity();
-        if (living instanceof Player player && player.isUsingItem() && player.getUseItem().is(stack.getItem())) {
+        if (living instanceof Player player && player.isUsingItem() && player.getUseItem() == stack) {
             useTicks = player.getTicksUsingItem(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false));
         }
         FocusItem.WandFocusAnimation animation = focusItem == null ? null : focusItem.getAnimation(focusStack);

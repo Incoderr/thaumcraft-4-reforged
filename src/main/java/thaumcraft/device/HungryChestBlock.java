@@ -91,7 +91,9 @@ public class HungryChestBlock extends Block implements EntityBlock {
         if (leftovers.isEmpty() || leftovers.getCount() != stack.getCount()) {
             level.playSound(
                 null,
-                entity,
+                entity.getX(),
+                entity.getY(),
+                entity.getZ(),
                 SoundEvents.GENERIC_EAT.value(),
                 SoundSource.BLOCKS,
                 0.25F,
