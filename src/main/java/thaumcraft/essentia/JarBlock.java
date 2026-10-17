@@ -33,8 +33,10 @@ import thaumcraft.registry.ModBlockEntities;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import thaumcraft.registry.ModSounds;
+import thaumcraft.wand.WandInteractable;
+import thaumcraft.wand.Wands;
 
-public class JarBlock extends Block implements EntityBlock {
+public class JarBlock extends Block implements EntityBlock, WandInteractable {
     private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 12, 13);
 
     private final boolean voidJar;
@@ -128,12 +130,37 @@ public class JarBlock extends Block implements EntityBlock {
     protected InteractionResult useItemOn(
         ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult
     ) {
+        if (Wands.isWand(stack) && player.isShiftKeyDown()) {
+            return onWandUseOn(level, pos, player, stack, hitResult.getDirection());
+        }
         return interact(level, pos, player, stack, hitResult.getDirection());
     }
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         return interact(level, pos, player, ItemStack.EMPTY, hitResult.getDirection());
+    }
+
+    @Override
+    public InteractionResult onWandUseOn(Level level, BlockPos pos, Player player, ItemStack wand, Direction side) {
+        if (!player.isShiftKeyDown() || !(level.getBlockEntity(pos) instanceof JarBlockEntity jar)) {
+            return InteractionResult.PASS;
+        }
+        emptyJar(level, pos, jar);
+        return InteractionResult.SUCCESS;
+    }
+
+    private static void emptyJar(Level level, BlockPos pos, JarBlockEntity jar) {
+        if (level.isClientSide()) {
+            return;
+        }
+        jar.setAmount(0);
+        jar.setAspect(jar.getAspectFilter());
+        jar.sync();
+        level.updateNeighbourForOutputSignal(pos, level.getBlockState(pos).getBlock());
+        level.playSound(null, pos, ModSounds.JAR.get(), SoundSource.BLOCKS, 0.4F, 1.0F);
+        level.playSound(null, pos, SoundEvents.GENERIC_SWIM, SoundSource.BLOCKS, 0.5F,
+            1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.3F);
     }
 
     private InteractionResult interact(Level level, BlockPos pos, Player player, ItemStack held, Direction side) {
@@ -155,22 +182,7 @@ public class JarBlock extends Block implements EntityBlock {
                 ));
             }
         } else if (player.isShiftKeyDown() && held.isEmpty()) {
-            if (!level.isClientSide()) {
-                jar.setAmount(0);
-                if (jar.getAspectFilter() == null) {
-                    jar.setAspect(null);
-                }
-                jar.sync();
-                level.playSound(null, pos, ModSounds.JAR.get(), SoundSource.BLOCKS, 0.4F, 1.0F);
-                level.playSound(
-                    null,
-                    pos,
-                    SoundEvents.GENERIC_SWIM,
-                    SoundSource.BLOCKS,
-                    0.5F,
-                    1.0F + (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.3F
-                );
-            }
+            emptyJar(level, pos, jar);
         } else if (!held.isEmpty() && jar.getAspectFilter() == null && held.is(ModItems.JAR_LABEL.get())) {
             AspectList labelAspects = AspectKeys.ASPECTS.get(held);
             boolean labelled = labelAspects != null && !labelAspects.isEmpty();

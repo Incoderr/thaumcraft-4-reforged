@@ -398,6 +398,9 @@ public final class GolemGameTests {
             var block = jars.get(index).defaultBlockState();
             helper.assertTrue(block.getShadeBrightness(level, base) == 1.0F, "glass jar darkens ambient lighting");
             helper.assertTrue(block.getLightDampening() == 0 && block.propagatesSkylightDown(), "jar blocks skylight");
+            for (int y = base.getY() + 6; y < level.getMaxY(); y++) {
+                level.removeBlock(new BlockPos(base.getX(), y, base.getZ()), false);
+            }
             for (int y = 0; y < 6; y++) level.setBlockAndUpdate(base.above(y), block);
         }
         helper.succeedWhen(() -> {

@@ -5,6 +5,11 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 public final class GuiBlit {
+    public static void sparkle(GuiGraphicsExtractor graphics, Identifier texture, int x, int y, int frame, int color) {
+        graphics.blit(ModRenderPipelines.GUI_TEXTURED_ADDITIVE, texture, x - 4, y - 4, frame * 16.0F, 112.0F,
+            8, 8, 16, 16, 256, 256, color);
+    }
+
     private GuiBlit() {
     }
 

@@ -77,5 +77,6 @@ public final class ThaumcraftClient {
         event.registerPipeline(ModRenderPipelines.ADDITIVE_PARTICLE);
         event.registerPipeline(ModRenderPipelines.TRANSLUCENT_PARTICLE);
         event.registerPipeline(ModRenderPipelines.GUI_ADDITIVE);
+        event.registerPipeline(ModRenderPipelines.GUI_TEXTURED_ADDITIVE);
     }
 }

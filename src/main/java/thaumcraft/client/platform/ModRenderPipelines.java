@@ -60,6 +60,11 @@ public final class ModRenderPipelines {
         .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
         .build();
 
+    public static final RenderPipeline GUI_TEXTURED_ADDITIVE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+        .withLocation(Thaumcraft.id("pipeline/gui_textured_additive"))
+        .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+        .build();
+
     private ModRenderPipelines() {
     }
 }

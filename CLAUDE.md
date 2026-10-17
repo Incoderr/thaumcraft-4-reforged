@@ -39,6 +39,7 @@
 
 - `platform/` и `client/platform/` содержат всё, где API версий расходится: сеть (`ModNetwork`, `ClientNetwork`), данные стаков (`StackData`/`StackKey`), attachments (`DataAttachments`/`DataKey`), `Transfer`, `Teleport`, `BiomeEdit`, `Registration` (инструменты, броня, еда, топливо), `Baubles`, `Menus`, `GolemActions`, `OuterLandsData`, рендер-типы и пайплайны. Игровая логика ходит только через них. `tools/check_seams.py` (в CI) падает на запрещённых импортах вне швов.
 - Рендер: `client/geom` считает вершины и пишет в `QuadSink` без классов Minecraft (только JOML), `client/platform` реализует sink-и под версию. BER, рендереры и частицы тонкие.
+- Виньетка варпа — непрозрачная RGB-маска: смешивание `ZERO / ONE_MINUS_SRC_COLOR`, сила эффекта задаётся RGB, не альфой. На 26.3 использовать `RenderPipelines.VIGNETTE`; обычный alpha-blit закрывает обзор чёрным центром текстуры.
 - Регистрация: `registry/` (`DeferredRegister`), пакеты в `network/ModPayloads`, клиентские хендлеры в `client/ClientPayloadHandlers`, capabilities в `registry/ModCapabilities`.
 - Meta TC4 раскладывается в отдельные id или свойства blockstate по `tools/id_map.json` (уникальна пара id + state).
 
@@ -104,6 +105,8 @@ python3 tools/gen_resources.py && git status --short src/generated
 - `onEquipped`/`onUnequipped` бижутерии вызываются только на сервере.
 
 ## Намеренные отступления от TC4
+
+- Shift+ПКМ жезлом опустошает обычную и пустотную банки эссенции, сохраняя этикетку и фильтр. Действия пустой рукой остаются как в TC4.
 
 - Колокольчик перепривязывает выбранного голема к инвентарю через Shift+ПКМ по его грани. Обычный ПКМ сохраняет назначение рабочих меток. Это добавлено по запросу пользователя; в TC4 колокольчик менял только метки.
 

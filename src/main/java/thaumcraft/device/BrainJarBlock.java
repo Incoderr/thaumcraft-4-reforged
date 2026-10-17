@@ -33,6 +33,16 @@ public class BrainJarBlock extends Block implements EntityBlock {
     }
 
     @Override
+    protected boolean propagatesSkylightDown(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getLightDampening(BlockState state) {
+        return 0;
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new BrainJarBlockEntity(pos, state);
     }

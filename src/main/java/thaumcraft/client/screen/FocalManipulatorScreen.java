@@ -23,7 +23,6 @@ import thaumcraft.aspect.AspectHelper;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.client.fx.ParticleFx;
 import thaumcraft.client.platform.GuiBlit;
-import thaumcraft.client.platform.ModRenderPipelines;
 import thaumcraft.menu.FocalManipulatorMenu;
 import thaumcraft.registry.ModSounds;
 import thaumcraft.wand.focus.FocusItem;
@@ -202,7 +201,7 @@ public class FocalManipulatorScreen extends AbstractContainerScreen<FocalManipul
             Sparkle sparkle = iterator.next();
             int x = leftPos + (int) sparkle.x;
             int y = topPos + (int) sparkle.y;
-            graphics.blit(ModRenderPipelines.GUI_ADDITIVE, ParticleFx.PARTICLES, x - 4, y - 4, sparkle.frame * 16.0F, 112.0F, 8, 8, 16, 16, 256, 256, sparkle.color);
+            GuiBlit.sparkle(graphics, ParticleFx.PARTICLES, x, y, sparkle.frame, sparkle.color);
             if (sparkle.nextFrame < time) {
                 sparkle.frame++;
                 sparkle.nextFrame = time + 50L;

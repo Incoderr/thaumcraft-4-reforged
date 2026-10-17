@@ -12,10 +12,11 @@ public final class WarpVignetteOverlay {
     private WarpVignetteOverlay() {
     }
 
-    public static void draw(RenderGuiLayerEvent.Post event, int alpha) {
+    public static void draw(RenderGuiLayerEvent.Post event, int strength) {
         GuiGraphicsExtractor graphics = event.getGuiGraphics();
+        int brightness = Math.clamp(strength, 0, 255);
         graphics.blit(
-            RenderPipelines.GUI_TEXTURED,
+            RenderPipelines.VIGNETTE,
             TEXTURE,
             0,
             0,
@@ -23,9 +24,11 @@ public final class WarpVignetteOverlay {
             0.0F,
             graphics.guiWidth(),
             graphics.guiHeight(),
-            graphics.guiWidth(),
-            graphics.guiHeight(),
-            0x00FFFFFF | (alpha << 24)
+            256,
+            256,
+            256,
+            256,
+            0xFF000000 | brightness << 16 | brightness << 8 | brightness
         );
     }
 }
