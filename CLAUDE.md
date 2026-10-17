@@ -119,6 +119,7 @@ python3 tools/gen_resources.py && git status --short src/generated
 - `TcArmorMaterial.assetId` принимает полный Identifier ассета брони.
 - `TcStack.registerDataHandler(key, BiConsumer<ItemStack, String>)`: `create()` вызывает обработчик для ключа `data`, результат инфузии с таким ключом создаётся через `create()`, а не копией центрального предмета.
 - `TcStack.registerDataMatcher(key, BiPredicate<ItemStack, String>)`: `matches()` требует совпадения для каждого ключа `data` с зарегистрированным матчером (аналог сравнения меты в TC4, например тип зелья).
+- `FocusPouchItem.pouchSize(stack)` и `canStore(stack)` переопределяются подклассом: статические `getInventory/setInventory` берут размер и фильтр из предмета, переключатель жезла видит все слоты (мешочек ихора TT на 117 слотов).
 
 ## Код-стайл
 
