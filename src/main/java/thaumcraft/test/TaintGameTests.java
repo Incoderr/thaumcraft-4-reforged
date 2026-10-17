@@ -115,6 +115,7 @@ public final class TaintGameTests {
     @SubscribeEvent
     static void registerTests(RegisterGameTestsEvent event) {
         var environment = event.registerEnvironment(Thaumcraft.id("taint_default"), new TestEnvironmentDefinition.AllOf());
+        var growthEnvironment = event.registerEnvironment(Thaumcraft.id("taint_spore_growth"), new TestEnvironmentDefinition.AllOf());
         for (String name : TESTS) {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             int timeout = name.equals("taint_spore_grows_after_1201_ticks") ? 1250
@@ -123,7 +124,7 @@ public final class TaintGameTests {
                 : name.equals("taint_bloom_server_tick_purifies_nearby_columns") ? 300 : 100;
             event.registerTest(
                 Thaumcraft.id(name),
-                new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), timeout, 0, true))
+                new FunctionGameTestInstance(function, new TestData<>(name.equals("taint_spore_grows_after_1201_ticks") ? growthEnvironment : environment, Thaumcraft.id("test/platform"), timeout, 0, true))
             );
         }
     }

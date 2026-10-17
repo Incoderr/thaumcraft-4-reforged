@@ -51,7 +51,11 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class InfusionGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"infusion_altar_forms", "infusion_stability_symmetry", "infusion_without_essentia", "infusion_with_jars", "infusion_zephyr_sword_with_floor_jars"};
+    private static final String[] TESTS = {
+        "infusion_altar_forms", "infusion_stability_symmetry", "infusion_without_essentia", "infusion_with_jars",
+        "infusion_zephyr_sword_with_floor_jars", "infusion_layout_9x9", "infusion_layout_11x11", "infusion_layout_13x13",
+        "infusion_layout_17x17"
+    };
     private static final BlockPos[] RING = {
         new BlockPos(1, 1, 3), new BlockPos(5, 1, 3), new BlockPos(3, 1, 1), new BlockPos(3, 1, 5),
         new BlockPos(1, 1, 1), new BlockPos(5, 1, 5), new BlockPos(1, 1, 5), new BlockPos(5, 1, 1)
@@ -67,6 +71,10 @@ public final class InfusionGameTests {
         FUNCTIONS.register(TESTS[2], () -> InfusionGameTests::withoutEssentia);
         FUNCTIONS.register(TESTS[3], () -> InfusionGameTests::withJars);
         FUNCTIONS.register(TESTS[4], () -> InfusionGameTests::zephyrSwordWithFloorJars);
+        FUNCTIONS.register(TESTS[5], () -> helper -> pedestalLayout(helper, 4));
+        FUNCTIONS.register(TESTS[6], () -> helper -> pedestalLayout(helper, 5));
+        FUNCTIONS.register(TESTS[7], () -> helper -> pedestalLayout(helper, 6));
+        FUNCTIONS.register(TESTS[8], () -> helper -> pedestalLayout(helper, 8));
     }
 
     private InfusionGameTests() {
@@ -89,7 +97,8 @@ public final class InfusionGameTests {
             ResourceKey<Consumer<GameTestHelper>> function = ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name));
             event.registerTest(
                 Thaumcraft.id(name),
-                new FunctionGameTestInstance(function, new TestData<>(environment, Thaumcraft.id("test/platform"), 200, 0, true))
+                new FunctionGameTestInstance(function, new TestData<>(environment,
+                    Thaumcraft.id(name.startsWith("infusion_layout_") ? "test/eldritch_regression" : "test/platform"), 200, 0, true))
             );
         }
     }
@@ -108,12 +117,16 @@ public final class InfusionGameTests {
     }
 
     private static void buildFrame(GameTestHelper helper) {
-        helper.setBlock(new BlockPos(3, 1, 3), ModBlocks.ARCANE_PEDESTAL.get());
-        helper.setBlock(new BlockPos(3, 3, 3), ModBlocks.RUNIC_MATRIX.get());
+        buildFrame(helper, BlockPos.ZERO);
+    }
+
+    private static void buildFrame(GameTestHelper helper, BlockPos offset) {
+        helper.setBlock(new BlockPos(3, 1, 3).offset(offset), ModBlocks.ARCANE_PEDESTAL.get());
+        helper.setBlock(new BlockPos(3, 3, 3).offset(offset), ModBlocks.RUNIC_MATRIX.get());
         for (int x = 2; x <= 4; x += 2) {
             for (int z = 2; z <= 4; z += 2) {
-                helper.setBlock(new BlockPos(x, 1, z), ModBlocks.ARCANE_STONE_BRICKS.get());
-                helper.setBlock(new BlockPos(x, 2, z), ModBlocks.ARCANE_STONE.get());
+                helper.setBlock(new BlockPos(x, 1, z).offset(offset), ModBlocks.ARCANE_STONE_BRICKS.get());
+                helper.setBlock(new BlockPos(x, 2, z).offset(offset), ModBlocks.ARCANE_STONE.get());
             }
         }
     }
@@ -130,7 +143,11 @@ public final class InfusionGameTests {
     }
 
     private static void clickMatrix(GameTestHelper helper, ServerPlayer player) {
-        BlockPos matrixPos = helper.absolutePos(new BlockPos(3, 3, 3));
+        clickMatrix(helper, player, new BlockPos(3, 3, 3));
+    }
+
+    private static void clickMatrix(GameTestHelper helper, ServerPlayer player, BlockPos relativePos) {
+        BlockPos matrixPos = helper.absolutePos(relativePos);
         helper.assertTrue(player.gameMode.useItemOn(player, helper.getLevel(), player.getMainHandItem(), InteractionHand.MAIN_HAND,
             new BlockHitResult(Vec3.atCenterOf(matrixPos), Direction.UP, matrixPos, false)).consumesAction(), "wand click was not handled");
     }
@@ -226,7 +243,7 @@ public final class InfusionGameTests {
     }
 
     private static void run(GameTestHelper helper, InfusionMatrixBlockEntity matrix, int ticks) {
-        BlockPos matrixPos = helper.absolutePos(new BlockPos(3, 3, 3));
+        BlockPos matrixPos = matrix.getBlockPos();
         for (int tick = 0; tick < ticks && (tick == 0 || matrix.isCrafting()); tick++) {
             InfusionMatrixBlockEntity.tick(helper.getLevel(), matrixPos, matrix.getBlockState(), matrix);
         }
@@ -257,6 +274,66 @@ public final class InfusionGameTests {
         craftWithJars(helper, player, chosen, true);
     }
 
+    private static void pedestalLayout(GameTestHelper helper, int radius) {
+        ServerPlayer player = mockServerPlayer(helper);
+        InfusionRecipe chosen = (InfusionRecipe) TcRecipes.get("ElementalSword");
+        helper.assertTrue(chosen != null, "Sword of the Zephyr recipe missing");
+        ResearchManager.complete(player, "INFUSION");
+        ResearchManager.complete(player, chosen.research());
+        equipWand(player);
+        buildFrame(helper, new BlockPos(12, 0, 12));
+        BlockPos matrixPos = new BlockPos(15, 3, 15);
+        BlockPos centerPos = matrixPos.below(2);
+        clickMatrix(helper, player, matrixPos);
+        InfusionMatrixBlockEntity matrix = helper.getBlockEntity(matrixPos, InfusionMatrixBlockEntity.class);
+        helper.assertTrue(matrix.isActive() && matrix.validLocation(), "large altar did not form");
+        PedestalBlockEntity center = helper.getBlockEntity(centerPos, PedestalBlockEntity.class);
+        center.setStack(chosen.central().displayStacks().getFirst().copyWithCount(1));
+        BlockPos[] corners = {
+            centerPos.offset(-radius, 0, -radius), centerPos.offset(radius, 0, radius),
+            centerPos.offset(-radius, 0, radius), centerPos.offset(radius, 0, -radius)
+        };
+        for (int index = 0; index < corners.length; index++) {
+            helper.setBlock(corners[index], ModBlocks.ARCANE_PEDESTAL.get());
+            helper.getBlockEntity(corners[index], PedestalBlockEntity.class)
+                .setStack(chosen.components().get(index).displayStacks().getFirst().copyWithCount(1));
+        }
+        List<Aspect> aspects = chosen.aspects().getAspects();
+        for (int index = 0; index < aspects.size(); index++) {
+            BlockPos jarPos = centerPos.offset(index - 1, 0, 3);
+            helper.setBlock(jarPos, ModBlocks.WARDED_JAR.get());
+            JarBlockEntity jar = helper.getBlockEntity(jarPos, JarBlockEntity.class);
+            jar.setAspect(aspects.get(index));
+            jar.setAmount(chosen.aspects().getAmount(aspects.get(index)));
+        }
+        matrix.recalculateSurroundings();
+        helper.assertValueEqual(matrix.getPedestals().size(), corners.length, "large layout pedestal count");
+        for (BlockPos corner : corners) {
+            helper.assertTrue(matrix.getPedestals().contains(helper.absolutePos(corner)), "corner pedestal missing: " + corner);
+        }
+        helper.assertValueEqual(matrix.getSymmetry(), 0, "large layout symmetry");
+        clickMatrix(helper, player, matrixPos);
+        helper.assertTrue(matrix.isCrafting(), "crafting did not start at radius " + radius);
+        suppressInstability(matrix);
+        run(helper, matrix, 4000);
+        helper.assertFalse(matrix.isCrafting(), "crafting did not finish at radius " + radius);
+        helper.assertTrue(chosen.result().matches(center.getStack()), "large layout result missing");
+        for (BlockPos corner : corners) {
+            helper.assertTrue(helper.getBlockEntity(corner, PedestalBlockEntity.class).getStack().isEmpty(), "corner ingredient not consumed");
+        }
+        helper.succeed();
+    }
+
+    private static void suppressInstability(InfusionMatrixBlockEntity matrix) {
+        try {
+            Field instability = InfusionMatrixBlockEntity.class.getDeclaredField("instability");
+            instability.setAccessible(true);
+            instability.setInt(matrix, 0);
+        } catch (ReflectiveOperationException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
     private static void craftWithJars(GameTestHelper helper, ServerPlayer player, InfusionRecipe chosen, boolean floorJars) {
         List<Aspect> aspects = chosen.aspects().getAspects();
         for (int index = 0; index < aspects.size(); index++) {
@@ -267,13 +344,7 @@ public final class InfusionGameTests {
             jar.setAmount(jar.getMaxAmount());
         }
         InfusionMatrixBlockEntity matrix = start(helper, player);
-        try {
-            Field instability = InfusionMatrixBlockEntity.class.getDeclaredField("instability");
-            instability.setAccessible(true);
-            instability.setInt(matrix, 0);
-        } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException(exception);
-        }
+        suppressInstability(matrix);
         run(helper, matrix, 10);
         helper.assertValueEqual(matrix.getAspects().visSize(), chosen.aspects().visSize() - 1, "matrix did not drain essentia from jars");
         run(helper, matrix, 4000);

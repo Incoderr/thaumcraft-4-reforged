@@ -88,7 +88,14 @@ public final class GolemGameTests {
     @SubscribeEvent
     static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Thaumcraft.id("golem_default"), new TestEnvironmentDefinition.AllOf());
-        for (String name : TESTS.keySet()) event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name)), new TestData<>(environment, Thaumcraft.id(name.startsWith("golem_chop_") || name.equals("golem_jar_lighting") ? "test/eldritch_regression" : "test/platform"), name.startsWith("golem_chop_") ? 1200 : 600, 0, true)));
+        for (String name : TESTS.keySet()) {
+            boolean chop = name.startsWith("golem_chop_");
+            boolean sky = name.equals("golem_jar_lighting");
+            var data = new TestData<>(environment, net.minecraft.world.level.Level.OVERWORLD,
+                Thaumcraft.id(chop || sky ? "test/eldritch_regression" : "test/platform"), chop ? 1200 : 600,
+                0, true, net.minecraft.world.level.block.Rotation.NONE, false, chop ? 3 : 1, chop ? 3 : 1, sky, 0);
+            event.registerTest(Thaumcraft.id(name), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, Thaumcraft.id(name)), data));
+        }
     }
     private static GolemSnapshot state(int core) { return new GolemSnapshot(core, false, List.of(), "", List.of(), ItemContainerContents.EMPTY, List.of(), 0); }
     private static GolemBase golem(GameTestHelper helper, GolemType type, int core) {
@@ -391,7 +398,6 @@ public final class GolemGameTests {
             var block = jars.get(index).defaultBlockState();
             helper.assertTrue(block.getShadeBrightness(level, base) == 1.0F, "glass jar darkens ambient lighting");
             helper.assertTrue(block.getLightDampening() == 0 && block.propagatesSkylightDown(), "jar blocks skylight");
-            for (int y = 6; y < 12; y++) level.setBlockAndUpdate(base.above(y), Blocks.AIR.defaultBlockState());
             for (int y = 0; y < 6; y++) level.setBlockAndUpdate(base.above(y), block);
         }
         helper.succeedWhen(() -> {

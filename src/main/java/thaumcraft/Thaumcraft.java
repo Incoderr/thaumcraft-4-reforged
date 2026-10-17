@@ -107,6 +107,7 @@ public class Thaumcraft {
         InfusionGameTests.register(modEventBus);
         thaumcraft.test.PortBugGameTests.register(modEventBus);
         thaumcraft.test.GolemGameTests.register(modEventBus);
+        thaumcraft.test.GolemCoreGameTests.register(modEventBus);
         thaumcraft.test.MazeGameTests.register(modEventBus);
         thaumcraft.test.EldritchGameTests.register(modEventBus);
         thaumcraft.test.BossGameTests.register(modEventBus);
