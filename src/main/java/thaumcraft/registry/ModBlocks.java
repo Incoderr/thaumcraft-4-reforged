@@ -421,7 +421,7 @@ public final class ModBlocks {
     public static final DeferredItem<NodeJarItem> NODE_JAR_ITEM = ModItems.ITEMS.registerItem(
         "node_jar",
         properties -> new NodeJarItem(NODE_JAR.get(), properties),
-        NodeJarItem::properties
+        properties -> NodeJarItem.properties(properties).useBlockDescriptionPrefix()
     );
 
     public static final DeferredBlock<TableBlock> TABLE = withItem(BLOCKS.registerBlock("table", TableBlock::new, ModBlocks::tableProperties));

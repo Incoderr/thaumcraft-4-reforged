@@ -481,6 +481,9 @@ public final class ThaumcraftGameTests {
     }
 
     private static void nodeJarTrigger(GameTestHelper helper) {
+        ItemStack jar = thaumcraft.item.NodeJarItem.create(primals(15), NodeType.HUNGRY, null, "name_test");
+        helper.assertTrue(jar.getHoverName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents name
+            && name.getKey().equals("block.thaumcraft.node_jar"), "jar item does not use the translated block name");
         BlockPos center = new BlockPos(3, 2, 3);
         for (int x = -1; x <= 1; x++) {
             for (int z = -1; z <= 1; z++) {
