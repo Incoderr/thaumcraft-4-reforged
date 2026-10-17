@@ -1,6 +1,6 @@
 # Thaumcraft 4: Reforged
 
-![Thaumcraft 4: Reforged](poster.png)
+[![Thaumcraft 4: Reforged](poster.png)](poster.png)
 
 Unofficial port of **Thaumcraft 4.2.3.5** by Azanor from Minecraft 1.7.10 to **Minecraft 26.3** on **NeoForge 26.3**.
 
