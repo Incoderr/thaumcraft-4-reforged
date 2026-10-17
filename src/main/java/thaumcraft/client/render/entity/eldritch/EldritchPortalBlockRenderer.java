@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.Thaumcraft;
 import thaumcraft.client.geom.EldritchSurfaceGeometry;
@@ -54,11 +55,17 @@ public final class EldritchPortalBlockRenderer implements BlockEntityRenderer<El
         int frame = (int) (System.nanoTime() / 50_000_000L) & 15;
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.5F, 0.5F);
-        collector.submitCustomGeometry(poseStack, TcRenderTypes.translucent(TEXTURE), (pose, buffer) -> {
+        poseStack.rotate(camera.orientation);
+        collector.submitCustomGeometry(poseStack, TcRenderTypes.eldritchPortal(TEXTURE), (pose, buffer) -> {
             EntityQuadSink sink = new EntityQuadSink(pose, buffer);
             int color = ARGB.color(255, 255, 255, 255);
             EldritchSurfaceGeometry.portal(sink, width, height, frame, color, 0xF000F0);
         });
         poseStack.popPose();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(EldritchPortalBlockEntity entity) {
+        return new AABB(entity.getBlockPos()).inflate(1.0);
     }
 }

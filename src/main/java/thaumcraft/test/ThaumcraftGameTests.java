@@ -64,7 +64,7 @@ import thaumcraft.wand.Wands;
 @EventBusSubscriber(modid = Thaumcraft.MODID)
 public final class ThaumcraftGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Thaumcraft.MODID);
-    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water", "scan_continuous_use"};
+    private static final String[] TESTS = {"wand_taps_node", "pedestal_charges_wand", "node_jar_trigger", "research_warp_split", "research_purchase", "scan_award_caps", "modern_scan_targets", "wand_casting_visual_state", "scan_fluid_targets", "scan_blocks_through_water", "scan_continuous_use", "energized_node_scan_identity", "legacy_energized_node_identity", "released_node_scan_sync", "node_charge_visual_sync"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ThaumcraftGameTests::wandTapsNode);
@@ -78,6 +78,10 @@ public final class ThaumcraftGameTests {
         FUNCTIONS.register(TESTS[8], () -> ThaumcraftGameTests::scanFluidTargets);
         FUNCTIONS.register(TESTS[9], () -> ThaumcraftGameTests::scanBlocksThroughWater);
         FUNCTIONS.register(TESTS[10], () -> ThaumcraftGameTests::scanContinuousUse);
+        FUNCTIONS.register(TESTS[11], () -> ThaumcraftGameTests::energizedNodeScanIdentity);
+        FUNCTIONS.register(TESTS[12], () -> ThaumcraftGameTests::legacyEnergizedNodeIdentity);
+        FUNCTIONS.register(TESTS[13], () -> ThaumcraftGameTests::releasedNodeScanSync);
+        FUNCTIONS.register(TESTS[14], () -> ThaumcraftGameTests::nodeChargeVisualSync);
     }
 
     private ThaumcraftGameTests() {
@@ -296,6 +300,8 @@ public final class ThaumcraftGameTests {
         NodeBlockEntity node = helper.getBlockEntity(new BlockPos(3, 2, 3), NodeBlockEntity.class);
         int before = node.getAspects().visSize();
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.snapTo(nodePos.getX() + 0.5, nodePos.getY() + 0.5 - player.getEyeHeight(), nodePos.getZ() + 2.5, 180.0F, 0.0F);
+        player.setYHeadRot(180.0F);
         ItemStack wand = Wands.create(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false);
         for (int tick = 5; tick <= 50; tick += 5) {
             node.onUsingWandTick(wand, player, tick);
@@ -303,6 +309,165 @@ public final class ThaumcraftGameTests {
         helper.assertTrue(totalVis(wand) > 0, "wand received no vis");
         helper.assertTrue(node.getAspects().visSize() < before, "node lost no vis");
         helper.assertValueEqual(before - node.getAspects().visSize(), totalVis(wand) / 100, "vis moved");
+        helper.succeed();
+    }
+
+    private static NodeBlockEntity copyNode(GameTestHelper helper, NodeBlockEntity node) {
+        NodeBlockEntity copy = new NodeBlockEntity(node.getBlockPos(), node.getBlockState());
+        copy.setLevel(helper.getLevel());
+        copy.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), node.getUpdateTag(helper.getLevel().registryAccess())));
+        return copy;
+    }
+
+    private static void energizedNodeScanIdentity(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        level.setBlockAndUpdate(pos.below(), ModBlocks.NODE_STABILIZER.get().defaultBlockState());
+        level.setBlockAndUpdate(pos.above(), ModBlocks.NODE_TRANSDUCER.get().defaultBlockState());
+        NodeGenerator.createNodeAt(level, pos, NodeType.NORMAL, null, new AspectList().add(Aspect.AIR, 100).add(Aspect.FIRE, 64));
+        NodeBlockEntity original = (NodeBlockEntity) level.getBlockEntity(pos);
+        String id = original.getId();
+        ServerPlayer player = mockServerPlayer(helper);
+        player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 2);
+        var target = ScanManager.resolveNode(level, pos);
+        helper.assertTrue(ScanManager.completeScan(player, target), "initial node scan failed");
+        int pool = Knowledge.get(player).getAspectPool(Aspect.AIR);
+        level.setBlockAndUpdate(pos.above(2), Blocks.REDSTONE_BLOCK.defaultBlockState());
+        var transducer = (thaumcraft.node.NodeTransducerBlockEntity) level.getBlockEntity(pos.above());
+        for (int tick = 0; tick < 120; tick++) {
+            thaumcraft.node.NodeTransducerBlockEntity.tick(level, pos.above(), transducer.getBlockState(), transducer);
+        }
+        helper.assertTrue(transducer.getStatus() == 1 && transducer.getCount() == 120, "conversion did not start");
+        level.removeBlock(pos.above(2), false);
+        for (int tick = 0; tick < 60; tick++) {
+            thaumcraft.node.NodeTransducerBlockEntity.tick(level, pos.above(), transducer.getBlockState(), transducer);
+        }
+        helper.assertTrue(transducer.getCount() == 60 && level.getBlockEntity(pos) == original && original.getId().equals(id), "interruption did not roll back conversion progress");
+        level.setBlockAndUpdate(pos.above(2), Blocks.REDSTONE_BLOCK.defaultBlockState());
+        for (int tick = 0; tick <= 1000; tick++) {
+            thaumcraft.node.NodeTransducerBlockEntity.tick(level, pos.above(), transducer.getBlockState(), transducer);
+        }
+        helper.assertTrue(level.getBlockEntity(pos) instanceof thaumcraft.node.EnergizedNodeBlockEntity, "transducer did not energize the node");
+        var energized = (thaumcraft.node.EnergizedNodeBlockEntity) level.getBlockEntity(pos);
+        target = ScanManager.resolveBlock(level, pos);
+        helper.assertTrue(target != null && target.kind() == thaumcraft.research.ScanKind.PHENOMENON, "energized node is not a scan target");
+        helper.assertTrue(id.equals(energized.getId()) && target.key().equals("NODE" + id), "conversion changed scan identity");
+        helper.assertValueEqual(energized.getAspects().getAmount(Aspect.AIR), 10, "converted air CV");
+        helper.assertValueEqual(energized.getAspects().getAmount(Aspect.FIRE), 8, "converted fire CV");
+        helper.assertTrue(!(energized instanceof thaumcraft.wand.WandInteractable), "CV node must not allow direct wand tapping");
+        ScanManager.handleScan(new ScanPayload(ScanManager.KIND_NODE, pos, 0), player);
+        helper.assertTrue(ScanManager.hasBeenScanned(player, target), "conversion lost scan knowledge");
+        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.AIR), pool, "conversion awarded a second scan");
+        ServerPlayer fresh = mockServerPlayer(helper);
+        fresh.setPos(player.position());
+        ScanManager.handleScan(new ScanPayload(ScanManager.KIND_NODE, pos, 0), fresh);
+        helper.assertTrue(ScanManager.hasBeenScanned(fresh, target), "new player could not scan the CV node");
+        var copy = new thaumcraft.node.EnergizedNodeBlockEntity(pos, energized.getBlockState());
+        copy.setLevel(level);
+        copy.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), energized.getUpdateTag(level.registryAccess())));
+        helper.assertTrue(copy.getId().equals(id) && copy.getAspects().equals(energized.getAspects()), "energized node data did not synchronize");
+        level.removeBlock(pos.above(2), false);
+        for (int tick = 0; tick < 951; tick++) {
+            thaumcraft.node.NodeTransducerBlockEntity.tick(level, pos.above(), transducer.getBlockState(), transducer);
+        }
+        helper.assertTrue(level.getBlockEntity(pos) instanceof NodeBlockEntity, "node did not revert after power removal");
+        NodeBlockEntity restored = (NodeBlockEntity) level.getBlockEntity(pos);
+        helper.assertTrue(restored.getId().equals(id), "reversion changed scan identity");
+        helper.assertTrue(restored.getAspectsBase().equals(new AspectList().add(Aspect.AIR, 100).add(Aspect.FIRE, 64)), "reversion lost base aspects");
+        helper.assertValueEqual(restored.getAspects().visSize(), 0, "reverted node should start depleted");
+        helper.assertTrue(copyNode(helper, restored).getId().equals(id), "reverted identity did not synchronize");
+        helper.succeed();
+    }
+
+    private static void legacyEnergizedNodeIdentity(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos firstPos = helper.absolutePos(new BlockPos(2, 2, 2));
+        var first = new thaumcraft.node.EnergizedNodeBlockEntity(firstPos, ModBlocks.ENERGIZED_AURA_NODE.get().defaultBlockState());
+        first.setLevel(level);
+        String id = first.getId();
+        var second = new thaumcraft.node.EnergizedNodeBlockEntity(firstPos.east(), first.getBlockState());
+        second.setLevel(level);
+        second.setId("");
+        helper.assertTrue(!id.isEmpty() && !id.equals("blank") && !id.equals(second.getId()), "legacy nodes share a blank scan identity");
+        var copy = new thaumcraft.node.EnergizedNodeBlockEntity(firstPos, first.getBlockState());
+        copy.setLevel(level);
+        copy.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), first.saveWithoutMetadata(level.registryAccess())));
+        helper.assertTrue(id.equals(copy.getId()), "legacy node identity did not persist");
+        helper.succeed();
+    }
+
+    private static void releasedNodeScanSync(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        ServerPlayer player = mockServerPlayer(helper);
+        player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 2);
+        AspectList aspects = new AspectList().add(Aspect.AIR, 37).add(Aspect.FIRE, 19);
+        String id = "jar:" + pos;
+        ItemStack jarStack = thaumcraft.item.NodeJarItem.create(aspects, NodeType.PURE, thaumcraft.node.NodeModifier.BRIGHT, id);
+        level.setBlockAndUpdate(pos, ModBlocks.NODE_JAR.get().defaultBlockState());
+        ModBlocks.NODE_JAR.get().setPlacedBy(level, pos, level.getBlockState(pos), player, jarStack);
+        var jarTarget = ScanManager.resolveNode(level, pos);
+        for (Aspect aspect : Aspect.values()) Knowledge.get(player).discoverAspect(aspect);
+        helper.assertTrue(ScanManager.completeScan(player, jarTarget), "jar scan failed");
+        int pool = Knowledge.get(player).getAspectPool(Aspect.AIR);
+        ItemStack wand = Wands.create(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false);
+        ((thaumcraft.block.NodeJarBlock) ModBlocks.NODE_JAR.get()).onWandUseOn(level, pos, player, wand, Direction.UP);
+        helper.assertTrue(level.getBlockEntity(pos) instanceof NodeBlockEntity, "jar did not release its node");
+        NodeBlockEntity node = (NodeBlockEntity) level.getBlockEntity(pos);
+        helper.assertTrue(node.getAspects().equals(aspects) && node.getAspectsBase().equals(aspects), "release lost aspects");
+        helper.assertTrue(node.getNodeType() == NodeType.PURE && node.getNodeModifier() == thaumcraft.node.NodeModifier.BRIGHT && node.getId().equals(id), "release lost node metadata");
+        NodeBlockEntity copy = copyNode(helper, node);
+        helper.assertTrue(copy.getAspects().equals(aspects) && copy.getId().equals(id), "released node does not synchronize");
+        var target = ScanManager.resolveNode(level, pos);
+        helper.assertTrue(target.key().equals(jarTarget.key()) && ScanManager.hasBeenScanned(player, target), "release lost scan identity");
+        ScanManager.handleScan(new ScanPayload(ScanManager.KIND_NODE, pos, 0), player);
+        helper.assertValueEqual(Knowledge.get(player).getAspectPool(Aspect.AIR), pool, "release awarded a second scan");
+        ServerPlayer fresh = mockServerPlayer(helper);
+        for (Aspect aspect : Aspect.values()) Knowledge.get(fresh).discoverAspect(aspect);
+        helper.assertTrue(!ScanManager.hasBeenScanned(fresh, target) && ScanManager.completeScan(fresh, target), "unscanned released node cannot be scanned");
+        helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(1)).isEmpty(), "releasing a node duplicated its jar");
+        helper.succeed();
+    }
+
+    private static void nodeChargeVisualSync(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        level.setBlockAndUpdate(pos.below(), ModBlocks.NODE_STABILIZER.get().defaultBlockState());
+        NodeGenerator.createNodeAt(level, pos, NodeType.NORMAL, null, new AspectList().add(Aspect.FIRE, 20));
+        NodeBlockEntity node = (NodeBlockEntity) level.getBlockEntity(pos);
+        ServerPlayer player = mockServerPlayer(helper);
+        level.addNewPlayer(player);
+        player.setNoGravity(true);
+        player.snapTo(pos.getX() + 0.5, pos.getY() + 0.5 - player.getEyeHeight(), pos.getZ() + 2.5, 180.0F, 0.0F);
+        player.setYHeadRot(180.0F);
+        ItemStack wand = Wands.create(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false);
+        player.setItemInHand(InteractionHand.MAIN_HAND, wand);
+        node.onWandUse(level, pos, player, wand);
+        player.startUsingItem(InteractionHand.MAIN_HAND);
+        int before = node.getAspects().getAmount(Aspect.FIRE);
+        node.onUsingWandTick(wand, player, 5);
+        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), 100, "stabilized node did not charge the held wand");
+        helper.assertValueEqual(node.getAspects().getAmount(Aspect.FIRE), before - 1, "held wand did not drain exactly one vis");
+        NodeBlockEntity copy = copyNode(helper, node);
+        helper.assertTrue(copy.getDrainEntity() == player && copy.getDrainCollision() != null, "charging beam state did not reach an observing client");
+        helper.assertValueEqual(copy.getDrainColor(), Aspect.FIRE.getColor(), "charging beam has the wrong color");
+        helper.assertTrue(!node.saveWithoutMetadata(level.registryAccess()).contains("drainEntity"), "temporary beam entity ID leaked into world saves");
+        player.releaseUsingItem();
+        copy = copyNode(helper, node);
+        helper.assertTrue(copy.getDrainEntity() == null && copy.getDrainCollision() == null, "releasing the wand left a stale beam");
+        player.startUsingItem(InteractionHand.MAIN_HAND);
+        node.onWandUse(level, pos, player, wand);
+        Wands.fill(wand);
+        node.onUsingWandTick(wand, player, 10);
+        helper.assertTrue(copyNode(helper, node).getDrainEntity() == null, "a full wand must not display a charging beam");
+        Wands.storeVis(wand, Aspect.FIRE, 0);
+        player.setYRot(0.0F);
+        player.setYHeadRot(0.0F);
+        int remaining = node.getAspects().getAmount(Aspect.FIRE);
+        node.onUsingWandTick(wand, player, 15);
+        helper.assertValueEqual(Wands.getVis(wand, Aspect.FIRE), 0, "looking away still charged the wand");
+        helper.assertValueEqual(node.getAspects().getAmount(Aspect.FIRE), remaining, "looking away drained the node");
+        helper.assertTrue(!player.isUsingItem(), "looking away did not stop wand use");
         helper.succeed();
     }
 

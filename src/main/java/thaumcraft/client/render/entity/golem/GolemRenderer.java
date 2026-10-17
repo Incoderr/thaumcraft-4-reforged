@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import thaumcraft.client.platform.TcRenderTypes;
+import thaumcraft.client.geom.GolemItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -164,10 +165,7 @@ public final class GolemRenderer extends MobRenderer<GolemBase, GolemRenderState
         public void submit(PoseStack poseStack, SubmitNodeCollector collector, int light, GolemRenderState state, float yRot, float xRot) {
             if (state.fishing) {
                 poseStack.pushPose();
-                poseStack.scale(0.66F, -0.66F, 0.66F);
-                poseStack.translate(-0.26875F, -1.6F, 0.53F);
-                poseStack.rotateDegrees(Axis.YN, 90.0F);
-                poseStack.rotateDegrees(Axis.ZN, 30.0F);
+                poseStack.mulPose(GolemItemTransforms.fishingRod(GolemModel.armAngle(state, false, 0.0F)));
                 state.fishingRod.submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
                 poseStack.popPose();
                 return;

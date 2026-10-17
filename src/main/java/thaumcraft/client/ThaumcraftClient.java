@@ -73,6 +73,7 @@ public final class ThaumcraftClient {
 
     @SubscribeEvent
     static void registerPipelines(RegisterRenderPipelinesEvent event) {
+        event.registerPipeline(ModRenderPipelines.ELDRITCH_PORTAL);
         event.registerPipeline(ModRenderPipelines.ADDITIVE_PARTICLE);
         event.registerPipeline(ModRenderPipelines.TRANSLUCENT_PARTICLE);
         event.registerPipeline(ModRenderPipelines.GUI_ADDITIVE);

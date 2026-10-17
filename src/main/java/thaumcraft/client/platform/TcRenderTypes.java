@@ -12,6 +12,7 @@ import net.minecraft.resources.Identifier;
 
 public final class TcRenderTypes {
     private static final Map<Identifier, RenderType> ELDRITCH = new HashMap<>();
+    private static final Map<Identifier, RenderType> ELDRITCH_PORTAL = new HashMap<>();
     private static final Map<Identifier, RenderType> ADDITIVE = new HashMap<>();
     private static final Map<Identifier, RenderType> TRANSLUCENT = new HashMap<>();
     private static final Map<Identifier, RenderType> ADDITIVE_NO_DEPTH = new HashMap<>();
@@ -41,6 +42,17 @@ public final class TcRenderTypes {
             case ENTITY_CUTOUT_NO_CULL -> entityCutoutNoCull(texture);
             case ENTITY_TRANSLUCENT -> entityTranslucent(texture);
         };
+    }
+
+    public static RenderType eldritchPortal(Identifier texture) {
+        return ELDRITCH_PORTAL.computeIfAbsent(texture, key -> RenderType.create(
+            "thaumcraft_eldritch_portal",
+            RenderSetup.builder(ModRenderPipelines.ELDRITCH_PORTAL)
+                .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
+                .useLightmap()
+                .sortOnUpload()
+                .createRenderSetup()
+        ));
     }
 
     public static RenderType eldritchSurface(Identifier texture) {
