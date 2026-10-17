@@ -118,6 +118,7 @@ python3 tools/gen_resources.py && git status --short src/generated
 - `Warp.registerItem(Identifier, int)`: изменяемая карта `WARP_ITEMS`.
 - `TcArmorMaterial.assetId` принимает полный Identifier ассета брони.
 - `TcStack.registerDataHandler(key, BiConsumer<ItemStack, String>)`: `create()` вызывает обработчик для ключа `data`, результат инфузии с таким ключом создаётся через `create()`, а не копией центрального предмета.
+- `TcStack.registerDataMatcher(key, BiPredicate<ItemStack, String>)`: `matches()` требует совпадения для каждого ключа `data` с зарегистрированным матчером (аналог сравнения меты в TC4, например тип зелья).
 
 ## Код-стайл
 
