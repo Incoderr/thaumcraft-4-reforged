@@ -129,6 +129,7 @@ public class Thaumcraft {
         thaumcraft.test.MirrorGameTests.register(modEventBus);
         thaumcraft.entity.projectile.ProjectileGameTests.register(modEventBus);
         thaumcraft.test.ConfigGameTests.register(modEventBus);
+        thaumcraft.test.OreGenerationGameTests.register(modEventBus);
     }
 
     public static Identifier id(String path) {
