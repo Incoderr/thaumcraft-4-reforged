@@ -14,5 +14,6 @@ public final class IrisCompat {
         iris.assignPipeline(ModRenderPipelines.ADDITIVE_NO_DEPTH, IrisProgram.PARTICLES_TRANSLUCENT);
         iris.assignPipeline(ModRenderPipelines.TRANSLUCENT_NO_DEPTH, IrisProgram.PARTICLES_TRANSLUCENT);
         iris.assignPipeline(ModRenderPipelines.ENTITY_TRANSLUCENT_NO_DEPTH, IrisProgram.ENTITIES_TRANSLUCENT);
+        NodeRenderTypes.forEachPipeline(pipeline -> iris.assignPipeline(pipeline, IrisProgram.PARTICLES_TRANSLUCENT));
     }
 }

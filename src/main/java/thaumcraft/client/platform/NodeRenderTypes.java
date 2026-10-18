@@ -9,6 +9,7 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -52,6 +53,18 @@ public final class NodeRenderTypes {
     }
 
     private NodeRenderTypes() {
+    }
+
+    public static void forEachPipeline(Consumer<RenderPipeline> consumer) {
+        for (Layer layer : Layer.values()) {
+            consumer.accept(layer.pipeline);
+        }
+    }
+
+    public static void forEachOitPipelineSet(Consumer<OitPipelineSet> consumer) {
+        for (Layer layer : Layer.values()) {
+            consumer.accept(layer.oit);
+        }
     }
 
     public static RenderType of(Identifier texture, boolean translucent, boolean depthIgnore) {

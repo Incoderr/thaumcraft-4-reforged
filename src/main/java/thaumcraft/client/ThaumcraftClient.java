@@ -17,6 +17,7 @@ import thaumcraft.Thaumcraft;
 import thaumcraft.client.fx.ClientFx;
 import thaumcraft.client.platform.IrisCompat;
 import thaumcraft.client.platform.ModRenderPipelines;
+import thaumcraft.client.platform.NodeRenderTypes;
 import thaumcraft.client.research.ResearchBrowserScreen;
 import thaumcraft.client.research.ThaumometerClient;
 import thaumcraft.client.fx.MachineClientFx;
@@ -78,5 +79,7 @@ public final class ThaumcraftClient {
         event.registerPipeline(ModRenderPipelines.TRANSLUCENT_PARTICLE);
         event.registerPipeline(ModRenderPipelines.GUI_ADDITIVE);
         event.registerPipeline(ModRenderPipelines.GUI_TEXTURED_ADDITIVE);
+        NodeRenderTypes.forEachPipeline(event::registerPipeline);
+        NodeRenderTypes.forEachOitPipelineSet(event::registerOitPipelineSet);
     }
 }
