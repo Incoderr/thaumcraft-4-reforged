@@ -14,6 +14,7 @@ import me.shedaniel.rei.api.common.util.EntryStacks;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.ItemLike;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.client.aspect.AspectRenderer;
 
 final class TcReiCategory implements DisplayCategory<TcReiDisplay> {
     private final CategoryIdentifier<TcReiDisplay> id;
@@ -53,7 +54,7 @@ final class TcReiCategory implements DisplayCategory<TcReiDisplay> {
         return switch (kind) {
             case CRUCIBLE -> 96;
             case ARCANE -> 116;
-            case INFUSION, ENCHANTMENT -> 164;
+            case INFUSION, ENCHANTMENT -> 168;
         };
     }
 
@@ -132,25 +133,29 @@ final class TcReiCategory implements DisplayCategory<TcReiDisplay> {
     }
 
     private static void addAspectCosts(List<Widget> widgets, TcReiDisplay display, Rectangle bounds) {
-        List<String> parts = new ArrayList<>();
-        for (Aspect aspect : display.aspects().getAspectsSorted()) {
-            parts.add(aspect.getName() + " " + display.aspects().getAmount(aspect));
-        }
-        int row = 0;
-        for (int start = 0; start < parts.size(); start += 3) {
-            int end = Math.min(parts.size(), start + 3);
-            String prefix = start == 0 ? "Aspects: " : "";
-            String line = prefix + String.join(", ", parts.subList(start, end));
-            widgets.add(Widgets.createLabel(
-                new Point(bounds.getCenterX(), bounds.y + (display.kind() == TcReiDisplay.Kind.CRUCIBLE ? 39 : display.kind() == TcReiDisplay.Kind.ARCANE ? 72 : 113) + row * 10),
-                Component.literal(line)
-            ).noShadow().color(0xFF404040, 0xFFBBBBBB));
-            row++;
+        List<Aspect> aspects = display.aspects().getAspectsSorted();
+        int perRow = 5;
+        int cellSize = 18;
+        int iconY = switch (display.kind()) {
+            case CRUCIBLE -> bounds.y + 30;
+            case ARCANE -> bounds.y + 61;
+            case INFUSION, ENCHANTMENT -> bounds.y + 103;
+        };
+        for (int index = 0; index < aspects.size(); index++) {
+            int row = index / perRow;
+            int column = index % perRow;
+            int columnsInRow = Math.min(perRow, aspects.size() - row * perRow);
+            int rowWidth = columnsInRow * cellSize;
+            int x = bounds.getCenterX() - rowWidth / 2 + column * cellSize;
+            int y = iconY + row * cellSize;
+            Aspect aspect = aspects.get(index);
+            int amount = display.aspects().getAmount(aspect);
+            widgets.add(Widgets.createDrawableWidget((graphics, mouseX, mouseY, delta) -> AspectRenderer.drawTag(graphics, x, y, aspect, amount)));
         }
         if (display.kind() == TcReiDisplay.Kind.INFUSION || display.kind() == TcReiDisplay.Kind.ENCHANTMENT) {
             int level = Math.min(5, display.instability() / 2);
             Component instability = Component.translatable("tc.inst").append(Component.translatable("tc.inst." + level));
-            widgets.add(Widgets.createLabel(new Point(bounds.getCenterX(), bounds.y + 151), instability).noShadow().color(0xFF404040, 0xFFBBBBBB));
+            widgets.add(Widgets.createLabel(new Point(bounds.getCenterX(), bounds.y + 155), instability).noShadow().color(0xFF404040, 0xFFBBBBBB));
         }
     }
 }
