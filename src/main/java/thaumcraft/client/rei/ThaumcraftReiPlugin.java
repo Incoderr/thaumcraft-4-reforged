@@ -31,17 +31,12 @@ import thaumcraft.registry.ModBlocks;
 
 @REIPluginClient
 public final class ThaumcraftReiPlugin implements REIClientPlugin {
-    private static final TcReiCategory CRUCIBLE = new TcReiCategory(TcReiDisplay.CRUCIBLE, "recipe.type.crucible", ModBlocks.CRUCIBLE.get(), Kind.CRUCIBLE);
-    private static final TcReiCategory ARCANE = new TcReiCategory(TcReiDisplay.ARCANE, "recipe.type.arcane", ModBlocks.ARCANE_WORKTABLE.get(), Kind.ARCANE);
-    private static final TcReiCategory INFUSION = new TcReiCategory(TcReiDisplay.INFUSION, "recipe.type.infusion", ModBlocks.RUNIC_MATRIX.get(), Kind.INFUSION);
-    private static final TcReiCategory ENCHANTMENT = new TcReiCategory(TcReiDisplay.ENCHANTMENT, "recipe.type.infusionenchantment", ModBlocks.RUNIC_MATRIX.get(), Kind.ENCHANTMENT);
-
     @Override
     public void registerCategories(CategoryRegistry registry) {
-        registry.add(CRUCIBLE);
-        registry.add(ARCANE);
-        registry.add(INFUSION);
-        registry.add(ENCHANTMENT);
+        registry.add(new TcReiCategory(TcReiDisplay.CRUCIBLE, "recipe.type.crucible", ModBlocks.CRUCIBLE.get(), Kind.CRUCIBLE));
+        registry.add(new TcReiCategory(TcReiDisplay.ARCANE, "recipe.type.arcane", ModBlocks.ARCANE_WORKTABLE.get(), Kind.ARCANE));
+        registry.add(new TcReiCategory(TcReiDisplay.INFUSION, "recipe.type.infusion", ModBlocks.RUNIC_MATRIX.get(), Kind.INFUSION));
+        registry.add(new TcReiCategory(TcReiDisplay.ENCHANTMENT, "recipe.type.infusionenchantment", ModBlocks.RUNIC_MATRIX.get(), Kind.ENCHANTMENT));
         registry.addWorkstations(TcReiDisplay.CRUCIBLE, EntryStacks.of(ModBlocks.CRUCIBLE.get()));
         registry.addWorkstations(TcReiDisplay.ARCANE, EntryStacks.of(ModBlocks.ARCANE_WORKTABLE.get()));
         registry.addWorkstations(TcReiDisplay.INFUSION, EntryStacks.of(ModBlocks.RUNIC_MATRIX.get()));
