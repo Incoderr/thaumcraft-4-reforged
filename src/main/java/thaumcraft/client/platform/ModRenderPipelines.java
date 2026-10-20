@@ -7,9 +7,18 @@ import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import thaumcraft.Thaumcraft;
 
 public final class ModRenderPipelines {
+    public static final OitPipelineSet OIT_ADDITIVE_PARTICLE = OitPipelineSet.builder(
+        Thaumcraft.id("additive_particle"),
+        RenderPipeline.builder(RenderPipelines.OIT_PARTICLE_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE")
+    ).build();
+    public static final OitPipelineSet OIT_ADDITIVE_NO_DEPTH = OitPipelineSet.builder(
+        Thaumcraft.id("additive_no_depth"),
+        RenderPipeline.builder(RenderPipelines.OIT_PARTICLE_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE")
+    ).withoutDepthTest().build();
     public static final RenderPipeline ELDRITCH_PORTAL = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/eldritch_portal"))
         .withCull(false)

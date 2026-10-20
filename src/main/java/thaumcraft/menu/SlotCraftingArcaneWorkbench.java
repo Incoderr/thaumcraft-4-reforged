@@ -88,7 +88,8 @@ public class SlotCraftingArcaneWorkbench extends Slot {
     public void onTake(Player taker, ItemStack carried) {
         checkTakeAchievements(carried);
         List<ItemStack> grid = gridStacks();
-        AspectList aspects = ArcaneCrafting.findAspects(grid, player);
+        ArcaneCrafting.Match arcane = ArcaneCrafting.find(grid, player);
+        AspectList aspects = arcane == null ? new AspectList() : arcane.aspects();
         ItemStack wand = craftMatrix.getItem(ArcaneWorkbenchBlockEntity.WAND_SLOT);
         if (aspects.size() > 0 && wand.getItem() instanceof WandItem wandItem) {
             wandItem.consumeAllVisCrafting(wand, player, aspects, true);
@@ -97,23 +98,23 @@ public class SlotCraftingArcaneWorkbench extends Slot {
             }
         }
         CraftingInput.Positioned positioned = CraftingInput.ofPositioned(ArcaneCrafting.GRID_SIZE, ArcaneCrafting.GRID_SIZE, grid);
-        CraftingInput input = CraftingInput.of(ArcaneCrafting.GRID_SIZE, ArcaneCrafting.GRID_SIZE, grid);
-        int left = 0;
-        int top = 0;
+        CraftingInput input = positioned.input();
+        int left = positioned.left();
+        int top = positioned.top();
         NonNullList<ItemStack> remaining = CraftingRecipe.defaultCraftingReminder(input);
         if (player.level() instanceof ServerLevel serverLevel) {
             Optional<RecipeHolder<CraftingRecipe>> vanilla = serverLevel.recipeAccess().getRecipeFor(RecipeType.CRAFTING, positioned.input(), serverLevel);
             if (vanilla.isPresent()) {
-                input = positioned.input();
-                left = positioned.left();
-                top = positioned.top();
                 CommonHooks.setCraftingPlayer(player);
-                remaining = vanilla.get().value().getRemainingItems(input);
-                CommonHooks.setCraftingPlayer(null);
+                try {
+                    remaining = vanilla.get().value().getRemainingItems(input);
+                } finally {
+                    CommonHooks.setCraftingPlayer(null);
+                }
             }
         }
-        if (carried.is(thaumcraft.registry.ModBlocks.ADVANCED_ALCHEMICAL_CONSTRUCT.get().asItem()) && grid.get(4).is(thaumcraft.registry.EldritchContent.PRIMORDIAL_PEARL.get())) {
-            remaining.set(4, grid.get(4).copyWithCount(1));
+        if (arcane != null && arcane.result().is(thaumcraft.registry.ModBlocks.ADVANCED_ALCHEMICAL_CONSTRUCT.get().asItem()) && grid.get(4).is(thaumcraft.registry.EldritchContent.PRIMORDIAL_PEARL.get())) {
+            remaining.set(1 - left + (1 - top) * input.width(), grid.get(4).copyWithCount(1));
         }
         for (int y = 0; y < input.height(); y++) {
             for (int x = 0; x < input.width(); x++) {

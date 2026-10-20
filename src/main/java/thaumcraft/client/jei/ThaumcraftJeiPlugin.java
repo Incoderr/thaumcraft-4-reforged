@@ -5,9 +5,11 @@ import java.util.List;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.registration.IExtraIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.constants.VanillaTypes;
 import net.minecraft.client.Minecraft;
@@ -23,12 +25,15 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thaumcraft.Thaumcraft;
+import thaumcraft.client.platform.JeiWandSubtypes;
 import thaumcraft.crafting.ArcaneRecipe;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.registry.ModBlocks;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.Wands;
 
 @JeiPlugin
 public final class ThaumcraftJeiPlugin implements IModPlugin {
@@ -37,6 +42,21 @@ public final class ThaumcraftJeiPlugin implements IModPlugin {
     @Override
     public Identifier getPluginUid() {
         return Thaumcraft.id("jei");
+    }
+
+    @Override
+    public void registerItemSubtypes(ISubtypeRegistration registration) {
+        JeiWandSubtypes.register(registration);
+    }
+
+    @Override
+    public void registerExtraIngredients(IExtraIngredientRegistration registration) {
+        List<ItemStack> wands = new ArrayList<>();
+        wands.add(Wands.create(WandRegistry.CAP_IRON, WandRegistry.ROD_WOOD, false));
+        for (ArcaneDisplay recipe : ArcaneDisplay.wandRecipes()) {
+            wands.add(recipe.result());
+        }
+        registration.addExtraItemStacks(wands);
     }
 
     @Override
@@ -58,7 +78,9 @@ public final class ThaumcraftJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         List<CrucibleRecipe> crucible = TcRecipes.all(CrucibleRecipe.class).stream().filter(recipe -> recipe.result().exists()).toList();
-        List<ArcaneRecipe> arcane = TcRecipes.all(ArcaneRecipe.class).stream().filter(recipe -> recipe.result().exists()).toList();
+        List<ArcaneDisplay> arcane = new ArrayList<>(TcRecipes.all(ArcaneRecipe.class).stream()
+            .filter(recipe -> recipe.result().exists()).map(ArcaneDisplay::of).toList());
+        arcane.addAll(ArcaneDisplay.wandRecipes());
         List<InfusionRecipe> infusion = TcRecipes.all(InfusionRecipe.class).stream().filter(recipe -> recipe.result().exists()).toList();
         List<EnchantmentCategory.Entry> enchantments = enchantments();
         registration.addRecipes(CrucibleCategory.TYPE, crucible);

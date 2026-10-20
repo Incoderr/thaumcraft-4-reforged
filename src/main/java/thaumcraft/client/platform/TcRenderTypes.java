@@ -69,7 +69,7 @@ public final class TcRenderTypes {
         return ADDITIVE.computeIfAbsent(texture, key -> RenderType.create(
             "thaumcraft_additive",
             RenderSetup.builder(ModRenderPipelines.ADDITIVE_PARTICLE)
-                .setOitPipelines(RenderPipelines.OIT_PARTICLE)
+                .setOitPipelines(ModRenderPipelines.OIT_ADDITIVE_PARTICLE)
                 .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
                 .useLightmap()
                 .createRenderSetup()
@@ -91,7 +91,7 @@ public final class TcRenderTypes {
         return ADDITIVE_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
             "thaumcraft_additive_no_depth",
             RenderSetup.builder(ModRenderPipelines.ADDITIVE_NO_DEPTH)
-                .setOitPipelines(RenderPipelines.OIT_PARTICLE)
+                .setOitPipelines(ModRenderPipelines.OIT_ADDITIVE_NO_DEPTH)
                 .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
                 .useLightmap()
                 .createRenderSetup()

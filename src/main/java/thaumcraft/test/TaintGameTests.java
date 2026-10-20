@@ -268,6 +268,7 @@ public final class TaintGameTests {
         TaintBiomes.set(helper.getLevel(), stalkPos, TaintBiomes.TAINTED_LAND);
         TaintSpore spore = TaintSpore.create(helper.getLevel(), stalkPos);
         helper.assertTrue(spore != null, "failed to create attached spore");
+        spore.setPersistenceRequired();
         helper.getLevel().addFreshEntity(spore);
         awaitSporeGrowth(helper, spore, stalkPos);
     }
@@ -339,6 +340,7 @@ public final class TaintGameTests {
     private static void tinyTentacleExpiresAfter200Ticks(GameTestHelper helper) {
         TaintacleTiny tentacle = ModEntities.TAINTACLE_TINY.get().create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
         helper.assertTrue(tentacle != null, "failed to create tiny tentacle");
+        tentacle.setPersistenceRequired();
         BlockPos pos = helper.absolutePos(new BlockPos(3, 2, 3));
         TaintBiomes.set((net.minecraft.server.level.ServerLevel) helper.getLevel(), pos, TaintBiomes.TAINTED_LAND);
         tentacle.absSnapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
