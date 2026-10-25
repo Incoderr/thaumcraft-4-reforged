@@ -25,8 +25,6 @@ public final class TcRenderTypes {
     public enum Kind {
         ADDITIVE,
         TRANSLUCENT,
-        ADDITIVE_NO_DEPTH,
-        TRANSLUCENT_NO_DEPTH,
         ENTITY_CUTOUT,
         ENTITY_CUTOUT_NO_CULL,
         ENTITY_TRANSLUCENT
@@ -36,8 +34,6 @@ public final class TcRenderTypes {
         return switch (kind) {
             case ADDITIVE -> additive(texture);
             case TRANSLUCENT -> translucent(texture);
-            case ADDITIVE_NO_DEPTH -> additiveNoDepth(texture);
-            case TRANSLUCENT_NO_DEPTH -> translucentNoDepth(texture);
             case ENTITY_CUTOUT -> entityCutout(texture);
             case ENTITY_CUTOUT_NO_CULL -> entityCutoutNoCull(texture);
             case ENTITY_TRANSLUCENT -> entityTranslucent(texture);
@@ -91,7 +87,6 @@ public final class TcRenderTypes {
         return ADDITIVE_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
             "thaumcraft_additive_no_depth",
             RenderSetup.builder(ModRenderPipelines.ADDITIVE_NO_DEPTH)
-                .setOitPipelines(ModRenderPipelines.OIT_ADDITIVE_NO_DEPTH)
                 .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
                 .useLightmap()
                 .createRenderSetup()
@@ -102,7 +97,6 @@ public final class TcRenderTypes {
         return TRANSLUCENT_NO_DEPTH.computeIfAbsent(texture, key -> RenderType.create(
             "thaumcraft_translucent_no_depth",
             RenderSetup.builder(ModRenderPipelines.TRANSLUCENT_NO_DEPTH)
-                .setOitPipelines(RenderPipelines.OIT_PARTICLE)
                 .withTexture("Sampler0", key, () -> RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR))
                 .useLightmap()
                 .createRenderSetup()

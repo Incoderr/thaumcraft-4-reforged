@@ -5,6 +5,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import java.util.Optional;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
@@ -15,10 +16,6 @@ public final class ModRenderPipelines {
         Thaumcraft.id("additive_particle"),
         RenderPipeline.builder(RenderPipelines.OIT_PARTICLE_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE")
     ).build();
-    public static final OitPipelineSet OIT_ADDITIVE_NO_DEPTH = OitPipelineSet.builder(
-        Thaumcraft.id("additive_no_depth"),
-        RenderPipeline.builder(RenderPipelines.OIT_PARTICLE_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE")
-    ).withoutDepthTest().build();
     public static final RenderPipeline ELDRITCH_PORTAL = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/eldritch_portal"))
         .withCull(false)
@@ -47,13 +44,13 @@ public final class ModRenderPipelines {
         .withLocation(Thaumcraft.id("pipeline/additive_no_depth"))
         .withCull(false)
         .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withDepthStencilState(Optional.empty())
         .build();
     public static final RenderPipeline TRANSLUCENT_NO_DEPTH = RenderPipeline.builder(RenderPipelines.PARTICLE_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/translucent_no_depth"))
         .withCull(false)
         .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withDepthStencilState(Optional.empty())
         .build();
     public static final RenderPipeline ENTITY_TRANSLUCENT_NO_DEPTH = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
         .withLocation(Thaumcraft.id("pipeline/entity_translucent_no_depth"))
