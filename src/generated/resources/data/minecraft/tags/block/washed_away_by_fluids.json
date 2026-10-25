@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "thaumcraft:liquid_death",
+      "required": false
+    },
+    {
+      "id": "thaumcraft:purifying_fluid",
+      "required": false
+    }
+  ]
+}
