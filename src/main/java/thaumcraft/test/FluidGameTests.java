@@ -197,6 +197,18 @@ public final class FluidGameTests {
 
     private static void fluidPhysicsCurrents(GameTestHelper helper) {
         for (int kind = 0; kind < 3; kind++) {
+            for (boolean partial : new boolean[]{false, true}) {
+                motionPool(helper, kind, partial);
+                Vec3 start = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(7, 3, 7))).add(0, 0.05, 0);
+                ItemEntity item = new ItemEntity(helper.getLevel(), start.x, start.y, start.z, new ItemStack(Items.STONE));
+                item.setDeltaMovement(Vec3.ZERO);
+                for (int tick = 0; tick < 12; tick++) {
+                    item.tick();
+                }
+                helper.assertTrue(item.position().subtract(start).horizontalDistance() < 0.001, "still fluid pushed item, kind=" + kind);
+                helper.assertTrue(item.getDeltaMovement().length() < 0.5, "still fluid launched item");
+                item.discard();
+            }
             for (boolean falling : new boolean[]{false, true}) {
                 motionPool(helper, kind, false);
                 for (int z = 3; z <= 11; z++) {
